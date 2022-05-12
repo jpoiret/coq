@@ -29,7 +29,7 @@ let start_deriving ~atts CAst.{v=f;loc} suchthat name : Declare.Proof.t =
   (* spiwack: I don't know what the rigidity flag does, picked the one
      that looked the most general. *)
   let sigma, (f_type, f_impargs) =
-    let (sigma,f_type_sort) = Evd.new_sort_variable Evd.univ_flexible_alg sigma in
+    let (sigma,f_type_sort) = Evd.new_sort_variable Evd.univ_flexible sigma in
     let f_type_type = EConstr.mkSort f_type_sort in
     let sigma, f_type = Evarutil.new_evar env sigma ~src:(Loc.tag @@ Evar_kinds.GoalEvar) ~typeclass_candidate:false f_type_type in
     let sigma = Evd.shelve sigma [fst (EConstr.destEvar sigma f_type)] in

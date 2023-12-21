@@ -104,7 +104,7 @@ Check r 2 3.
 
 End I.
 
-Require Import Stdlib.Numbers.Cyclic.Int63.Uint63.
+Require Import TestSuite.primint63.
 Module NumberNotations.
   Module Test17.
     (** Test uint63 *)

@@ -412,7 +412,7 @@ module UnivTab = Make(FullPath)(Univ.UGlobal)
 type univtab = UnivTab.t
 let the_univtab = Summary.ref ~name:"univtab" (UnivTab.empty : univtab)
 
-module QualityTab = Make(FullPath)(Sorts.QVar)
+module QualityTab = Make(FullPath)(Univ.UGlobal)
 type qualitytab = QualityTab.t
 let the_qualitytab = Summary.ref ~name:"qualitytab" (QualityTab.empty : qualitytab)
 
@@ -434,7 +434,7 @@ module UnivIdMap = HMap.Make(Univ.UGlobal)
 type univrevtab = full_path UnivIdMap.t
 let the_univrevtab = Summary.ref ~name:"univrevtab" (UnivIdMap.empty : univrevtab)
 
-module QualityIdMap = HMap.Make(Sorts.QVar)
+module QualityIdMap = HMap.Make(Univ.UGlobal)
 type qualityrevtab = full_path QualityIdMap.t
 let the_qualityrevtab = Summary.ref ~name:"qualityrevtab" (QualityIdMap.empty : qualityrevtab)
 

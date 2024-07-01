@@ -12,8 +12,6 @@ Require Export Stdlib.Classes.SetoidTactics.
 
 Export Morphisms.ProperNotations.
 
-Require Stdlib.ssr.ssrsetoid.
-
 (** For backward compatibility *)
 
 Definition Setoid_Theory := @Equivalence.

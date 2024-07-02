@@ -230,7 +230,7 @@ let boot_module_setup ~cctx coq_module =
   | Boot_type.NoInit -> [Arg.A "-noinit"], []
   | Stdlib ->
     (match Coq_module.prefix coq_module with
-     | ["Init"] -> [ Arg.A "-noinit" ], []
+     | "Init"::_ -> [ Arg.A "-noinit" ], []
      | _ -> [ ], [ Path.relative (Path.make "theories") prelude_path ]
     )
   | Regular stdlib -> [], [ Path.relative stdlib.directory prelude_path ]

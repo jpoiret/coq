@@ -8,8 +8,4 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-Require Export Coq.Init.Tactics.Ltac.
-(* Require Export Coq.Init.Tactics.Tauto. *)
-Declare ML Module "cc_plugin:coq-core.plugins.cc".
-Declare ML Module "firstorder_core_plugin:coq-core.plugins.firstorder_core".
-Declare ML Module "firstorder_plugin:coq-core.plugins.firstorder".
+val configure : ?apply: (unit -> unit) -> GWindow.window -> unit

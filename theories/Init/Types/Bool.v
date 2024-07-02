@@ -8,7 +8,8 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-Require Export Coq.Init.Tactics.Ltac.
-(* Require Export Coq.Init.Tactics.Tauto. *)
-Declare ML Module "cc_plugin:coq-core.plugins.cc".
-Declare ML Module "firstorder_plugin:coq-core.plugins.firstorder".
+Require Import PreludeOptions.
+
+Inductive bool@{s| |} : Type@{s|Set} :=
+  | true : bool
+  | false : bool.

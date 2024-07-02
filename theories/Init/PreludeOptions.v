@@ -8,7 +8,10 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-Require Export Coq.Init.Tactics.Ltac.
-(* Require Export Coq.Init.Tactics.Tauto. *)
-Declare ML Module "cc_plugin:coq-core.plugins.cc".
-Declare ML Module "firstorder_plugin:coq-core.plugins.firstorder".
+#[export] Set Typeclasses Unique Instances.
+#[export] Set Universe Polymorphism.
+#[export] Set Polymorphic Inductive Cumulativity.
+#[export] Unset Auto Template Polymorphism.
+#[export] Unset Universe Minimization ToSet.
+#[export] Set Primitive Projections.
+#[export] Set Printing Coercions.

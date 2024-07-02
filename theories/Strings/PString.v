@@ -1,12 +1,12 @@
-Require Import Uint63.
-Require Export PrimString.
-Require Export PrimStringAxioms.
+From Coq Require Import Uint63.
+From Coq Require Export PrimString.
+From Coq Require Export PrimStringAxioms.
 
 Require Import Coq.micromega.Lia.
 Require Import Coq.micromega.ZifyUint63.
 Require Import Coq.micromega.Zify.
 Require Import Coq.Numbers.Cyclic.Int63.Ring63.
-Require Import ZArith.
+From Coq Require Import ZArith.
 
 #[local] Open Scope Z_scope.
 #[local] Open Scope list_scope.
@@ -151,7 +151,7 @@ Lemma cat_length_spec_no_overflow (s1 s2 : string) :
 Proof.
   intros Hlen. rewrite cat_length_spec. unfold min.
   destruct (max_length ≤? length s1 + length s2)%uint63 eqn:Hle; [|reflexivity].
-  rewrite leb_spec, add_spec, Z.mod_small in Hle; [|lia].
+  rewrite Uint63Axioms.leb_spec, Z.compare_le_iff, add_spec, Z.mod_small in Hle; [|lia].
   apply to_Z_inj. rewrite add_spec, Z.mod_small; lia.
 Qed.
 
@@ -193,7 +193,7 @@ Proof.
   intros Hno Hi.
   rewrite !get_spec, sub_spec.
   rewrite List.nth_firstn, List.nth_skipn. case_if; [|lia].
-  f_equal. rewrite Uint63.add_spec, Z.mod_small; lia.
+  f_equal. rewrite add_spec, Z.mod_small; lia.
 Qed.
 
 Lemma cat_get_spec_l (s1 s2 : string) (i : int) :
@@ -217,7 +217,7 @@ Proof.
   rewrite !get_spec, cat_spec.
   rewrite List.nth_firstn. case_if; [|lia].
   rewrite List.app_nth2; [|rewrite <-length_spec; lia].
-  rewrite <-length_spec, Uint63.sub_spec, Z.mod_small; [|lia].
+  rewrite <-length_spec, Uint63Axioms.sub_spec, Z.mod_small; [|lia].
   rewrite Z2Nat.inj_sub; [reflexivity|lia].
 Qed.
 
@@ -410,8 +410,8 @@ Proof.
       exists (to_list (sub s2 (i + 1) (length s2 - i - 1))).
       rewrite !sub_spec; simpl.
       rewrite !(List.firstn_all2 (n:=to_nat (length _ - _ - _))).
-      2-3: repeat progress rewrite ?List.length_skipn, ?Uint63.add_spec,
-            ?Uint63.sub_spec, ?Z.mod_small, ?Z.min_r, <-?length_spec; simpl; lia.
+      2-3: repeat progress rewrite ?List.length_skipn, ?add_spec,
+            ?Uint63Axioms.sub_spec, ?Z.mod_small, ?Z.min_r, <-?length_spec; simpl; lia.
       split; [apply to_list_firstn_skipn_middle; lia|].
       rewrite (to_list_firstn_skipn_middle s2 i) at 1; [|lia].
       enough (sub s2 0 i = sub s1 0 i) as H12.
@@ -439,7 +439,7 @@ Lemma compare_lt_spec (s1 s2 : string) :
       char63_compare (get s1 i) (get s2 i) = Lt)).
 Proof.
   rewrite compare_spec.
-  setoid_rewrite Uint63.compare_def_spec; unfold compare_def.
+  setoid_rewrite Uint63Axioms.compare_def_spec; unfold compare_def.
   split.
   - intros [i (H1 & H2 & Hget & Heq)]; exists i.
     repeat split; [assumption..|].
@@ -557,7 +557,7 @@ Proof.
   rewrite List.firstn_all2; [reflexivity|].
   rewrite List.length_skipn, <-length_spec.
   destruct (to_Z len <=? to_Z (length s)) eqn:Hle; [|lia].
-  rewrite Uint63.sub_spec, Z.mod_small; lia.
+  rewrite Uint63Axioms.sub_spec, Z.mod_small; lia.
 Qed.
 
 Lemma sub_sub (s : string) (off1 len1 off2 len2 : int) :
@@ -587,7 +587,7 @@ Proof.
   rewrite make_length_spec; [|lia].
   rewrite IH. apply to_Z_inj.
   rewrite of_Z_spec, Z.mod_small; [|lia].
-  rewrite Uint63.add_spec, Z.mod_small.
+  rewrite add_spec, Z.mod_small.
   2: rewrite of_Z_spec, Z.mod_small; lia.
   rewrite of_Z_spec, Z.mod_small; lia.
 Qed.

@@ -222,7 +222,7 @@ val shortest_qualid_of_module : ?loc:Loc.t -> ModPath.t -> qualid
 (** In general we have a [UnivNames.universe_binders] around rather than a [Id.Set.t] *)
 val shortest_qualid_of_universe : ?loc:Loc.t -> 'u Id.Map.t -> Univ.UGlobal.t -> qualid
 
-val pr_depr_xref : Globnames.extended_global_reference -> Pp.t
+val shortest_qualid_of_quality : ?loc:Loc.t -> 'u Id.Map.t -> Sorts.QGlobal.t -> qualid
 
 (** {5 Generic name handling} *)
 

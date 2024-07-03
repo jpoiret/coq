@@ -36,7 +36,7 @@ Ltac show_hyps :=
 
 Ltac do_nat n tac :=
   match n with
-    | 0 => idtac
+    | O => idtac
     | S ?n' => tac ; do_nat n' tac
   end.
 
@@ -72,9 +72,6 @@ Ltac destruct_one_ex :=
       | [H : (ex _) |- _] => tac H
       | [H : (sig ?P) |- _ ] => tac H
       | [H : (sigT ?P) |- _ ] => tacT H
-      | [H : (ex2 _ _) |- _] => tac2 H
-      | [H : (sig2 ?P _) |- _ ] => tac2 H
-      | [H : (sigT2 ?P _) |- _ ] => tacT2 H
     end.
 
 (** Repeateadly destruct existentials. *)

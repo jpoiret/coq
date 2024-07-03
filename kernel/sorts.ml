@@ -104,10 +104,10 @@ struct
       if c <> 0 then c
       else CString.compare s1 s2
     | Global ida, Global idb -> QGlobal.compare ida idb
-    | Var _, (Unif  _ | Global _) -> -1
-    | Unif _, Var _ -> 1
-    | Unif _, Global _ -> -1
-    | Global _, (Var _ | Unif _) -> -1
+    | Var _, _ -> -1
+    | _, Var _ -> 1
+    | Unif _, _ -> -1
+    | _, Unif _ -> 1
 
   let equal a b = match a, b with
     | Var a, Var b ->  Int.equal a b

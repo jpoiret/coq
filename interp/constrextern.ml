@@ -898,21 +898,20 @@ let extern_glob_quality uvars = function
   | GQConstant q -> CQConstant q
   | GQualVar q -> CQualVar (extern_glob_qvar uvars q)
 
-let extern_glob_sort uvars (q, l) =
-  Option.map (extern_glob_qvar uvars) q,
-  map_glob_sort_gen (List.map (on_fst (extern_glob_sort_name uvars))) l
-
-(** wrapper to handle print_universes: don't forget small univs *)
-let extern_glob_sort uvars (s:glob_sort) =
-  let really_extern = !print_universes || match s with
-    | None, UNamed [s, 0] -> begin match s with
+let extern_glob_levels uvars l =
+  let really_extern = !print_universes || match l with
+    | UNamed [s, 0] -> begin match s with
         | GSet | GProp | GSProp -> true
         | GUniv _ | GLocalUniv _ | GRawUniv _ -> false
       end
     | _ -> false
   in
-  if really_extern then extern_glob_sort uvars s
-  else Constrexpr_ops.expr_Type_sort
+  if really_extern then 
+    map_glob_sort_gen (List.map (on_fst (extern_glob_sort_name uvars))) l
+  else UNamed []
+
+let extern_glob_sort uvars (s:glob_sort) =
+  Option.map (extern_glob_qvar uvars) (fst s), extern_glob_levels uvars (snd s)
 
 
 let extern_glob_level uvars u =
@@ -920,9 +919,13 @@ let extern_glob_level uvars u =
   map_glob_sort_gen map u
 
 let extern_instance uvars = function
-  | Some (ql,ul) when !print_universes ->
+  | Some (ql,ul) ->
     let ql = List.map (extern_glob_quality uvars) ql in
-    let ul = List.map (extern_glob_level uvars) ul in
+    let ul = 
+      if !print_universes then 
+        List.map (extern_glob_level uvars) ul 
+      else []
+    in
     Some (ql,ul)
   | _ -> None
 

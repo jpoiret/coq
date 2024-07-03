@@ -8,6 +8,7 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
+Require Export Coq.Init.PreludeOptions.
 Require Export Coq.Init.Notations.
 Require Export Coq.Init.Types.
 Require Export Coq.Init.Tactics.Ltac.

@@ -87,7 +87,7 @@ struct
       match a, b with
       | Var a, Var b -> Int.equal a b
       | Unif (sa, ia), Unif (sb, ib) -> sa == sb && Int.equal ia ib
-      | Global ida, Global idb -> QGlobal.compare ida idb = 0
+      | Global ida, Global idb -> QGlobal.equal ida idb
       | (Var _ | Unif _| Global _), _ -> false
 
     let hash = hash
@@ -113,7 +113,7 @@ struct
     | Var a, Var b ->  Int.equal a b
     | Unif (s1,i1), Unif (s2,i2) ->
       Int.equal i1 i2 && CString.equal s1 s2
-    | Global ida, Global idb -> QGlobal.compare ida idb = 0
+    | Global ida, Global idb -> QGlobal.equal ida idb
     | (Var _| Unif _ | Global _), _ -> false
 
   let to_string = function

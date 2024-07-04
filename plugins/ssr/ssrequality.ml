@@ -392,8 +392,8 @@ let pirrel_rewrite ?(under=false) ?(map_redex=id_map_redex) pred rdx rdx_ty new_
     Evarutil.new_evar env sigma (beta (EConstr.Vars.subst1 new_rdx pred)) in
   let pred = EConstr.mkNamedLambda sigma (make_annot pattern_id ERelevance.relevant) rdx_ty pred in
   let sigma, elim =
-    let sort = Tacticals.elimination_sort_of_goal gl in
-    match Equality.eq_elimination_ref (dir = L2R) sort with
+    let _sort = Tacticals.elimination_sort_of_goal gl in
+    match Equality.eq_elimination_ref (dir = L2R) (* TODO FIXME *) Sorts.Quality.qtype with
     | Some r -> Evd.fresh_global env sigma r
     | None ->
       let ((kn, i) as ind, _) = Tacred.eval_to_quantified_ind env sigma c_ty in

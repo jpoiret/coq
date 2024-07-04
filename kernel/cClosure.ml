@@ -545,12 +545,12 @@ let rec to_constr (lfts, usubst as ulfts) v =
         mkProd (n, to_constr ulfts t, subst_instance_constr (usubst_instance ulfts (snd e)) c)
       else
         let subs' = comp_subs ulfts e in
-        mkProd (usubst_binder subs' n,
+        mkProd (n,
                 to_constr ulfts t,
                 subst_constr (usubs_lift subs') c)
     | FLetIn (n,b,t,f,e) ->
       let subs = comp_subs (on_fst el_lift ulfts) (usubs_lift e) in
-      mkLetIn (usubst_binder subs n,
+      mkLetIn (n,
                to_constr ulfts b,
                to_constr ulfts t,
                subst_constr subs f)

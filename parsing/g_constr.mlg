@@ -165,7 +165,8 @@ GRAMMAR EXTEND Gram
       | "Prop" -> { CProp } ] ]
   ;
   universe_expr:
-    [ [ id = universe_name; n = universe_increment -> { (id,n) } ] ]
+    [ [ n = natural -> { (CSet, n) }
+      | id = universe_name; n = universe_increment -> { (id,n) } ] ]
   ;
   lconstr:
     [ [ c = term LEVEL "200" -> { c } ] ]

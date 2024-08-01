@@ -19,17 +19,18 @@ license: "LGPL-2.1-only"
 homepage: "https://coq.inria.fr/"
 doc: "https://coq.github.io/doc/"
 bug-reports: "https://github.com/coq/coq/issues"
+dev-repo: "git+https://github.com/coq/coq.git"
 depends: [
   "dune" {>= "3.6"}
   "coq-core" {= version}
-  "coq-stdlib" {= version}
+  "rocq-init" {= version}
   "coqide-server" {= version}
+  "coq-stdlib"
   "ounit2" {with-test}
   "conf-python-3" {with-test}
   "conf-time" {with-test}
   "odoc" {with-doc}
 ]
-dev-repo: "git+https://github.com/coq/coq.git"
 build: [
   ["dune" "subst"] {dev}
   [ "./configure"

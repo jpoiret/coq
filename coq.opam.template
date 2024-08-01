@@ -1,3 +1,14 @@
+depends: [
+  "dune" {>= "3.6"}
+  "coq-core" {= version}
+  "rocq-init" {= version}
+  "coqide-server" {= version}
+  "coq-stdlib"
+  "ounit2" {with-test}
+  "conf-python-3" {with-test}
+  "conf-time" {with-test}
+  "odoc" {with-doc}
+]
 build: [
   ["dune" "subst"] {dev}
   [ "./configure"

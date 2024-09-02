@@ -510,9 +510,7 @@ let enforce_leq_up u v local =
 
 let instantiate_variable l (b : Universe.t) v local =
   v := UnivFlex.define l b !v;
-  try { local with local_univs = UGraph.set l b local.local_univs }
-  with UGraph.InconsistentEquality ->
-    add_local_univ (Universe.make l, Eq, b) local
+  { local with local_univs = UGraph.set l b local.local_univs }
 
 let get_constraint = function
 | Conversion.CONV -> Eq
@@ -523,7 +521,7 @@ let unify_quality c s1 s2 l =
     else sort_inconsistency (get_constraint c) s1 s2
   in
   { l with
-    local_sorts  = QState.unify_quality ~fail ~cumulative_prop:(UGraph.cumulative_prop univs)
+    local_sorts  = QState.unify_quality ~fail ~cumulative_prop:(UGraph.cumulative_prop l.local_univs)
         c (Sorts.quality s1) (Sorts.quality s2) l.local_sorts;
   }
 

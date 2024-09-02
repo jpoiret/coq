@@ -7,7 +7,7 @@ Require Import Setoid.
 Import Morphisms.
 Require Import Coq.Classes.Morphisms_Prop.
 
-Unset Universe Polymorphism.
+(* Unset Universe Polymorphism. *)
 
 Module TestSProp.
 
@@ -297,13 +297,18 @@ Lemma rewrite_all_in2 {l : list nat} (Q : nat -> Type) (R : nat -> Type) :
   All (fun x => prod (Q x) (R x))%type l.
 Proof.
   intros a.
+  Set Debug "loop-checking-set".
+  Set Debug "backtrace".
+
   setoid_rewrite add_0_r_peq in a.
+
+  Show Universes.
   exact a.
 Qed.
 End InType.
 
 Module Polymorphism.
-
+Set Universe Polymorphism.
 Notation "x :: xs" := (cons x xs).
 
 #[universes(polymorphic)]
@@ -336,7 +341,10 @@ Lemma rewrite_all {l : list nat} (Q : nat -> Type) :
   All (fun x => Q (plus x O)) l.
 Proof.
   intros a.
+  Set Debug "loop-checking-set".
+  Set Debug "backtrace".
   setoid_rewrite add_0_r_eq.
+  Show Universes.
   exact a.
 Qed.
 

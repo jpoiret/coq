@@ -303,7 +303,20 @@ let pr_evd_qvar sigma = UState.pr_uctx_qvar (Evd.ustate sigma)
 
 let reference_of_level sigma l = UState.qualid_of_level (Evd.ustate sigma) l
 
-let pr_evar_universe_context = UState.pr
+let pr_evar_universe_context ctx =
+  let open UState in
+  let prl = pr_uctx_level ctx in
+  if UState.is_empty ctx then mt ()
+  else
+    v 0 (str"UNIVERSES:"++brk(0,1)++
+       h (Univ.pr_universe_context_set prl (UState.context_set ctx)) ++ fnl () ++
+     UnivFlex.pr prl (UState.subst ctx) ++ fnl() ++
+     str"GRAPH:" ++ brk(0,1) ++
+      h (UGraph.pr_universes prl (UGraph.repr (UState.ugraph ctx))) ++ fnl () ++
+     str"SORTS:"++brk(0,1)++
+     h (UState.pr_sort_opt_subst ctx) ++ fnl() ++
+     str "WEAK CONSTRAINTS:"++brk(0,1)++
+     h (UState.pr_weak prl ctx) ++ fnl ())
 
 let print_env_short env sigma =
   let print_constr = Internal.print_kconstr in

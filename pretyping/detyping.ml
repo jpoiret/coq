@@ -362,7 +362,7 @@ let { Goptions.get = print_relevances } =
 (** univ and sort detyping *)
 
 let detype_level_name sigma l =
-  match UState.id_of_level (Evd.ustate sigma) l with
+  match UState.id_of_level (Evd.evar_universe_context sigma) l with
   | Some id -> GLocalUniv (CAst.make id)
   | None -> GUniv l
 

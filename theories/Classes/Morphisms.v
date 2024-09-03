@@ -100,9 +100,9 @@ Proof. split. Qed.
 
 (** The non-dependent version is an instance where we forget dependencies. *)
 (** listings: respectful **)
-Definition respectful@{sa sb sra srb|a b ra rb|} {A : Type@{sa|a}} {B : Type@{sb|b}}
+Definition respectful@{sa sb sra srb|a b ra rb ab ararb|max(a,b) <= ab, max(a,ra,rb) <= ararb} {A : Type@{sa|a}} {B : Type@{sb|b}}
   (R : relation@{sa sra|a ra} A) (R' : relation@{sb srb|b rb} B)
-  : relation@{sb srb|_ _} (A -> B) := fun f g => forall x y, R x y -> R' (f x) (g y).
+  : relation@{sb srb|ab ararb} (A -> B) := fun f g => forall x y, R x y -> R' (f x) (g y).
 (** listings: end **)
 
 Lemma rewrite_relation_eq_dom@{sa sb sr se|a b r|} {A : Type@{sa|a}} {B : Type@{sb|b}} {R : relation@{sb sr|b r} B} {_ : RewriteRelation R}:
@@ -240,7 +240,7 @@ Section Relations.
 
   Lemma pointwise_pointwise@{s' sb|r b|} {B : Type@{sb|b}} (R : relation@{sb s'|b r} B) :
     relation_equivalence@{sb s'|max(a,b) max(a,r)} (pointwise_relation@{_ _ _|a b r} R)
-    (respectful@{_ _ _ _|a b a r} (@eq@{_ s'|a} A) R).
+    (respectful@{_ _ _ _|a b a r _ _} (@eq@{_ s'|a} A) R).
   Proof.
     intros. split.
     - intros X a b []. apply X.
@@ -249,7 +249,7 @@ Section Relations.
 
   Lemma pointwise_pointwise_prop@{s' sb|r b|} {B : Type@{sb|b}} (R : relation@{sb s'|b r} B) :
     relation_equivalence@{sb s'|max(a,b) max(a,r)} (pointwise_relation@{_ _ _|a b r} R)
-    (respectful@{_ _ _ _|a b Set r} (@eq@{_ Prop|a} A) R).
+    (respectful@{_ _ _ _|a b Set r _ _} (@eq@{_ Prop|a} A) R).
   Proof.
     intros. split.
     - intros X a b []. apply X.
@@ -263,12 +263,12 @@ Section Relations.
 
   (** The subrelation property goes through products as usual. *)
 
-  Lemma subrelation_respectful@{s' s2 s2' s3 s3'| b ra rb|?} {B : Type@{s2|b}}
+  Lemma subrelation_respectful@{s' s2 s2' s3 s3'| b ra rb ab ararb|max(a,b) <= ab, max(a, ra, rb) <= ararb ?} {B : Type@{s2|b}}
     (RA : relation@{s s'|a ra} A) (RA' : relation@{s s'|a ra} A)
     (RB : relation@{s2 s2'|b rb} B) (RB' : relation@{s2 s2'|b rb} B)
     (subl : subrelation@{s s'|a ra} RA' RA)
     (subr : subrelation@{s2 s2'|b rb} RB RB') :
-    subrelation@{s2 s2'|max(a,b) max(a,ra,rb)} (RA ++> RB) (RA' ++> RB').
+    subrelation@{s2 s2'|ab ararb} (RA ++> RB) (RA' ++> RB').
   Proof. intros f g rfg x y rxy. apply subr, rfg, subl, rxy. Qed.
 
   (** And of course it is reflexive. *)
@@ -335,7 +335,7 @@ Hint Extern 5 (@Proper _ ?H _) => proper_subrelation : typeclass_instances.
 
 #[global]
 Instance iff_arrow_subrelation@{s | u|} : subrelation iff@{s|u u} arrow@{s s|u u} | 2.
-Proof. firstorder.  Qed.
+Proof. firstorder. Qed.
 
 #[global]
 Instance iff_flip_arrow_subrelation@{s | u|} : subrelation iff@{s|u u} (flip arrow@{s s|u u}) | 2.
@@ -569,11 +569,17 @@ Instance respectful_per@{sa sra sb srb | a ra b rb |}
 
 End GenericInstances.
 
-
 Global Instance reflexive_eq_dom_reflexive@{sa sb sr | a b r |}
   {A : Type@{sa|a}} {B : Type@{sb|b}} {RB : relation@{sb sr | b r} B}
   (hr : Reflexive RB) :
-  Reflexive (@eq@{_ sr|a} A ++> RB).
+  Reflexive (@eq@{sa sr|a} A ++> RB).
+Proof. simpl_relation. Qed.
+
+(** Special case where the equality is in Type, hence can be eliminated to any sort. *)
+Global Instance reflexive_eq_type_dom_reflexive@{sa sb sr | a b r |}
+  {A : Type@{sa|a}} {B : Type@{sb|b}} {RB : relation@{sb sr | b r} B}
+  (hr : Reflexive RB) :
+  Reflexive (@eq@{sa Type|a} A ++> RB).
 Proof. simpl_relation. Qed.
 
 Lemma proper_eq@{s | a |} {A : Type@{s | a}} (x : A) : Proper (@eq@{_ _|a} A) x.

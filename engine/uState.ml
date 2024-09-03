@@ -510,7 +510,9 @@ let enforce_leq_up u v local =
 
 let instantiate_variable l (b : Universe.t) v local =
   v := UnivFlex.define l b !v;
-  { local with local_univs = UGraph.set l b local.local_univs }
+  try { local with local_univs = UGraph.set l b local.local_univs }
+  with UGraph.InconsistentEquality ->
+    add_local_univ (Universe.make l, Eq, b) local
 
 let get_constraint = function
 | Conversion.CONV -> Eq

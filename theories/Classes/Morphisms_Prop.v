@@ -32,9 +32,20 @@ Program Instance not_impl_morphism@{s|u|} :
 Program Instance not_iff_morphism@{s|u|} :
   Proper@{_ _|_ u+1} (iff@{_|u u} ++> iff@{_| u u}) not@{s|u}.
 
+
+
+(* Something subtle is happening here:
+
+  (respectful@{Type Type Prop Prop|Set+1 Set+1 Set Set Set+1 Set+1} iff@{Prop|Set Set} iff@{Prop| Set Set}) : (relation@{Type Prop | Set+1 Set+1} (Prop -> Prop))
+  However (relation@{Type Prop | Set+1 Set+1} (Prop -> Prop)) = (Prop -> Prop) -> (Prop -> Prop) -> Prop = (relation@{Type Prop | Set+1 Set} (Prop -> Prop)),
+  so both Proper@{Type Prop|Set+1 Set} or Proper@{Type Prop|Set+1 Set+1} can be used to annotate this instance, knowing that Type@{Prop|Set} = Type@{Prop|Set+1}.
+  However the Set+1 instance is more natural as is directly follows the inferred type of the respectful application, and does not require unfolding the [relation]
+  constant during unification. We hence give the somewhat less precise type here.
+  *)
+
 #[global]
 Program Instance not_iff_morphism'@{| |} :
-  Proper@{_ _|Set+1 Set} (respectful@{Type Type Prop Prop|Set+1 Set+1 Set Set} iff@{Prop|Set Set} iff@{Prop| Set Set}) not@{Prop|Set}.
+  Proper@{Type Prop|Set+1 Set+1} (respectful@{Type Type Prop Prop|Set+1 Set+1 Set Set Set+1 Set+1} iff@{Prop|Set Set} iff@{Prop| Set Set}) not@{Prop|Set}.
 
 (** Logical conjunction. *)
 
@@ -113,7 +124,7 @@ Qed.
 
 #[global]
 Instance well_founded_morphism@{u} {A : Type@{u}} :
- Proper (respectful@{Type Type Prop Prop|u u Set Set} relation_equivalence@{Type Prop|u Set} iff@{Prop|Set Set}) (@well_founded A).
+ Proper (respectful@{Type Type Prop Prop|u u Set Set u u} relation_equivalence@{Type Prop|u Set} iff@{Prop|Set Set}) (@well_founded A).
 Proof.
  unfold well_founded. intros x y r.
  apply (existR@{Prop|Set Set}); intros H a.

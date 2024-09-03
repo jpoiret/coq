@@ -11,6 +11,7 @@
 Require Import PreludeOptions.
 Require Import Notations.
 Require Import Types.Nat.
+Require Import Tactics.Ltac.
 
 Inductive list@{s|u|} (A : Type@{s|u}) : Type@{s|u} :=
 | nil : list A
@@ -28,6 +29,17 @@ Infix "::" := cons (at level 60, right associativity) : list_scope.
 Register list as core.list.type.
 Register nil as core.list.nil.
 Register cons as core.list.cons.
+
+Local Open Scope list_scope.
+
+Definition list_ty_elim@{α | u u0 |} : forall (A : Type@{u}) (P : list A -> Type@{α | u0}),
+  P nil ->
+  (forall (a : A) (l : list A), P l -> P (a :: l)) ->
+  forall l : list A, P l.
+Proof.
+  intros A P pn pc.
+  fix elim 1. destruct l. exact pn. apply (pc _ _ (elim l)).
+Defined.
 
 Section ListPolyDefinitions.
   Sort s.

@@ -82,7 +82,7 @@ Inductive set : Set :=
 Fixpoint In (a : A) (s : set) {struct s} : Prop :=
   match s with
   | Empty => empty
-  | Add b s' => {a = b} + {In a s'}
+  | Add b s' => @sum@{Prop Prop Prop|Set Set} (a = b) (In a s')
   end.
 
 Definition same (s t : set) : Prop := forall a : A, iff@{Prop|Set Set} (In a s) (In a t).
@@ -137,15 +137,13 @@ Goal exists A, (@Proper@{Type Prop | Set+1 Set}
            (Prop -> Prop) A not@{Prop | Set}).
 econstructor.
 set (foo := do_subrelation).
-(* apply (not_iff_morphism). *)
-typeclasses eauto.
-Show Proof.
+Print Proper.
+apply (not_iff_morphism).
 Qed.
 
 Lemma in_rem_not : forall (a : A) (s : set), not@{Prop|Set} (In a (remove a (Add a Empty))).
 
 intros.
-
 setoid_replace (remove a (Add a Empty)) with Empty.
 - intros [].
 - unfold same.
@@ -301,13 +299,13 @@ Proof.
   Set Debug "backtrace".
 
   setoid_rewrite add_0_r_peq in a.
-
+Show Proof.
   Show Universes.
   exact a.
 Qed.
 End InType.
 
-Module Polymorphism.
+Module UnivPolymorphism.
 Set Universe Polymorphism.
 Notation "x :: xs" := (cons x xs).
 
@@ -341,10 +339,7 @@ Lemma rewrite_all {l : list nat} (Q : nat -> Type) :
   All (fun x => Q (plus x O)) l.
 Proof.
   intros a.
-  Set Debug "loop-checking-set".
-  Set Debug "backtrace".
   setoid_rewrite add_0_r_eq.
-  Show Universes.
   exact a.
 Qed.
 
@@ -352,7 +347,9 @@ Lemma rewrite_all_in {l : list nat} (Q : nat -> Type) :
   All (fun x => Q (plus x O)) l ->
   All (fun x => Q x) l.
 Proof.
-  intros a.  Show Universes.
+  intros a.
+  Set Typeclasses Debug.
+
   setoid_rewrite add_0_r_eq in a.
   exact a.
 Qed.

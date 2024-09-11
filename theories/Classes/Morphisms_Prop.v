@@ -39,7 +39,7 @@ Program Instance not_iff_morphism@{s|u|} :
   (respectful@{Type Type Prop Prop|Set+1 Set+1 Set Set Set+1 Set+1} iff@{Prop|Set Set} iff@{Prop| Set Set}) : (relation@{Type Prop | Set+1 Set+1} (Prop -> Prop))
   However (relation@{Type Prop | Set+1 Set+1} (Prop -> Prop)) = (Prop -> Prop) -> (Prop -> Prop) -> Prop = (relation@{Type Prop | Set+1 Set} (Prop -> Prop)),
   so both Proper@{Type Prop|Set+1 Set} or Proper@{Type Prop|Set+1 Set+1} can be used to annotate this instance, knowing that Type@{Prop|Set} = Type@{Prop|Set+1}.
-  However the Set+1 instance is more natural as is directly follows the inferred type of the respectful application, and does not require unfolding the [relation]
+  However the Set+1 instance is more natural as it directly follows the inferred type of the respectful application, and does not require unfolding the [relation]
   constant during unification. We hence give the somewhat less precise type here.
   *)
 

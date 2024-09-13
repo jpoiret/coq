@@ -1,4 +1,4 @@
-From Coq Require Import ssreflect.
+From Stdlib Require Import ssreflect.
 Set SsrRewrite.
 
 (* Ssreflect's rewrite looks still totally bugged *)

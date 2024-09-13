@@ -1,5 +1,5 @@
-From Coq Require Import PreludeOptions.
-From Coq Require Import Types.
+From Stdlib Require Import PreludeOptions.
+From Stdlib Require Import Types.
 
 Set Printing Universes.
 

@@ -8,12 +8,12 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-Require Export Coq.Init.PreludeOptions.
-Require Export Coq.Init.Notations.
-Require Export Coq.Init.Types.
-Require Export Coq.Init.Tactics.Ltac.
-Require Export Coq.Init.Tactics.Tauto.
-Require Export Coq.Init.Tactics.Extra.
+Require Export Stdlib.Init.PreludeOptions.
+Require Export Stdlib.Init.Notations.
+Require Export Stdlib.Init.Types.
+Require Export Stdlib.Init.Tactics.Ltac.
+Require Export Stdlib.Init.Tactics.Tauto.
+Require Export Stdlib.Init.Tactics.Extra.
 Declare ML Module "cc_plugin:coq-core.plugins.cc".
 Declare ML Module "firstorder_core_plugin:coq-core.plugins.firstorder_core".
 Declare ML Module "firstorder_plugin:coq-core.plugins.firstorder".

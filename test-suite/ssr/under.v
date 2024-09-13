@@ -208,7 +208,7 @@ done.
 Qed.
 
 
-(* Inspired From Coquelicot.Lub. *)
+(* Inspired From Stdlibuelicot.Lub. *)
 (* http://coquelicot.saclay.inria.fr/html/Coquelicot.Lub.html#Lub_Rbar_eqset *)
 
 Parameters (R Rbar : Set) (R0 : R) (Rbar0 : Rbar).

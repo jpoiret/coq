@@ -2792,8 +2792,7 @@ let next_obligation ~pm ?(final=false) name tac =
   solve_obligation ?check_final prg i tac
 
 let check_program_libraries () =
-  Coqlib.check_required_library Coqlib.datatypes_module_name;
-  Coqlib.check_required_library ["Stdlib";"Init";"Specif"]
+  Coqlib.check_required_library Coqlib.datatypes_module_name
 
 let program_inference_hook env sigma ev =
   let tac = !default_tactic in

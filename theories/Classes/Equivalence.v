@@ -14,12 +14,12 @@
    Institution: LRI, CNRS UMR 8623 - University Paris Sud
 *)
 
-Require Import Coq.Program.Basics.
-Require Import Coq.Program.Tactics.
+Require Import Stdlib.Program.Basics.
+Require Import Stdlib.Program.Tactics.
 
-Require Import Coq.Classes.Init.
-Require Export Coq.Classes.RelationClasses.
-Require Import Coq.Classes.Morphisms.
+Require Import Stdlib.Classes.Init.
+Require Export Stdlib.Classes.RelationClasses.
+Require Import Stdlib.Classes.Morphisms.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

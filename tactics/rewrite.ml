@@ -474,12 +474,12 @@ end
 let init_relation_classes () =
   if Coqlib.has_ref "rewrite.prop.relation" || Coqlib.has_ref "rewrite.type.relation" then ()
   else CErrors.user_err
-    (Pp.str "No bindings have been registered for relation classes in Prop or Type, maybe you need to require Coq.Classes.(C)RelationClasses.")
+    (Pp.str "No bindings have been registered for relation classes in Prop or Type, maybe you need to require Stdlib.Classes.(C)RelationClasses.")
 
 let init_rewrite () =
   if Coqlib.has_ref "rewrite.prop.Proper" || Coqlib.has_ref "rewrite.type.Proper" then ()
   else CErrors.user_err
-    (Pp.str "No bindings have been registered for morphisms in Prop or Type, maybe you need to require Coq.Classes.(C)Morphisms.")
+    (Pp.str "No bindings have been registered for morphisms in Prop or Type, maybe you need to require Stdlib.Classes.(C)Morphisms.")
 
 let get_type_of_refresh env evars t =
   let evars', tty = Evarsolve.get_type_of_refresh env (fst evars) t in

@@ -20,6 +20,7 @@
 *)
 
 Require Import ssrclasses.
+Require Import Stdlib.Classes.RelationClasses.
 
 Module Type UNDER_REL.
 Parameter Under_rel :
@@ -64,6 +65,9 @@ Lemma over_rel :
   forall (A : Type) (eqA : A -> A -> Prop) (x y : A),
     @Under_rel A eqA x y = @Over_rel A eqA x y.
 Proof. now trivial. Qed.
+
+Set Debug "backtrace".
+
 Lemma over_rel_done :
   forall (A : Type) (eqA : A -> A -> Prop) (EeqA : Reflexive eqA) (x : A),
     @Over_rel A eqA x x.

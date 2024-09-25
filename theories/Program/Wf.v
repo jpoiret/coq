@@ -10,7 +10,7 @@
 (** Reformulation of the Wf module using subsets where possible, providing
    the support for [Program]'s treatment of well-founded definitions. *)
 
-Require Import Stdlib.Init.Wf.
+Require Import Stdlib.Init.Types.Wf.
 Require Import Stdlib.Program.Utils.
 
 Local Open Scope program_scope.
@@ -19,6 +19,30 @@ Section Well_founded.
   Variable A : Type.
   Variable R : A -> A -> Prop.
   Hypothesis Rwf : well_founded R.
+
+  (** Well-founded induction on [Set] and [Prop] *)
+
+ Theorem well_founded_induction_type :
+  forall P:A -> Type,
+    (forall x:A, (forall y:A, R y x -> P y) -> P x) -> forall a:A, P a.
+ Proof.
+  intros. apply (Acc_rect R) ; auto.
+ Defined.
+
+ Theorem well_founded_induction :
+  forall P:A -> Set,
+    (forall x:A, (forall y:A, R y x -> P y) -> P x) -> forall a:A, P a.
+ Proof.
+  exact (fun P:A -> Set => well_founded_induction_type P).
+ Defined.
+
+ Theorem well_founded_ind :
+  forall P:A -> Prop,
+    (forall x:A, (forall y:A, R y x -> P y) -> P x) -> forall a:A, P a.
+ Proof.
+   intros; apply (Acc_ind R); auto.
+ Defined.
+
 
   Variable P : A -> Type.
 
@@ -138,12 +162,31 @@ Section Fix_rects.
   Proof with auto.
     set (R' := fun (x: A) => forall a, Q _ (Fix_F_sub A R P f x a)).
     cut (forall x, R' x)...
-    apply (well_founded_induction_type Rwf).
+    apply (well_founded_induction_type _ _ Rwf).
     subst R'.
     simpl.
     intros.
     rewrite F_unfold...
   Qed.
+
+  Lemma Fix_F_sub_ind
+  (Q: forall x, P x -> Prop)
+  (inv: forall x: A,
+   (forall (y: A) (H: R y x) (a: Acc R y),
+      Q y (Fix_F_sub A R P f y a)) ->
+      forall (a: Acc R x),
+        Q x (f (fun y: {y: A | R y x} =>
+          Fix_F_sub A R P f (proj1_sig y) (Acc_inv a (proj2_sig y)))))
+  : forall x a, Q _ (Fix_F_sub A R P f x a).
+Proof with auto.
+  set (R' := fun (x: A) => forall a, Q _ (Fix_F_sub A R P f x a)).
+  cut (forall x, R' x)...
+  apply (well_founded_ind _ _ Rwf).
+  subst R'.
+  simpl.
+  intros.
+  rewrite F_unfold...
+Qed.
 
   (* Let's call f's second parameter its "lowers" function, since it
   provides it access to results for inputs with a lower measure.
@@ -157,7 +200,7 @@ Section Fix_rects.
 
   Hypothesis equiv_lowers:
     forall x0 (g h: forall x: {y: A | R y x0}, P (proj1_sig x)),
-    (forall x p p', g (exist (fun y: A => R y x0) x p) = h (exist (*FIXME shouldn't be needed *) (fun y => R y x0) x p')) ->
+    (forall x p p', g (exist x p) = h (exist x p')) ->
       f g = f h.
 
   (* From equiv_lowers, it follows that
@@ -170,7 +213,7 @@ Section Fix_rects.
   Proof.
     revert a'.
     pattern x, (Fix_F_sub A R P f x a).
-    apply Fix_F_sub_rect.
+    apply Fix_F_sub_ind.
     intros ? H **.
     rewrite F_unfold.
     apply equiv_lowers.

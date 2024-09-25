@@ -6377,8 +6377,8 @@ Standard library
   (`#12801 <https://github.com/coq/coq/pull/12801>`_,
   by Vincent Semeria).
 - **Changed:**
-  ``Require Import Coq.nsatz.NsatzTactic`` now allows using ``nsatz``
-  with `Z` and `Q` without having to supply instances or using ``Require Import Coq.nsatz.Nsatz``, which
+  ``Require Import Stdlib.nsatz.NsatzTactic`` now allows using ``nsatz``
+  with `Z` and `Q` without having to supply instances or using ``Require Import Stdlib.nsatz.Nsatz``, which
   transitively requires unneeded files declaring axioms used in the reals
   (`#12861 <https://github.com/coq/coq/pull/12861>`_,
   fixes `#12860 <https://github.com/coq/coq/issues/12860>`_,
@@ -9619,7 +9619,7 @@ Standard Library
   `Coq.NArith.BinNatDef`, `Coq.Reals.Rdefinitions`, and
   `Coq.Numbers.Cyclic.Int31.Int31`, respectively, to be able to use
   these notations.  Note that passing `-compat 8.8` or issuing
-  `Require Import Coq.Compat.Coq88` will make these notations
+  `Require Import Stdlib.Compat.Coq88` will make these notations
   available.  Users wishing to port their developments automatically
   may download `fix.py` from
   https://gist.github.com/JasonGross/5d4558edf8f5c2c548a3d96c17820169
@@ -9631,9 +9631,9 @@ Standard Library
   available even when `string_scope` was open.)
 
 - Numeral syntax for `nat` is no longer available without loading the
-  entire prelude (`Require Import Coq.Init.Prelude`).  This only
+  entire prelude (`Require Import Stdlib.Init.Prelude`).  This only
   impacts users running Coq without the init library (`-nois` or
-  `-noinit`) and also issuing `Require Import Coq.Init.Datatypes`.
+  `-noinit`) and also issuing `Require Import Stdlib.Init.Datatypes`.
 
 Tools
 

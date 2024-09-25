@@ -94,8 +94,10 @@ Definition sig_rect@{u u'} := sigma_elim@{Type SProp Type | u Set u'}.
 Register sig as core.sig.type.
 
 Register sig_rect as core.sig.rect.
+
 Notation proj1_sig := proj1.
-Notation proj2_sig := proj2.
+
+Definition proj2_sig@{s|u v|} {A:Type@{u}} {P:A -> Type@{s|v}} (p : sigma@{_ _ Type|_ _} A P) : P (proj1_sig p) := match p with exist _ b => b end.
 
 (** listings: sigmaR **)
 Record sigmaR@{s|u v|} (A : Type@{s|u}) (P:A -> Type@{s|v}) : Type@{s|max(u,v)}

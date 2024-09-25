@@ -10,6 +10,8 @@
 
 Require Export CarryType.
 
+Definition bool' := bool@{Type|}.
+
 Register bool as kernel.ind_bool.
 Register prod as kernel.ind_pair.
 Register carry as kernel.ind_carry.

@@ -19,7 +19,7 @@ Require Import Notations.
 (** Well-founded induction principle on [Prop] *)
 
 Section Well_founded.
- Variable A : Type.
+ Context {A : Type}.
  Variable R : A -> A -> Prop.
 
  (** The accessibility predicate is defined to be non-informative *)
@@ -32,7 +32,6 @@ Section Well_founded.
 
  Definition Acc_inv (x:A) (a : Acc x) : forall (y:A), R y x -> Acc y := match a with Acc_intro _ f => f end.
 
- Global Arguments Acc_inv [x] _ [y] _, [x] _ y _.
  Register Acc_inv as core.wf.acc_inv.
 
  (** A relation is well-founded if every element is accessible *)
@@ -41,7 +40,9 @@ Section Well_founded.
 
  Register well_founded as core.wf.well_founded.
 
- (** Well-founded induction on [Set] and [Prop] *)
+
 End Well_founded.
 
-Arguments Acc {A}.
+Global Arguments Acc_inv {_ _} [x] _ [y] _, {_ _} [x] _ y _.
+
+Scheme Acc_inv_dep := Induction for Acc Sort Prop.

@@ -35,6 +35,10 @@ Notation " `  t " := (proj1_sig t) (at level 10, t at next level) : program_scop
 
 (** Construct a dependent disjunction from a boolean. *)
 
+Definition sumbool_of_bool : forall b:bool, {b = true} + {b = false}.
+  intros b; destruct b; econstructor; reflexivity.
+Defined.
+
 Notation dec := sumbool_of_bool.
 
 (** The notations [in_right] and [in_left] construct objects of a dependent disjunction. *)

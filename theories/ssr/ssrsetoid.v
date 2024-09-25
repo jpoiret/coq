@@ -26,7 +26,6 @@
 Require Import ssrclasses.
 Require Import ssrunder.
 Require Import RelationClasses.
-Require Import Relation_Definitions.
 
 (** Reconcile [Coq.Classes.RelationClasses.Reflexive] with
     [Coq.ssr.ssrclasses.Reflexive] *)

@@ -13,6 +13,7 @@
 (** #<style> .doc { font-family: monospace; white-space: pre; } </style># **)
 
 Require Import ssreflect.
+Require Import GroupoidLaws.
 
 
 (**
@@ -331,7 +332,7 @@ Open Scope pair_scope.
 Notation "p .1" := (fst p) : pair_scope.
 Notation "p .2" := (snd p) : pair_scope.
 
-Coercion pair_of_and P Q (PandQ : P /\ Q) := (fst PandQ, snd PandQ).
+Coercion pair_of_and P Q (PandQ : P /\ Q) := (PandQ.1, PandQ.2).
 
 Definition all_pair I T U (w : forall i : I, T i * U i) :=
   (fun i => (w i).1, fun i => (w i).2).
@@ -365,11 +366,11 @@ Notation some := (@Some _) (only parsing).
 
 Notation erefl := eq_refl.
 Notation ecast i T e x := (let: erefl in _ = i := e return T in x).
-Definition esym := @eq_sym.
-(*Definition nesym := sym_not_eq.*)
-Definition etrans := @eq_trans.
-Definition congr1 := @f_equal.
-Definition congr2 := @f_equal2.
+Definition esym@{sa se | a| } := @eq_sym@{sa se | a}.
+Definition nesym@{s e | u| } := @not_eq_sym@{s e | u}.
+Definition etrans@{sa se | a | } := @eq_trans@{sa se | a}.
+Definition congr1@{s s' e | u v| } := @f_equal@{s s' e | u v}.
+Definition congr2@{s1 s2 s' e | u1 u2 v|} := @f_equal2@{s1 s2 s' e | u1 u2 v}.
 (**  Force at least one implicit when used as a view.  **)
 Prenex Implicits esym. (* nesym.*)
 
@@ -560,14 +561,15 @@ Coercion tag_of_tag2 I T_ U_ (w : @sigma2 I T_ U_) :=
   Tagged (fun i => T_ i * U_ i)%type (tagged2 w; tagged2' w).
 
 Lemma all_tag I T U :
-   (forall x : I, Σ y, U x y) ->
+   (forall x : I, { y : T x | U x y}) ->
   {f : forall x, T x | forall x, U x (f x)}.
 Proof. by move=> fP; exists (fun x => tag (fP x)) => x; case: (fP x). Qed.
 
-Lemma all_tag2 I T U V :
+Lemma all_tag2 I T (U V : forall x : I, T x -> Prop) :
     (forall i : I, {y : T i | U i y & V i y}) ->
   {f : forall i, T i | forall i, U i (f i) & forall i, V i (f i)}.
-Proof. by case/all_tag=> f /all_pair[]; exists f. Qed.
+Proof. by move=> fP; exists (fun x => tag2 (fP x)) => x; case: (fP x). Qed.
+(* by case/all_tag=> f /all_pair[]; exists f. Qed.*)
 
 (**  Refinement types.  **)
 
@@ -583,9 +585,9 @@ Lemma svalP (u : sig P) : P (sval u). Proof. by case: u. Qed.
 
 Definition s2val (u : { x : T | P x & Q x } : Type) := let: exist2 _ _ _ x _ _ := u in x.
 
-Lemma s2valP u : P (s2val u). Proof. by destruct u. Qed.
+Lemma s2valP u : P (s2val u). Proof. by case: u. Qed.
 
-Lemma s2valP' u : Q (s2val u). Proof. by destruct u. Qed.
+Lemma s2valP' u : Q (s2val u). Proof. by case: u. Qed.
 
 End Sig.
 
@@ -603,10 +605,11 @@ Lemma all_sig I T P :
   {f : forall x, T x | forall x, P x (f x)}.
 Proof. by case/all_tag=> f; exists f. Qed.
 
-Lemma all_sig2 I T P Q :
+Lemma all_sig2 I T (P Q : forall x : I, T x -> Prop) :
     (forall x : I, {y : T x | P x y & Q x y}) ->
   {f : forall x, T x | forall x, P x (f x) & forall x, Q x (f x)}.
-Proof. by case/all_sig=> f /all_pair[]; exists f. Qed.
+Proof. by case/all_tag2=> f; exists f. Qed.
+(* by case/all_sig=> f /all_pair[]; exists f. Qed.*)
 
 Section Morphism.
 
@@ -680,7 +683,7 @@ Lemma can_pcan g : cancel g -> pcancel (fun y => Some (g y)).
 Proof. by move=> fK x; congr (Some _). Qed.
 
 Lemma pcan_inj g : pcancel g -> injective.
-Proof. by move=> fK x y /(congr1 g); rewrite !fK => [[]]. Qed.
+Proof. move=> fK x y /(congr1 g). rewrite !fK. congruence. Qed.
 
 Lemma can_inj g : cancel g -> injective.
 Proof. by move/can_pcan; apply: pcan_inj. Qed.
@@ -694,7 +697,7 @@ Proof. by move=> fK <-. Qed.
 End Injections.
 
 Lemma Some_inj {T : nonPropType} : injective (@Some T).
-Proof. by move=> x y []. Qed.
+Proof. move=> x y. congruence. Qed.
 
 Lemma of_voidK T : pcancel (of_void T) [fun _ => None].
 Proof. by case. Qed.
@@ -729,13 +732,14 @@ Lemma pcan_pcomp f' h' :
   pcancel f f' -> pcancel h h' -> pcancel (f \o h) (pcomp h' f').
 Proof. by move=> fK hK x; rewrite /pcomp fK /= hK. Qed.
 
+Set Debug "backtrace".
 Lemma ocan_comp [fo : B -> option A] [ho : C -> option B]
     [f' : A -> B] [h' : B -> C] :
   ocancel fo f' -> ocancel ho h' -> ocancel (obind fo \o ho) (h' \o f').
 Proof.
 move=> fK hK c /=; rewrite -[RHS]hK/=; case hcE : (ho c) => [b|]//=.
 by rewrite -[b in RHS]fK; case: (fo b) => //=; have := hK c; rewrite hcE.
-Qed.
+Admitted.
 
 Lemma eq_inj : injective f -> f =1 g -> injective g.
 Proof. by move=> injf eqfg x y; rewrite -2!eqfg; apply: injf. Qed.

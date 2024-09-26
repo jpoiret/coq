@@ -50,6 +50,9 @@ Notation "'ex_intro'" := (exist@{_ Prop Prop| _ Set}) (at level 50).
 Register ex as core.ex.type.
 Register exist as core.ex.intro.
 
+Inductive sigma2@{s s' s''|u v| } (A:Type@{s|u}) (P Q:A -> Type@{s'|v}) : Type@{s''|max(u,v)}
+  :=  exist2 : forall x:A, P x -> Q x -> sigma2 A P Q.
+
 Section ProjectionsProp.
 
   Context {A:Prop} {P:A->Prop}.
@@ -95,9 +98,9 @@ Register sig as core.sig.type.
 
 Register sig_rect as core.sig.rect.
 
-Notation proj1_sig := proj1.
+Definition proj1_sig@{s s'|u v|} {A:Type@{s|u}} {P:A -> Type@{s'|v}} (p : sigma@{_ _ Type|_ _} A P) : A := match p with exist a _ => a end.
 
-Definition proj2_sig@{s|u v|} {A:Type@{u}} {P:A -> Type@{s|v}} (p : sigma@{_ _ Type|_ _} A P) : P (proj1_sig p) := match p with exist _ b => b end.
+Definition proj2_sig@{s s'|u v|} {A:Type@{s|u}} {P:A -> Type@{s'|v}} (p : sigma@{_ _ Type|_ _} A P) : P (proj1_sig p) := match p with exist _ b => b end.
 
 (** listings: sigmaR **)
 Record sigmaR@{s|u v|} (A : Type@{s|u}) (P:A -> Type@{s|v}) : Type@{s|max(u,v)}
@@ -169,11 +172,17 @@ Notation "{ x | P }" := (sig (fun x => P)) : type_scope.
 Notation "{ x : A | P }" := (sig (A:=A) (fun x => P)) : type_scope.
 Notation "{ x & P }" := (sigT (fun x => P)) : type_scope.
 Notation "{ x : A & P }" := (@sigmaR A (fun x => P)) : type_scope.
+Notation "{ x & P & Q }" := (sigT2 (fun x => P) (fun x => Q)) : type_scope.
+Notation "{ x : A & P & Q }" := (sigT2 (A:=A) (fun x => P) (fun x => Q)) :
+  type_scope.
 
 Notation "{ ' pat | P }" := (sig (fun pat => P)) : type_scope.
 Notation "{ ' pat : A | P }" := (sig (A:=A) (fun pat => P)) : type_scope.
 Notation "{ ' pat & P }" := (sigT (fun pat => P)) : type_scope.
 Notation "{ ' pat : A & P }" := (@sigmaR A (fun pat => P)) : type_scope.
+
+Notation "{ x : A | P & Q }" := (sigma2 A (fun x => P) (fun x => Q)) :
+  type_scope.
 
 Add Printing Let sigma.
 

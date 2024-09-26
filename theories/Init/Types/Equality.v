@@ -13,7 +13,7 @@ Require Import Notations.
 Require Import Empty.
 
 (** listings: eq **)
-Inductive eq@{s s'|l|} {A:Type@{s|l}} (x:A) : A -> Type@{s'|l} :=
+Cumulative Inductive eq@{s s'|l|} {A:Type@{s|l}} (x:A) : A -> Type@{s'|l} :=
     eq_refl : eq x x.
 (** listings: end **)
 Arguments eq {A} x _.
@@ -160,15 +160,81 @@ Definition f_equal2@{s1 s2 s' e|u1 u2 v|}
 
 Register f_equal2 as core.eq.congr2.
 
-Axiom cast@{α|u| } : forall (A B:Type@{α|u}) (e: A = B :> _ : SProp), A -> B.
+(*
+(* Axiom cast@{α|u v| } : forall (A:Type@{α|u}) (B:Type@{α|u}) (e: A = B :> _ : SProp), A -> B.*)
+
+Notation "a ~ b" := (a = b :> _ : SProp) (at level 50).
+
+Symbol cast@{α|u v| } : forall (A:Type@{α|u}) (B:Type@{α|v})
+  (e: @eq Type@{α|max(u,v)} A B :> SProp), A -> B.
+Notation "e # a" := (cast _ _ e a) (at level 55, only parsing).
 
 Definition eq_cast@{α β|u v|} (A:Type@{α|u}) (x:A) (P:A -> Type@{β|v}) :
-  P x -> forall y:A, (x = y :> _ : SProp) -> P y :=
+  P x -> forall y:A, x ~ y -> P y :=
   fun px y e => cast (P x) (P y) (f_equal P e) px.
 
 Definition eq_cast_r@{α β|u v|} (A:Type@{α|u}) (x:A) (P:A -> Type@{β|v}) :
-  P x -> forall y:A, (y = x :> _ : SProp) -> P y :=
+  P x -> forall y:A, y ~ x -> P y :=
   fun px y e => eq_cast _ x P px y (eq_sym e).
 
 Register eq_cast_r as core.eq.sind_r.
 Register eq_cast as core.eq.sind.
+
+(*
+Rewrite Rule cast_refl :=
+| cast ?A ?A _ ?t => ?t.
+*)
+Unset Printing Notations.
+Set Printing Universes.
+Parameter obseq_forall_1@{α β|u v u' v'|} :
+  forall {A : Type@{α|u}} {A' : Type@{α|u'}}
+   {B : A -> Type@{β|v}} {B' : A' -> Type@{β|v'}},
+   (forall (x : A), B x) ~ (forall (x : A'), B' x) ->
+   @eq Type@{α|max(u,u')} A' A :> SProp.
+
+Parameter obseq_forall_2@{α β|u v u' v' |} :
+  forall {A : Type@{α|u}} {A' : Type@{α|u'}}
+  {B : A -> Type@{β|v}} {B' : A' -> Type@{β|v'}}
+  (e : (forall (x : A), B x) ~ (forall (x : A'), B' x)) (x : A'),
+    @eq Type@{β|max(v,v')} (B (obseq_forall_1@{α β|u v u' v'} e # x)) (B' x) :> SProp.
+
+Parameter funext : forall {A B} (f g : forall (x : A), B x),
+  (forall (x : A), f x ~ g x) -> f ~ g.
+
+Rewrite Rule cast_pi :=
+| @{u v ?|?} |-
+  cast@{Prop|u v}
+    (forall (x : ?A), ?B)
+    (forall (x : ?A'), ?B') ?e ?f
+=>  fun (x : ?A') => cast@{Prop|u v} ?B@{x := cast ?A' ?A (obseq_forall_1@{Prop Prop|u u v v} ?e) x}
+                             ?B'@{x := x}
+                             (obseq_forall_2@{Prop Prop|u u v v} ?e x)
+                             (?f (cast ?A' ?A (obseq_forall_1@{Prop Prop|u u v v} ?e) x)).
+
+
+Rewrite Rule cast_pi :=
+| @{α α' β|u v u' v'|} |-
+  cast
+    (forall (x : ?A), ?B)
+    (forall (x : ?A'), ?B') ?e ?f
+=>  fun (x : ?A') => cast@{β|v v'} ?B@{x := cast ?A' ?A (obseq_forall_1@{α β|u v u' v'} ?e) x}
+                             ?B'@{x := x}
+                             (obseq_forall_2@{α β|u v u' v'} ?e x)
+                             (?f (cast ?A' ?A (obseq_forall_1@{α β|u v u' v'} ?e) x)).
+
+
+
+Rewrite Rule cast_pi :=
+| @{α α' β|u v u' v'|} |-
+  cast@{β|max(u,v) max(u',v')}
+    (forall (x : ?A), (?B:Type@{β|v}))
+    (forall (x : ?A'), (?B':Type@{β|v'})) ?e ?f
+=>  fun (x : ?A') => cast@{β|v v'} ?B@{x := cast ?A' ?A (obseq_forall_1@{α β|u v u' v'} ?e) x}
+                             ?B'@{x := x}
+                             (obseq_forall_2@{α β|u v u' v'} ?e x)
+                             (?f (cast ?A' ?A (obseq_forall_1@{α β|u v u' v'} ?e) x)).
+
+
+
+
+*)

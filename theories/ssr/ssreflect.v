@@ -348,7 +348,7 @@ Register protect_term as plugins.ssreflect.protect_term.
 Notation unkeyed x := (let flex := x in flex).
 
 (**  Ssreflect converse rewrite rule rule idiom.  **)
-Definition ssr_converse R (r : R) := (Logic.I, r).
+Definition ssr_converse R (r : R) := (tt@{Prop|}, r).
 Notation "=^~ r" := (ssr_converse r) : form_scope.
 
 (**
@@ -394,19 +394,19 @@ Lemma lock A x : x = locked x :> A. Proof. unlock; reflexivity. Qed.
 (**  The basic closing tactic "done".  **)
 Ltac done :=
   trivial; hnf; intros; solve
-   [ do ![solve [trivial | simple refine (@sym_equal _ _ _ _); trivial]
+   [ do ![solve [trivial | simple refine (@eq_sym _ _ _ _); trivial]
          | discriminate | contradiction | split]
    | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
 
 (**  Quicker done tactic not including split, syntax: /0/  **)
 Ltac ssrdone0 :=
   trivial; hnf; intros; solve
-   [ do ![solve [trivial | apply: sym_equal; trivial]
+   [ do ![solve [trivial | apply: eq_sym; trivial]
          | discriminate | contradiction ]
    | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
 
 (**  To unlock opaque constants.  **)
-#[universes(template)]
+#[projections(primitive=no)]
 Structure unlockable T v := Unlockable {unlocked : T; _ : unlocked = v}.
 Lemma unlock T x C : @unlocked T x C = x. Proof. by case: C. Qed.
 
@@ -424,7 +424,7 @@ Definition locked_with k := let: tt := k in fun T x => x : T.
 (**
  This can be used as a cheap alternative to cloning the unlockable instance
  below, but with caution as unkeyed matching can be expensive.               **)
-Lemma locked_withE T k x : unkeyed (locked_with k x) = x :> T.
+Lemma locked_withE T k x : unkeyed (locked_with k x) = x :> T : Prop.
 Proof. by case: k. Qed.
 
 (**  Intensionaly, this instance will not apply to locked u.  **)
@@ -432,7 +432,7 @@ Canonical locked_with_unlockable T k x :=
   @Unlockable T x (locked_with k x) (locked_withE k x).
 
 (**  More accurate variant of unlock, and safer alternative to locked_withE. **)
-Lemma unlock_with T k x : unlocked (locked_with_unlockable k x) = x :> T.
+Lemma unlock_with T k x : unlocked (locked_with_unlockable k x) = x :> T : Prop.
 Proof. exact: unlock. Qed.
 
 (**  Notation to trigger Coq elaboration to fill the holes **)
@@ -615,7 +615,7 @@ Module NonPropType.
  **)
 
 Structure call_of (condition : unit) (result : bool) := Call {callee : Type}.
-Definition maybeProp (T : Type) := tt.
+Definition maybeProp@{s|u|} (T : Type@{s|u}) := tt.
 Definition call T := Call (maybeProp T) false T.
 
 Structure test_of (result : bool) := Test {condition :> unit}.

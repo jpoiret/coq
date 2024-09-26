@@ -331,7 +331,7 @@ Open Scope pair_scope.
 Notation "p .1" := (fst p) : pair_scope.
 Notation "p .2" := (snd p) : pair_scope.
 
-Coercion pair_of_and P Q (PandQ : P /\ Q) := (proj1 PandQ, proj2 PandQ).
+Coercion pair_of_and P Q (PandQ : P /\ Q) := (fst PandQ, snd PandQ).
 
 Definition all_pair I T U (w : forall i : I, T i * U i) :=
   (fun i => (w i).1, fun i => (w i).2).
@@ -363,15 +363,15 @@ Notation some := (@Some _) (only parsing).
 
 (**  Shorthand for some basic equality lemmas.  **)
 
-Notation erefl := refl_equal.
+Notation erefl := eq_refl.
 Notation ecast i T e x := (let: erefl in _ = i := e return T in x).
-Definition esym := sym_eq.
-Definition nesym := sym_not_eq.
-Definition etrans := trans_eq.
-Definition congr1 := f_equal.
-Definition congr2 := f_equal2.
+Definition esym := @eq_sym.
+(*Definition nesym := sym_not_eq.*)
+Definition etrans := @eq_trans.
+Definition congr1 := @f_equal.
+Definition congr2 := @f_equal2.
 (**  Force at least one implicit when used as a view.  **)
-Prenex Implicits esym nesym.
+Prenex Implicits esym. (* nesym.*)
 
 (**  A predicate for singleton types.  **)
 Definition all_equal_to T (x0 : T) := forall x, unkeyed x = x0.
@@ -380,7 +380,6 @@ Lemma unitE : all_equal_to tt. Proof. by case. Qed.
 
 (**  A generic wrapper type  **)
 
-#[universes(template)]
 Structure wrapped T := Wrap {unwrap : T}.
 Canonical wrap T x := @Wrap T x.
 
@@ -402,7 +401,6 @@ Notation "@^~ x" := (fun f => f x) : function_scope.
  Definitions and notation for explicit functions with simplification,
  i.e., which simpl and /= beta expand (this is complementary to nosimpl).  **)
 
-#[universes(template)]
 Variant simpl_fun (aT rT : Type) := SimplFun of aT -> rT.
 
 Section SimplFun.
@@ -531,7 +529,7 @@ End OptionTheory.
 
 (** The empty type. **)
 
-Notation void := Empty_set.
+Notation void := empty@{Type|}.
 
 Definition of_void T (x : void) : T := match x with end.
 
@@ -539,16 +537,18 @@ Definition of_void T (x : void) : T := match x with end.
 
 Section Tag.
 
-Variables (I : Type) (i : I) (T_ U_ : I -> Type).
+Sort s s'.
+Universe u v.
+Variables (I : Type@{s|u}) (i : I) (T_ U_ : I -> Type@{s'|v}).
 
-Definition tag := projT1.
-Definition tagged : forall w, T_(tag w) := @projT2 I [eta T_].
-Definition Tagged x := @existT I [eta T_] i x.
+Definition tag := @proj1_sig I T_.
+Definition tagged : forall w: sigma I T_, T_(tag w) := @proj2_sig I [eta T_].
+Definition Tagged x := @exist I [eta T_] i x.
 
-Definition tag2 (w : @sigT2 I T_ U_) := let: existT2 _ _ i _ _ := w in i.
-Definition tagged2 w : T_(tag2 w) := let: existT2 _ _ _ x _ := w in x.
-Definition tagged2' w : U_(tag2 w) := let: existT2 _ _ _ _ y := w in y.
-Definition Tagged2 x y := @existT2 I [eta T_] [eta U_] i x y.
+Definition tag2 (w : @sigma2@{s s' Type | _ _} I T_ U_) := let: exist2 _ _ _ i _ _ := w in i.
+Definition tagged2 w : T_(tag2 w) := let: exist2 _ _ _ _ x _ := w in x.
+Definition tagged2' w : U_(tag2 w) := let: exist2 _ _ _ _ _ y := w in y.
+Definition Tagged2 x y := @exist2 I [eta T_] [eta U_] i x y.
 
 End Tag.
 
@@ -556,17 +556,17 @@ Arguments Tagged [I i].
 Arguments Tagged2 [I i].
 Prenex Implicits tag tagged Tagged tag2 tagged2 tagged2' Tagged2.
 
-Coercion tag_of_tag2 I T_ U_ (w : @sigT2 I T_ U_) :=
-  Tagged (fun i => T_ i * U_ i)%type (tagged2 w, tagged2' w).
+Coercion tag_of_tag2 I T_ U_ (w : @sigma2 I T_ U_) :=
+  Tagged (fun i => T_ i * U_ i)%type (tagged2 w; tagged2' w).
 
 Lemma all_tag I T U :
-   (forall x : I, {y : T x & U x y}) ->
-  {f : forall x, T x & forall x, U x (f x)}.
+   (forall x : I, Σ y, U x y) ->
+  {f : forall x, T x | forall x, U x (f x)}.
 Proof. by move=> fP; exists (fun x => tag (fP x)) => x; case: (fP x). Qed.
 
 Lemma all_tag2 I T U V :
-    (forall i : I, {y : T i & U i y & V i y}) ->
-  {f : forall i, T i & forall i, U i (f i) & forall i, V i (f i)}.
+    (forall i : I, {y : T i | U i y & V i y}) ->
+  {f : forall i, T i | forall i, U i (f i) & forall i, V i (f i)}.
 Proof. by case/all_tag=> f /all_pair[]; exists f. Qed.
 
 (**  Refinement types.  **)
@@ -581,11 +581,11 @@ Variables (T : Type) (P Q : T -> Prop).
 
 Lemma svalP (u : sig P) : P (sval u). Proof. by case: u. Qed.
 
-Definition s2val (u : sig2 P Q) := let: exist2 _ _ x _ _ := u in x.
+Definition s2val (u : { x : T | P x & Q x } : Type) := let: exist2 _ _ _ x _ _ := u in x.
 
-Lemma s2valP u : P (s2val u). Proof. by case: u. Qed.
+Lemma s2valP u : P (s2val u). Proof. by destruct u. Qed.
 
-Lemma s2valP' u : Q (s2val u). Proof. by case: u. Qed.
+Lemma s2valP' u : Q (s2val u). Proof. by destruct u. Qed.
 
 End Sig.
 
@@ -593,8 +593,10 @@ Prenex Implicits svalP s2val s2valP s2valP'.
 
 Coercion tag_of_sig I P (u : @sig I P) := Tagged P (svalP u).
 
-Coercion sig_of_sig2 I P Q (u : @sig2 I P Q) :=
-  exist (fun i => P i /\ Q i) (s2val u) (conj (s2valP u) (s2valP' u)).
+(*
+Coercion sig_of_sig2 I P Q (u : @sigma2 I P Q) :=
+  @exist _ (fun i => P i /\ Q i) (s2val u) (existR (s2valP u) (s2valP' u)).
+*)
 
 Lemma all_sig I T P :
     (forall x : I, {y : T x | P x y}) ->

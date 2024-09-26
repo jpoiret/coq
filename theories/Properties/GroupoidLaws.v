@@ -65,4 +65,8 @@ Proof. induction e1 using eq_elim; reflexivity. Defined.
 
 End GroupoidLaws.
 
-
+Theorem not_eq_sym@{s e|u|} {A : Type@{s|u}} (x y : A) :
+  not (x = y :> _: Type@{e|u}) -> not (y = x :> _: Type@{e|u}).
+Proof.
+  red; intros h1 h2; apply h1; destruct h2; trivial.
+Qed.

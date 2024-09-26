@@ -732,14 +732,18 @@ Lemma pcan_pcomp f' h' :
   pcancel f f' -> pcancel h h' -> pcancel (f \o h) (pcomp h' f').
 Proof. by move=> fK hK x; rewrite /pcomp fK /= hK. Qed.
 
+Goal O = O.
+  remember O as X.
+Abort.
+
 Set Debug "backtrace".
 Lemma ocan_comp [fo : B -> option A] [ho : C -> option B]
     [f' : A -> B] [h' : B -> C] :
   ocancel fo f' -> ocancel ho h' -> ocancel (obind fo \o ho) (h' \o f').
 Proof.
-move=> fK hK c /=; rewrite -[RHS]hK/=; case hcE : (ho c) => [b|]//=.
-by rewrite -[b in RHS]fK; case: (fo b) => //=; have := hK c; rewrite hcE.
-Admitted.
+move=> fK hK c /=; rewrite -[RHS]hK/=. remember (ho c) as X eqn:hcE. destruct X as [b|] => //=.
+by rewrite -[b in RHS]fK; case: (fo b) => //=; have := hK c; rewrite <- hcE.
+Qed.
 
 Lemma eq_inj : injective f -> f =1 g -> injective g.
 Proof. by move=> injf eqfg x y; rewrite -2!eqfg; apply: injf. Qed.

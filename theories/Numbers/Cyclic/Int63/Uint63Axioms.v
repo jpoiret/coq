@@ -35,7 +35,7 @@ Definition size := 63%nat.
 Definition digits := 63%uint63.
 
 (** The biggest int *)
-Definition max_int := Eval vm_compute in sub 0 1.
+Definition max_int := Eval compute in sub 0 1.
 
 (** Access to the nth digits *)
 Definition get_digit x p := ltb 0 (land x (lsl 1 p)).

@@ -22,7 +22,7 @@ Local Notation "x < y" := (Z.compare x y = Lt) : Z_scope.
 Local Notation "'false'" := falsePrim : Z_scope.
 Local Notation "'true'" := truePrim : Z_scope.
 
-Definition min_int := Eval vm_compute in (lsl 1 62).
+Definition min_int := Eval compute in (lsl 1 62).
 
 (** Translation to and from Z *)
 Definition to_Z (i : int) :=

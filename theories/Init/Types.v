@@ -28,3 +28,4 @@ Require Export Types.Hexadecimal.
 Require Export Types.Number.
 Require Export Types.Relations.
 Require Export Types.Reflect.
+Require Export Types.Wf.

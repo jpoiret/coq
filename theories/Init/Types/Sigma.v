@@ -150,7 +150,7 @@ Hint Resolve pair : core.
     Similarly for [(sigT2 A P Q)], also written [{x:A & (P x) & (Q x)}]. *)
 
 Notation sigT := (@sigmaR _).
-Notation existT := @existR.
+Notation existT := (@existR _).
 
 Register sigmaR as core.sigT.type.
 Register existR as core.sigT.intro.

@@ -23,3 +23,6 @@ Register unit as core.unit.type.
 Register tt as core.unit.tt.
 Register unit as core.True.type.
 Register tt as core.True.I.
+
+#[export]
+Hint Resolve tt : core.

@@ -169,3 +169,75 @@ Definition f_equal2@{s1 s2 s' e|u1 u2 v|}
 Register f_equal2 as core.eq.congr2.
 
 Arguments f_equal2 [_ _ _] _ [_ _ _ _] _ _.
+
+Module EqNotations.
+  Notation "'rew' H 'in' H'" := (eq_rect _ _ H' _ H)
+    (at level 10, H' at level 10,
+     format "'[' 'rew'  H  in  '/' H' ']'").
+  Notation "'rew' [ P ] H 'in' H'" := (eq_rect _ P H' _ H)
+    (at level 10, H' at level 10,
+     format "'[' 'rew'  [ P ]  '/    ' H  in  '/' H' ']'").
+  Notation "'rew' <- H 'in' H'" := (eq_rect_r _ H' H)
+    (at level 10, H' at level 10,
+     format "'[' 'rew'  <-  H  in  '/' H' ']'").
+  Notation "'rew' <- [ P ] H 'in' H'" := (eq_rect_r P H' H)
+    (at level 10, H' at level 10,
+     format "'[' 'rew'  <-  [ P ]  '/    ' H  in  '/' H' ']'").
+  Notation "'rew' -> H 'in' H'" := (eq_rect _ _ H' _ H)
+    (at level 10, H' at level 10, only parsing).
+  Notation "'rew' -> [ P ] H 'in' H'" := (eq_rect _ P H' _ H)
+    (at level 10, H' at level 10, only parsing).
+
+  Notation "'rew' 'dependent' H 'in' H'"
+    := (match H with
+        | eq_refl => H'
+        end)
+         (at level 10, H' at level 10,
+          format "'[' 'rew'  'dependent'  '/    ' H  in  '/' H' ']'").
+  Notation "'rew' 'dependent' -> H 'in' H'"
+    := (match H with
+        | eq_refl => H'
+        end)
+         (at level 10, H' at level 10, only parsing).
+  Notation "'rew' 'dependent' <- H 'in' H'"
+    := (match eq_sym H with
+        | eq_refl => H'
+        end)
+         (at level 10, H' at level 10,
+          format "'[' 'rew'  'dependent'  <-  '/    ' H  in  '/' H' ']'").
+  Notation "'rew' 'dependent' [ 'fun' y p => P ] H 'in' H'"
+    := (match H as p in (_ = y) return P with
+        | eq_refl => H'
+        end)
+         (at level 10, H' at level 10, y name, p name,
+          format "'[' 'rew'  'dependent'  [ 'fun'  y  p  =>  P ]  '/    ' H  in  '/' H' ']'").
+  Notation "'rew' 'dependent' -> [ 'fun' y p => P ] H 'in' H'"
+    := (match H as p in (_ = y) return P with
+        | eq_refl => H'
+        end)
+         (at level 10, H' at level 10, y name, p name, only parsing).
+  Notation "'rew' 'dependent' <- [ 'fun' y p => P ] H 'in' H'"
+    := (match eq_sym H as p in (_ = y) return P with
+        | eq_refl => H'
+        end)
+         (at level 10, H' at level 10, y name, p name,
+          format "'[' 'rew'  'dependent'  <-  [ 'fun'  y  p  =>  P ]  '/    ' H  in  '/' H' ']'").
+  Notation "'rew' 'dependent' [ P ] H 'in' H'"
+    := (match H as p in (_ = y) return P y p with
+        | eq_refl => H'
+        end)
+         (at level 10, H' at level 10,
+          format "'[' 'rew'  'dependent'  [ P ]  '/    ' H  in  '/' H' ']'").
+  Notation "'rew' 'dependent' -> [ P ] H 'in' H'"
+    := (match H as p in (_ = y) return P y p with
+        | eq_refl => H'
+        end)
+         (at level 10, H' at level 10,
+          only parsing).
+  Notation "'rew' 'dependent' <- [ P ] H 'in' H'"
+    := (match eq_sym H as p in (_ = y) return P y p with
+        | eq_refl => H'
+        end)
+         (at level 10, H' at level 10,
+          format "'[' 'rew'  'dependent'  <-  [ P ]  '/    ' H  in  '/' H' ']'").
+End EqNotations.

@@ -147,7 +147,7 @@ Hint Unfold le: bool.
 
 Lemma le_implb : forall b1 b2, le b1 b2 <-> implb b1 b2 = true.
 Proof.
-  destruct b1, b2; now intuition.
+  destruct b1, b2; now auto.
 Qed.
 
 #[ local ] Definition lt (b1 b2:bool) :=

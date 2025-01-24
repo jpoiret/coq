@@ -59,12 +59,10 @@ Tactic Notation "symmetry_eq" := symmetry; try typeclasses eauto.
 Tactic Notation "transitivity_eq" := transitivity; try typeclasses eauto.
 Tactic Notation "transitivity_eq" constr(t) := transitivity t; try typeclasses eauto.
 
-Notation congr := ap.
-
 (* Aliases *)
 
-Definition _eq_sym {A} {x y : A} (e : x = y) : y = x :=
-    leibniz _ _ _ (fun y => y = x) (refl _ _) _ e.
+Definition _eq_sym@{s s'|u} {A:Type@{s|u}} {x y : A} (e : x = y :> A : Type@{s'|u})
+  : y = x :> A : Type@{s'|u} := @eq_sym (@eq@{s s'|u}) eq_Has_Leibniz_elim@{s s'|u u} _  A x y e.
 
 Register _eq_sym as core.eq.sym.
 
@@ -154,6 +152,8 @@ Definition f_equal@{s s' e|u v |} {A : Type@{s|u}} {B : Type@{s'|v}} (f : A -> B
 Register f_equal as core.eq.congr.
 
 Arguments f_equal [_ _] _ [_ _] _.
+
+Notation congr := ap.
 
 Definition f_equal2@{s1 s2 s' e|u1 u2 v|}
   {A1 : Type@{s1|u1}}

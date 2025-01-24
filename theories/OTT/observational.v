@@ -2,7 +2,7 @@
 
 From Corelib Require Import GroupoidLaws.
 
-Notation "a ~ b" := (a = b :> _ : SProp) (at level 50).
+Notation "a ~ b" := (a = b :> _ : SProp) : type_scope.
 
 Symbol cast@{α|u|} : forall (A B : Type@{α|u}), A ~ B -> A -> B.
 

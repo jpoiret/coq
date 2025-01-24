@@ -28,3 +28,5 @@ Notation " g ∘ f " := (compose g f)
   (at level 40, left associativity) : program_scope.
 
 Local Open Scope program_scope.
+
+Notation " `  t " := (proj1_sig t) (at level 10, t at next level) : program_scope.

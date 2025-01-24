@@ -10,63 +10,60 @@
 (** Reformulation of the Wf module using subsets where possible, providing
    the support for [Program]'s treatment of well-founded definitions. *)
 
-Require Import Corelib.Init.Wf.
-Require Import Corelib.Program.Utils.
+From Corelib.Init Require Import Wf.
+From Corelib.Program Require Import Basics.
+From Corelib.Program Require Import Tactics.
 
 Local Open Scope program_scope.
 
  (** Well-founded induction on [Set] and [Prop] *)
+ Section Well_founded.
 
- Lemma Acc_inv : forall x:A, Acc x -> forall y:A, R y x -> Acc y.
- destruct 1; trivial.
-Defined.
+ Sort s.
+ Universe u.
+
+ Variable A : Type@{s|u}.
+ Variable R : A -> A -> Prop.
+
+ Lemma Acc_inv : forall x:A, Acc R x -> forall y:A, R y x -> Acc R y.
+   destruct 1; trivial.
+ Defined.
 
 Global Arguments Acc_inv [x] _ [y] _, [x] _ y _.
 Register Acc_inv as core.wf.acc_inv.
 
 
- Hypothesis Rwf : well_founded.
+ Hypothesis Rwf : well_founded A R.
 
- Theorem well_founded_induction_type :
-  forall P:A -> Type,
+ Theorem well_founded_induction@{sp|up|} :
+  forall P:A -> Type@{sp|up},
     (forall x:A, (forall y:A, R y x -> P y) -> P x) -> forall a:A, P a.
  Proof.
-  intros; apply Acc_rect; auto.
- Defined.
-
- Theorem well_founded_induction :
-  forall P:A -> Set,
-    (forall x:A, (forall y:A, R y x -> P y) -> P x) -> forall a:A, P a.
- Proof.
-  exact (fun P:A -> Set => well_founded_induction_type P).
- Defined.
-
- Theorem well_founded_ind :
-  forall P:A -> Prop,
-    (forall x:A, (forall y:A, R y x -> P y) -> P x) -> forall a:A, P a.
- Proof.
-   intros; apply Acc_ind; auto.
+  intros; apply Acc_elim with (R:=R); auto.
  Defined.
 
 (** Well-founded fixpoints *)
 
  Section FixPoint.
 
-  Variable P : A -> Type.
+  Sort s'.
+  Universe v.
+
+  Variable P : A -> Type@{s'|v}.
   Variable F : forall x:A, (forall y:A, R y x -> P y) -> P x.
 
-  Fixpoint Fix_F (x:A) (a:Acc x) : P x :=
-    F (fun (y:A) (h:R y x) => Fix_F (Acc_inv a h)).
+  Fixpoint Fix_F (x:A) (a:Acc R x) : P x :=
+    F _ (fun (y:A) (h:R y x) => Fix_F _ (Acc_inv a h)).
 
   Scheme Acc_inv_dep := Induction for Acc Sort Prop.
 
-  Lemma Fix_F_eq (x:A) (r:Acc x) :
-     F (fun (y:A) (p:R y x) => Fix_F (x:=y) (Acc_inv r p)) = Fix_F (x:=x) r.
+  Lemma Fix_F_eq (x:A) (r:Acc R x) :
+     F _ (fun (y:A) (p:R y x) => Fix_F y (Acc_inv r p)) = Fix_F x r.
   Proof.
    destruct r using Acc_inv_dep; auto.
   Qed.
 
-  Definition Fix (x:A) := Fix_F (Rwf x).
+  Definition Fix (x:A) := Fix_F _ (Rwf x).
 
   (** Proof that [well_founded_induction] satisfies the fixpoint equation.
       It requires an extra property of the functional *)
@@ -74,16 +71,16 @@ Register Acc_inv as core.wf.acc_inv.
   Hypothesis
     F_ext :
       forall (x:A) (f g:forall y:A, R y x -> P y),
-        (forall (y:A) (p:R y x), f y p = g y p) -> F f = F g.
+        (forall (y:A) (p:R y x), f y p = g y p) -> F _ f = F _ g.
 
-  Lemma Fix_F_inv : forall (x:A) (r s:Acc x), Fix_F r = Fix_F s.
+  Lemma Fix_F_inv : forall (x:A) (r s:Acc R x), Fix_F _ r = Fix_F _ s.
   Proof.
    intro x; induction (Rwf x); intros r s.
-   rewrite <- (Fix_F_eq r); rewrite <- (Fix_F_eq s); intros.
+   rewrite <- (Fix_F_eq _ r); rewrite <- (Fix_F_eq _ s); intros.
    apply F_ext; auto.
   Qed.
 
-  Lemma Fix_eq : forall x:A, Fix x = F (fun (y:A) (p:R y x) => Fix y).
+  Lemma Fix_eq : forall x:A, Fix x = F _ (fun (y:A) (p:R y x) => Fix y).
   Proof.
    intro x; unfold Fix.
    rewrite <- Fix_F_eq.
@@ -95,14 +92,24 @@ Register Acc_inv as core.wf.acc_inv.
 
 End Well_founded.
 
+Arguments Acc_inv {_ _ _} _ {_} _.
+Arguments well_founded {_} _.
+Arguments Acc_intro {_ _} _.
 (** Well-founded fixpoints over pairs *)
 
 Section Well_founded_2.
 
-  Variables A B : Type.
+  Sort sa.
+  Universe ua ub.
+
+  Variable A : Type@{sa|ua}.
+  Variable B : Type@{sa|ub}.
+
   Variable R : A * B -> A * B -> Prop.
 
-  Variable P : A -> B -> Type.
+  Sort sp.
+  Universe up.
+  Variable P : A -> B -> Type@{sp|up}.
 
   Section FixPoint_2.
 
@@ -112,15 +119,15 @@ Section Well_founded_2.
         (forall (y:A) (y':B), R (y, y') (x, x') -> P y y') -> P x x'.
 
   Fixpoint Fix_F_2 (x:A) (x':B) (a:Acc R (x, x')) : P x x' :=
-    F
+    F _ _
       (fun (y:A) (y':B) (h:R (y, y') (x, x')) =>
-         Fix_F_2 (x:=y) (x':=y') (Acc_inv a (y,y') h)).
+         Fix_F_2 y y' (Acc_inv a h)).
 
   End FixPoint_2.
 
   Hypothesis Rwf : well_founded R.
 
-  Theorem well_founded_induction_type_2 :
+  Theorem well_founded_induction_2 :
    (forall (x:A) (x':B),
       (forall (y:A) (y':B), R (y, y') (x, x') -> P y y') -> P x x') ->
    forall (a:A) (b:B), P a b.
@@ -141,7 +148,11 @@ This construction is originally by Georges Gonthier, see
 https://sympa.inria.fr/sympa/arc/coq-club/2007-07/msg00013.html *)
 
 Section Acc_generator.
-  Variable A : Type.
+
+  Sort s.
+  Universe u.
+
+  Variable A : Type@{s|u}.
   Variable R : A -> A -> Prop.
 
   (* *Lazily* add 2^n - 1 Acc_intro on top of wf.
@@ -157,13 +168,18 @@ Section Acc_generator.
 
 End Acc_generator.
 
-
 Section Well_founded.
-  Variable A : Type.
+
+  Universe u.
+
+  Variable A : Type@{u}.
   Variable R : A -> A -> Prop.
   Hypothesis Rwf : well_founded R.
 
-  Variable P : A -> Type.
+  Sort s'.
+  Universe v.
+
+  Variable P : A -> Type@{s'|v}.
 
   Variable F_sub : forall x:A, (forall y: { y : A | R y x }, P (proj1_sig y)) -> P x.
 
@@ -182,25 +198,25 @@ Section Well_founded.
     forall (x:A) (f g:forall y:{y:A | R y x}, P (`y)),
       (forall y:{y : A | R y x}, f y = g y) -> F_sub x f = F_sub x g.
 
-  Lemma Fix_F_eq :
+  Lemma Fix_F_eq' :
     forall (x:A) (r:Acc R x),
       F_sub x (fun y:{y:A | R y x} => Fix_F_sub (`y) (Acc_inv r (proj2_sig y))) = Fix_F_sub x r.
   Proof.
     intros x r; destruct r using Acc_inv_dep; auto.
   Qed.
 
-  Lemma Fix_F_inv : forall (x:A) (r s:Acc R x), Fix_F_sub x r = Fix_F_sub x s.
+  Lemma Fix_F_inv' : forall (x:A) (r s:Acc R x), Fix_F_sub x r = Fix_F_sub x s.
   Proof.
     intro x; induction (Rwf x); intros.
-    rewrite <- 2 Fix_F_eq; intros. apply F_ext; intros []; auto.
+    rewrite <- 2 Fix_F_eq'; intros. apply F_ext; intros []; auto.
   Qed.
 
-  Lemma Fix_eq : forall x:A, Fix_sub x = F_sub x (fun y:{ y:A | R y x} => Fix_sub (proj1_sig y)).
+  Lemma Fix_eq' : forall x:A, Fix_sub x = F_sub x (fun y:{ y:A | R y x} => Fix_sub (proj1_sig y)).
   Proof.
     intro x; unfold Fix_sub.
-    rewrite <- (Fix_F_eq ).
+    rewrite <- (Fix_F_eq' ).
     apply F_ext; intros.
-    apply Fix_F_inv.
+    apply Fix_F_inv'.
   Qed.
 
   Lemma fix_sub_eq :
@@ -209,10 +225,70 @@ Section Well_founded.
       let f_sub := F_sub in
         f_sub x (fun y: {y : A | R y x} => Fix_sub (`y)).
   Proof.
-    exact Fix_eq.
+    exact Fix_eq'.
   Qed.
 
 End Well_founded.
+
+(* code duplication here because of the absence of elimination constraints *)
+
+Section Well_foundedP.
+
+  Variable A : Prop.
+  Variable R : A -> A -> Prop.
+  Hypothesis Rwf : well_founded R.
+
+  Sort s'.
+  Universe v.
+
+  Variable P : A -> Type@{s'|v}.
+
+  Variable F_sub : forall x:A, (forall y: { y : A | R y x }, P (proj1 y)) -> P x.
+
+  Fixpoint Fix_F_subP (x : A) (r : Acc R x) : P x :=
+    F_sub x (fun y: { y : A | R y x}  => Fix_F_subP (proj1 y)
+      (Acc_inv r (proj2 y))).
+
+  Definition Fix_subP (x : A) := Fix_F_subP x (Rwf x).
+
+  (* Notation Fix_F := (Fix_F_sub P F_sub) (only parsing). (* alias *) *)
+  (* Definition Fix (x:A) := Fix_F_sub P F_sub x (Rwf x). *)
+
+  Hypothesis F_ext :
+    forall (x:A) (f g:forall y:{y:A | R y x}, P (`y)),
+      (forall y:{y : A | R y x}, f y = g y) -> F_sub x f = F_sub x g.
+
+  Lemma Fix_F_eqP' :
+    forall (x:A) (r:Acc R x),
+      F_sub x (fun y:{y:A | R y x} => Fix_F_subP (proj1 y) (Acc_inv r (proj2 y))) = Fix_F_subP x r.
+  Proof.
+    intros x r; destruct r using Acc_inv_dep; auto.
+  Qed.
+
+  Lemma Fix_F_invP' : forall (x:A) (r s:Acc R x), Fix_F_subP x r = Fix_F_subP x s.
+  Proof.
+    intro x; induction (Rwf x); intros.
+    rewrite <- 2 Fix_F_eqP'; intros. apply F_ext; intros []; auto.
+  Qed.
+
+  Lemma Fix_eqP' : forall x:A, Fix_subP x = F_sub x (fun y:{ y:A | R y x} => Fix_subP (proj1 y)).
+  Proof.
+    intro x; unfold Fix_subP.
+    rewrite <- (Fix_F_eqP' ).
+    apply F_ext; intros.
+    apply Fix_F_invP'.
+  Qed.
+
+  Lemma fix_sub_eqP :
+    forall x : A,
+      Fix_subP x =
+      let f_sub := F_sub in
+        f_sub x (fun y: {y : A | R y x} => Fix_subP (`y)).
+  Proof.
+    exact Fix_eqP'.
+  Qed.
+
+End Well_foundedP.
 
 Set Implicit Arguments.
 
@@ -222,7 +298,12 @@ Section Measure_well_founded.
 
   (* Measure relations are well-founded if the underlying relation is well-founded. *)
 
-  Variables T M: Type.
+  Sort sa sb.
+  Universe ua ub.
+
+  Variable T : Type@{sa|ua}.
+  Variable M : Type@{sb|ub}.
+
   Variable R: M -> M -> Prop.
   Hypothesis wf: well_founded R.
   Variable m: T -> M.
@@ -237,7 +318,7 @@ Section Measure_well_founded.
     cut (forall (a: M) (a0: T), m a0 = a -> Acc MR a0).
     + intros H a.
       apply (H (m a))...
-    + apply (@well_founded_ind M R wf (fun mm => forall a, m a = mm -> Acc MR a)).
+    + apply (@well_founded_induction M R wf (fun mm => forall a, m a = mm -> Acc MR a)).
       intros ? H ? H0.
       apply Acc_intro.
       intros y H1.
@@ -248,13 +329,18 @@ Section Measure_well_founded.
 
 End Measure_well_founded.
 
-#[global]
+#[export]
 Hint Resolve measure_wf : core.
+
+Arguments well_founded_induction {_ _}.
 
 Section Fix_rects.
 
-  Variable A: Type.
-  Variable P: A -> Type.
+  Sort sp.
+  Universe ua up.
+
+  Variable A: Type@{ua}.
+  Variable P: A -> Type@{sp|up}.
   Variable R : A -> A -> Prop.
   Variable Rwf : well_founded R.
   Variable f: forall (x : A), (forall y: { y: A | R y x }, P (proj1_sig y)) -> P x.
@@ -269,8 +355,8 @@ Section Fix_rects.
   that property to be invariant over single application of the
   function body (f in our case). *)
 
-  Lemma Fix_F_sub_rect
-    (Q: forall x, P x -> Type)
+  Lemma Fix_F_sub_rect@{sq|uq|}
+    (Q: forall x, P x -> Type@{sq|uq})
     (inv: forall x: A,
      (forall (y: A) (H: R y x) (a: Acc R y),
         Q y (Fix_F_sub A R P f y a)) ->
@@ -281,7 +367,7 @@ Section Fix_rects.
   Proof with auto.
     set (R' := fun (x: A) => forall a, Q _ (Fix_F_sub A R P f x a)).
     cut (forall x, R' x)...
-    apply (well_founded_induction_type Rwf).
+    apply (well_founded_induction Rwf).
     subst R'.
     simpl.
     intros.
@@ -300,8 +386,7 @@ Section Fix_rects.
 
   Hypothesis equiv_lowers:
     forall x0 (g h: forall x: {y: A | R y x0}, P (proj1_sig x)),
-    (forall x p p', g (exist (fun y: A => R y x0) x p) = h (exist (*FIXME shouldn't be needed *) (fun y => R y x0) x p')) ->
-      f g = f h.
+    (forall x p p', g (x ; p) = h (x ; p')) -> f g = f h.
 
   (* From equiv_lowers, it follows that
    [Fix_F_sub A R P f x] applications do not not
@@ -327,14 +412,14 @@ Section Fix_rects.
   property to be invariant over single application of the function
   body (f). *)
 
-  Lemma Fix_sub_rect
-    (Q: forall x, P x -> Type)
+  Lemma Fix_sub_rect@{sq|uq|}
+    (Q: forall x, P x -> Type@{sq|uq})
     (inv: forall
       (x: A)
-      (H: forall (y: A), R y x -> Q y (Fix_sub A R Rwf P f y))
+      (H: forall (y: A), R y x -> Q y (Fix_sub@{_|_ up} A R Rwf P f y))
       (a: Acc R x),
-        Q x (f (fun y: {y: A | R y x} => Fix_sub A R Rwf P f (proj1_sig y))))
-    : forall x, Q _ (Fix_sub A R Rwf P f x).
+        Q x (f (fun y: {y: A | R y x} => Fix_sub@{_|_ up} A R Rwf P f (proj1_sig y))))
+    : forall x, Q _ (Fix_sub@{_|_ up} A R Rwf P f x).
   Proof with auto.
     unfold Fix_sub.
     intros x.

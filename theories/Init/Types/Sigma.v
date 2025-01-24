@@ -94,7 +94,8 @@ Register sigma as core.sig.type.
 
 Register sig_rect as core.sig.rect.
 Notation proj1_sig := proj1.
-Notation proj2_sig := proj2.
+
+Definition proj2_sig@{u} {A P} (p : @sig@{Type|u} A P) : P (proj1_sig p) := match p with exist _ b => b end.
 
 (** listings: end **)
 

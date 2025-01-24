@@ -19,7 +19,11 @@ Require Import Notations.
 (** Well-founded induction principle on [Prop] *)
 
 Section Well_founded.
- Variable A : Type.
+
+ Sort s.
+ Universe u.
+
+ Variable A : Type@{s|u}.
  Variable R : A -> A -> Prop.
 
  (** The accessibility predicate is defined to be non-informative *)
@@ -40,6 +44,15 @@ Section Well_founded.
  Definition well_founded := forall a:A, Acc a.
 
  Register well_founded as core.wf.well_founded.
+
+ Definition Acc_elim@{sp|up|} (P : A -> Type@{sp|up})
+  (P_acc_intro : forall x : A,
+  (forall y : A, R y x -> Acc y) -> (forall y : A, R y x -> P y) -> P x)
+    : forall (x : A), Acc x -> P x :=
+    fix F (x : A) (a : Acc x) {struct a} : P x :=
+  match a with
+  | Acc_intro _ a0 => P_acc_intro x a0 (fun (y : A) (r : R y x) => F y (a0 y r))
+  end.
 
  (** Well-founded induction on [Set] and [Prop] *)
 End Well_founded.

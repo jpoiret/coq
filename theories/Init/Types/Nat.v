@@ -53,6 +53,7 @@ Definition nat_rect@{s | u|} : forall P : nat@{Type|} -> Type@{s | u},
   end.
 
 Definition nat_ind := nat_rect@{Prop|0}.
+Definition nat_sind := nat_rect@{SProp|0}.
 
 Register nat as num.nat.type.
 Register O as num.nat.O.

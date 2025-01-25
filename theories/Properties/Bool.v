@@ -8,8 +8,6 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-From Corelib Require Import observational.
-
 (** * Boolean Properties *)
 
 (** Basic properties of [andb] *)
@@ -37,7 +35,7 @@ match e as e0 in (@eq _ _ a0) return (P a0 e0) with
 end.
 *)
 
-Lemma inj_type@{s| |} : true ~ false -> empty@{s|}.
+Lemma inj_type@{s| |} : true = false -> empty@{s|}.
 Proof.
   intros.
   discriminate.
@@ -77,7 +75,7 @@ Register eq_true as core.eq_true.type.
 
 (** Interpreting booleans as propositions *)
 
-Definition is_true@{s| |} (b : bool@{s|}) := b ~ true.
+Definition is_true@{s| |} (b : bool@{s|}) := b = true.
 
 (** [is_true] can be activated as a coercion by
    ([Local]) [Coercion is_true : bool >-> Sortclass]. *)
@@ -118,7 +116,7 @@ Register BoolSpecF as core.BoolSpec.BoolSpecF.
 
 (** For instance, we could state the correctness of [Bool.eqb] via [reflect]: *)
 
-Lemma eqb_spec (b b' : bool) : reflect (b ~ b') (Bool.eqb b b').
+Lemma eqb_spec (b b' : bool) : reflect (b = b') (Bool.eqb b b').
 Proof.
  destruct b, b'; constructor; eauto; discriminate.
 Qed.

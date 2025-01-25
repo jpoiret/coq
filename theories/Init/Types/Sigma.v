@@ -73,8 +73,7 @@ Notation "'Σ' x .. y , B" := (sigma _ (fun x => .. (sigma _ (fun y => B)) ..))
 Notation "( x ; .. ; y ; z )" := (exist x .. (exist y z) ..) : core_scope.
 
 (* Rule order is important to give printing priority to fully typed exists *)
-
-Notation "'exists' x .. y , p" := ((sigma _) (fun x => .. ((sigma _) (fun y => p)) ..))
+Notation "'exists' x .. y , p" := (ex (fun x => .. (ex (fun y => p)) ..))
   (at level 200, x binder, right associativity,
    format "'[' 'exists'  '/  ' x  ..  y ,  '/  ' p ']'")
   : type_scope.
@@ -189,7 +188,7 @@ Notation "{ ' pat : A | P }" := (sig (A:=A) (fun pat => P)) : type_scope.
 Notation "{ ' pat & P }" := (sigT (fun pat => P)) : type_scope.
 Notation "{ ' pat : A & P }" := (@sigmaR A (fun pat => P)) : type_scope.
 
-Notation "'exists2' x , p & q" := (sigma@{_ SProp SProp| _ 0} _ (fun x => p * q))
+Notation "'exists2' x , p & q" := (sigma@{_ Prop Prop| _ 0} _ (fun x => p /\ q))
   (at level 200, x binder, right associativity,
    format "'[' 'exists2'  '/  ' x  ,  '/  ' p & '/ ' q ']'")
   : type_scope.

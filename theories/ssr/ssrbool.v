@@ -490,7 +490,7 @@ Notation "{ x | P }" := (sigP (fun x => P)) : type_scope.
 #[warnings="-notation-overridden"]
 Notation "{ x : A | P }" := (sigP (A:=A) (fun x => P)) : type_scope.
 
-(**  Constant is_true b := b ~ true is defined in SProperties.Bool.  **)
+(**  Constant is_true b := b ~ true is defined in Properties.Bool.  **)
 Coercion is_true : bool >-> Sortclass. (* SProp *)
 
 Lemma prop_congr : forall b b' : bool, b ~ b' -> b ~ b'.
@@ -1830,7 +1830,7 @@ End RelationProperties.
 Lemma rev_trans T (R : rel T) : transitive R -> transitive (fun x y => R y x).
 Proof. by move=> trR x y z Ryx Rzy; apply: trR Rzy Ryx. Qed.
 
-(**  SProperty localization  **)
+(**  Property localization  **)
 
 Local Notation "{ 'all1' P }" := (forall x, P x : SProp) (at level 0).
 Local Notation "{ 'all2' P }" := (forall x y, P x y : SProp) (at level 0).

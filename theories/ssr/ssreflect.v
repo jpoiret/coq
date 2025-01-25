@@ -88,7 +88,7 @@ Module SsrSyntax.
  Declare Ssr keywords: 'is' 'of' '//' '/=' and '//='. We also declare the
  parsing level 8, as a workaround for a notation grammar factoring problem.
  Arguments of application-style notations (at level 10) should be declared
- at level 8 rather than 9 or the camlp5 grammar will not factor sproperly.    **)
+ at level 8 rather than 9 or the camlp5 grammar will not factor properly.    **)
 
 Reserved Notation "(* x 'is' y 'of' z 'isn't' // /= //= *)".
 
@@ -545,7 +545,7 @@ Definition UnderE := Under_relE.
 
 (*****************************************************************************)
 
-(** An interface for non-SProp types; used to avoid imsproper instantiation
+(** An interface for non-SProp types; used to avoid improper instantiation
     of polymorphic lemmas with on-demand implicits when they are used as views.
     For example: Some_inj {T} : forall x y : T, Some x = Some y -> x = y.
     Using move/Some_inj on a goal of the form Some n = Some 0 will fail:

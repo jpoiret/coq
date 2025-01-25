@@ -71,7 +71,7 @@ Require Import ssreflect Sigma.
  Tagged2 T U x y == the {i : I & T i} with components x : T i and y : U i.
           sval u == the x of u : {x : T | P x}.
          s2val u == the x of u : {x : T | P x & Q x}.
-   The sproperties of sval u, s2val u are given by lemmas svalP, s2valP, and
+   The properties of sval u, s2val u are given by lemmas svalP, s2valP, and
    s2valP'. We provide coercions sigT2 >-> sigT and sig2 >-> sig >-> sigT.
    A suite of lemmas (all_sig, ...) let us skolemize sig, sig2, sigT, sigT2
    and pair, e.g.,
@@ -126,7 +126,7 @@ Require Import ssreflect Sigma.
       pcomp f1 f2 == composition of partial functions f1 and f2.
 
 
- - SProperties of functions:
+ - Properties of functions:
       injective f <-> f is injective.
        cancel f g <-> g is a left inverse of f / f is a right inverse of g.
       pcancel f g <-> g is a left inverse of f where g is partial.
@@ -134,7 +134,7 @@ Require Import ssreflect Sigma.
       bijective f <-> f is bijective (has a left and right inverse).
      involutive f <-> f is involutive.
 
- - SProperties for operations.
+ - Properties for operations.
               left_id e op <-> e is a left identity for op (e op x = x).
              right_id e op <-> e is a right identity for op (x op e = x).
      left_inverse e inv op <-> inv is a left inverse for op wrt identity e,
@@ -158,7 +158,7 @@ Require Import ssreflect Sigma.
                              x op1 (y op2 z) = (x op1 z) op2 (x op1 z).
         interchange op1 op2 <-> op1 and op2 satisfy an interchange law:
                         (x op2 y) op1 (z op2 t) = (x op1 z) op2 (y op1 t).
-  Note that interchange op op is a commutativity sproperty.
+  Note that interchange op op is a commutativity property.
          left_injective op <-> op is injective in its left argument:
                              x op y = z op y -> x = z.
         right_injective op <-> op is injective in its right argument:
@@ -627,16 +627,16 @@ Section Morphism.
 
 Variables (aT rT sT : Type) (f : aT -> rT).
 
-(**  Morphism sproperty for unary and binary functions  **)
+(**  Morphism property for unary and binary functions  **)
 Definition morphism_1 aF rF := forall x, f (aF x) ~ rF (f x).
 Definition morphism_2 aOp rOp := forall x y, f (aOp x y) ~ rOp (f x) (f y).
 
-(**  Homomorphism sproperty for unary and binary relations  **)
+(**  Homomorphism property for unary and binary relations  **)
 Definition homomorphism_1 (aP rP : _ -> SProp) := forall x, aP x -> rP (f x).
 Definition homomorphism_2 (aR rR : _ -> _ -> SProp) :=
   forall x y, aR x y -> rR (f x) (f y).
 
-(**  Stability sproperty for unary and binary relations  **)
+(**  Stability property for unary and binary relations  **)
 Definition monomorphism_1 (aP rP : _ -> sT) := forall x, rP (f x) ~ aP x.
 Definition monomorphism_2 (aR rR : _ -> _ -> sT) :=
   forall x y, rR (f x) (f y) ~ aR x y.

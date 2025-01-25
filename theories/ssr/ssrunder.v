@@ -23,52 +23,52 @@ Require Import ssrclasses.
 
 Module Type UNDER_REL.
 Parameter Under_rel :
-  forall (A : Type) (eqA : A -> A -> Prop), A -> A -> Prop.
+  forall (A : Type) (eqA : A -> A -> SProp), A -> A -> SProp.
 Parameter Under_rel_from_rel@{u} :
-  forall (A : Type@{u}) (eqA : A -> A -> Prop) (x y : A),
+  forall (A : Type@{u}) (eqA : A -> A -> SProp) (x y : A),
     @Under_rel@{u} A eqA x y -> eqA x y.
 Parameter Under_relE@{u} :
-  forall (A : Type@{u}) (eqA : A -> A -> Prop),
+  forall (A : Type@{u}) (eqA : A -> A -> SProp),
     @Under_rel@{u} A eqA = eqA.
 (** [Over_rel, over_rel, over_rel_done]: for "by rewrite over_rel" *)
 Parameter Over_rel :
-  forall (A : Type) (eqA : A -> A -> Prop), A -> A -> Prop.
+  forall (A : Type) (eqA : A -> A -> SProp), A -> A -> SProp.
 Parameter over_rel@{u} :
-  forall (A : Type@{u}) (eqA : A -> A -> Prop) (x y : A),
+  forall (A : Type@{u}) (eqA : A -> A -> SProp) (x y : A),
     @Under_rel@{u} A eqA x y = @Over_rel@{u} A eqA x y.
 Parameter over_rel_done@{u} :
-  forall (A : Type@{u}) (eqA : A -> A -> Prop) (EeqA : Reflexive eqA) (x : A),
+  forall (A : Type@{u}) (eqA : A -> A -> SProp) (EeqA : Reflexive eqA) (x : A),
     @Over_rel@{u} A eqA x x.
 
 (** [under_rel_done]: for Ltac-style over *)
 Parameter under_rel_done@{u} :
-  forall (A : Type@{u}) (eqA : A -> A -> Prop) (EeqA : Reflexive eqA) (x : A),
+  forall (A : Type@{u}) (eqA : A -> A -> SProp) (EeqA : Reflexive eqA) (x : A),
     @Under_rel@{u} A eqA x x.
 Notation "''Under[' x ]" := (@Under_rel _ _ x _)
   (at level 8, format "''Under['  x  ]", only printing).
 End UNDER_REL.
 
 Module Export Under_rel : UNDER_REL.
-Definition Under_rel (A : Type) (eqA : A -> A -> Prop) :=
+Definition Under_rel (A : Type) (eqA : A -> A -> SProp) :=
   eqA.
 Lemma Under_rel_from_rel :
-  forall (A : Type) (eqA : A -> A -> Prop) (x y : A),
+  forall (A : Type) (eqA : A -> A -> SProp) (x y : A),
     @Under_rel A eqA x y -> eqA x y.
 Proof. now trivial. Qed.
-Lemma Under_relE (A : Type) (eqA : A -> A -> Prop) :
+Lemma Under_relE (A : Type) (eqA : A -> A -> SProp) :
   @Under_rel A eqA = eqA.
 Proof. now trivial. Qed.
 Definition Over_rel := Under_rel.
 Lemma over_rel :
-  forall (A : Type) (eqA : A -> A -> Prop) (x y : A),
+  forall (A : Type) (eqA : A -> A -> SProp) (x y : A),
     @Under_rel A eqA x y = @Over_rel A eqA x y.
 Proof. now trivial. Qed.
 Lemma over_rel_done :
-  forall (A : Type) (eqA : A -> A -> Prop) (EeqA : Reflexive eqA) (x : A),
+  forall (A : Type) (eqA : A -> A -> SProp) (EeqA : Reflexive eqA) (x : A),
     @Over_rel A eqA x x.
 Proof. now unfold Over_rel. Qed.
 Lemma under_rel_done :
-  forall (A : Type) (eqA : A -> A -> Prop) (EeqA : Reflexive eqA) (x : A),
+  forall (A : Type) (eqA : A -> A -> SProp) (EeqA : Reflexive eqA) (x : A),
     @Under_rel A eqA x x.
 Proof. now trivial. Qed.
 End Under_rel.

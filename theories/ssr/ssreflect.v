@@ -26,11 +26,11 @@ Declare ML Module "rocq-runtime.plugins.ssreflect".
         argumentType c == the T such that c : forall x : T, P x.
           returnType c == the R such that c : T -> R.
      {type of c for s} == P s where c : forall x : T, P x.
-           nonPropType == an interface for non-Prop Types: a nonPropType coerces
+           nonPropType == an interface for non-SProp Types: a nonPropType coerces
                           to a Type, and only types that do _not_ have sort
-                          Prop are canonical nonPropType instances. This is
+                          SProp are canonical nonPropType instances. This is
                           useful for applied views (see mid-file comment).
-             notProp T == the nonPropType instance for type T.
+             notSProp T == the nonPropType instance for type T.
            phantom T v == singleton type with inhabitant Phantom T v.
                phant T == singleton type with inhabitant Phant v.
                  =^~ r == the converse of rewriting rule r (e.g., in a
@@ -80,13 +80,15 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+From Corelib Require Export observational GroupoidLaws.
+
 Module SsrSyntax.
 
 (**
  Declare Ssr keywords: 'is' 'of' '//' '/=' and '//='. We also declare the
  parsing level 8, as a workaround for a notation grammar factoring problem.
  Arguments of application-style notations (at level 10) should be declared
- at level 8 rather than 9 or the camlp5 grammar will not factor properly.    **)
+ at level 8 rather than 9 or the camlp5 grammar will not factor sproperly.    **)
 
 Reserved Notation "(* x 'is' y 'of' z 'isn't' // /= //= *)".
 
@@ -210,7 +212,7 @@ Inductive external_view : Type := tactic_view of Type.
       #[#the struct_type of proj_val by proj_fun#]#
  This form denotes the Canonical instance s of the Structure type
  struct_type whose proj_fun projection is proj_val, i.e., such that
-      proj_fun s = proj_val.
+      proj_fun s ~ proj_val.
  Typically proj_fun will be A record field accessors of struct_type, but
  this need not be the case; it can be, for instance, a field of a record
  type to which struct_type coerces; proj_val will likewise be coerced to
@@ -221,7 +223,7 @@ Inductive external_view : Type := tactic_view of Type.
  inferred type of proj_val. Obviously the latter can be fixed by using an
  explicit cast on proj_val, and it is highly recommended to do so when the
  return type intended for proj_fun is "Type", as the type inferred for
- proj_val may vary because of sort polymorphism (it could be Set or Prop).
+ proj_val may vary because of sort polymorphism (it could be Set or SProp).
    Note when using the #[#the _ of _ #]# form to generate a substructure from a
  telescopes-style canonical hierarchy (implementing inheritance with
  coercions), one should always project or coerce the value to the BASE
@@ -231,7 +233,7 @@ Inductive external_view : Type := tactic_view of Type.
 
 Module TheCanonical.
 
-Variant put vT sT (v1 v2 : vT) (s : sT) : Prop := Put.
+Variant put vT sT (v1 v2 : vT) (s : sT) : Type := Put.
 
 Definition get vT sT v s (p : @put vT sT v v s) := let: Put _ _ _ := p in s.
 
@@ -324,10 +326,10 @@ Notation "{ 'type' 'of' c 'for' s }" := (dependentReturnType c s) : type_scope.
    We also define a simpler version ("phant" / "Phant") of phantom for the
  common case where p_type is Type.                                           **)
 
-Variant phantom T (p : T) : Prop := Phantom.
+Variant phantom T (p : T) : SProp := Phantom.
 Arguments phantom : clear implicits.
 Arguments Phantom : clear implicits.
-Variant phant (p : Type) : Prop := Phant.
+Variant phant (p : Type) : SProp := Phant.
 
 (**  Internal tagging used by the implementation of the ssreflect elim.  **)
 
@@ -365,7 +367,7 @@ Notation "=^~ r" := (ssr_converse r) : form_scope.
     CAVEAT: nosimpl should not be used inside a Section, because the end of
     section "cooking" removes the iota redex.
   locked t is provably equal to t, but is not convertible to t; 'locked'
-    provides support for selective rewriting, via the lock t : t = locked t
+    provides support for selective rewriting, via the lock t : t ~ locked t
     Lemma, and the ssreflect unlock tactic.
   locked_with k t is equal but not convertible to t, much like locked t,
     but supports explicit tagging with a value k : unit. This is used to
@@ -390,7 +392,7 @@ Definition locked A := let: tt := master_key in fun x : A => x.
 Register master_key as plugins.ssreflect.master_key.
 Register locked as plugins.ssreflect.locked.
 
-Lemma lock A x : x = locked x :> A. Proof. unlock; reflexivity. Qed.
+Lemma lock A x : x = locked x :> A : SProp. Proof. unlock; reflexivity. Qed.
 
 (**  The basic closing tactic "done".  **)
 Ltac done :=
@@ -409,8 +411,8 @@ Ltac ssrdone0 :=
 (**  To unlock opaque constants.  **)
 
 #[projections(primitive=no)]
-Structure unlockable@{s|l|} (T:Type@{s|l}) v := Unlockable {unlocked : T; _ : unlocked = v}.
-Lemma unlock T x C : @unlocked T x C = x. Proof. by case: C. Qed.
+Structure unlockable@{s|l|} (T:Type@{s|l}) v := Unlockable {unlocked : T; _ : unlocked = v :> _ : SProp}.
+Lemma unlock T x C : @unlocked T x C = x :> _ : SProp. Proof. by case: C. Qed.
 
 Notation "[ 'unlockable' 'of' C ]" :=
   (@Unlockable _ _ C (unlock _)) : form_scope.
@@ -426,7 +428,7 @@ Definition locked_with k := let: tt := k in fun T x => x : T.
 (**
  This can be used as a cheap alternative to cloning the unlockable instance
  below, but with caution as unkeyed matching can be expensive.               **)
-Lemma locked_withE T k x : unkeyed (locked_with k x) = x :> T : Prop.
+Lemma locked_withE T k x : unkeyed (locked_with k x) = x :> T : SProp.
 Proof. by case: k. Qed.
 
 (**  Intensionaly, this instance will not apply to locked u.  **)
@@ -434,7 +436,7 @@ Canonical locked_with_unlockable T k x :=
   @Unlockable T x (locked_with k x) (locked_withE k x).
 
 (**  More accurate variant of unlock, and safer alternative to locked_withE. **)
-Lemma unlock_with T k x : unlocked (locked_with_unlockable k x) = x :> T : Prop.
+Lemma unlock_with T k x : unlocked (locked_with_unlockable k x) = x :> T : SProp.
 Proof. exact: unlock. Qed.
 
 (**  Notation to trigger Rocq elaboration to fill the holes **)
@@ -443,7 +445,7 @@ Notation "[ 'elaborate' x ]" := (ltac:(refine x)) (only parsing).
 (**  The internal lemmas for the have tactics.  **)
 
 Lemma ssr_have
-  (Plemma : Prop)  (Pgoal : Prop)
+  (Plemma : SProp)  (Pgoal : SProp)
   (step : Plemma) (rest : Plemma -> Pgoal) : Pgoal.
 Proof. exact: rest step. Qed.
 
@@ -459,16 +461,16 @@ Register ssr_have_upoly as plugins.ssreflect.ssr_have_upoly.
 (**  Internal N-ary congruence lemmas for the congr tactic.  **)
 
 Fixpoint nary_congruence_statement (n : nat)
-         : (forall B, (B -> B -> Prop) -> Prop) -> Prop :=
+         : (forall B, (B -> B -> SProp) -> SProp) -> SProp :=
   match n with
-  | O => fun k => forall B, k B (fun x1 x2 : B => x1 = x2)
+  | O => fun k => forall B, k B (fun x1 x2 : B => x1 ~ x2)
   | S n' =>
     let k' A B e (f1 f2 : A -> B) :=
-      forall x1 x2, x1 = x2 -> (e (f1 x1) (f2 x2) : Prop) in
+      forall x1 x2, x1 = x2 -> (e (f1 x1) (f2 x2) : SProp) in
     fun k => forall A, nary_congruence_statement n' (fun B e => k _ (k' A B e))
   end.
 
-Lemma nary_congruence n (k := fun B e => forall y : B, (e y y : Prop)) :
+Lemma nary_congruence n (k := fun B e => forall y : B, (e y y : SProp)) :
   nary_congruence_statement n k.
 Proof.
 have: k _ _ := _; rewrite {1}/k.
@@ -487,7 +489,7 @@ Register ssr_congr_arrow as plugins.ssreflect.ssr_congr_arrow.
 
 Section ApplyIff.
 
-Variables P Q : Prop.
+Variables P Q : SProp.
 Hypothesis eqPQ : P <-> Q.
 
 Lemma iffLR : P -> Q. Proof. by case: eqPQ. Qed.
@@ -543,7 +545,7 @@ Definition UnderE := Under_relE.
 
 (*****************************************************************************)
 
-(** An interface for non-Prop types; used to avoid improper instantiation
+(** An interface for non-SProp types; used to avoid imsproper instantiation
     of polymorphic lemmas with on-demand implicits when they are used as views.
     For example: Some_inj {T} : forall x y : T, Some x = Some y -> x = y.
     Using move/Some_inj on a goal of the form Some n = Some 0 will fail:
@@ -556,7 +558,7 @@ Definition UnderE := Under_relE.
     interpretation, but is undesirable as it makes it harder to use Some_inj
     with the many SSReflect and MathComp lemmas that have an injectivity
     premise. Specifying {T : nonPropType} solves this more elegantly, as then
-    (?T : Type) no longer unifies with (Some n = Some 0), which has sort Prop.
+    (?T : Type) no longer unifies with (Some n = Some 0), which has sort SProp.
  **)
 
 Module NonPropType.
@@ -564,11 +566,11 @@ Module NonPropType.
 (** Implementation notes:
  We rely on three interface Structures:
   - test_of r, the middle structure, performs the actual check: it has two
-    canonical instances whose 'condition' projection are maybeProj (?P : Prop)
+    canonical instances whose 'condition' projection are maybeProj (?P : SProp)
     and tt, and which set r := true and r := false, respectively. Unifying
     condition (?t : test_of ?r) with maybeProj T will thus set ?r to true if
-    T is in Prop as the test_Prop T instance will apply, and otherwise simplify
-    maybeProp T to tt and use the test_negative instance and set ?r to false.
+    T is in SProp as the test_SProp T instance will apply, and otherwise simplify
+    maybeSProp T to tt and use the test_negative instance and set ?r to false.
   - call_of c r sets up a call to test_of on condition c with expected result r.
     It has a default instance for its 'callee' projection to Type, which
     sets c := maybeProj T and r := false when unifying with a type T.
@@ -578,25 +580,25 @@ Module NonPropType.
     instance essentially provides eta-expansion for 'type'. This is only
     essential for the first 'result' projection to bool; using the instance
     for other projection merely avoids spurious delta expansions that would
-    spoil the notProp T notation.
+    spoil the notSProp T notation.
  In detail, unifying T =~= ?S with ?S : nonPropType, i.e.,
   (1)  T =~= @callee (@condition (result ?S) (test ?S)) (result ?S) (frame ?S)
  first uses the default call instance with ?T := T to reduce (1) to
-  (2a) @condition (result ?S) (test ?S) =~= maybeProp T
+  (2a) @condition (result ?S) (test ?S) =~= maybeSProp T
   (3)                         result ?S =~= false
   (4)                          frame ?S =~= call T
  along with some trivial universe-related checks which are irrelevant here.
-   Then the unification tries to use the test_Prop instance to reduce (2a) to
+   Then the unification tries to use the test_SProp instance to reduce (2a) to
   (6a)                        result ?S =~= true
-  (7a)                               ?P =~= T with ?P : Prop
-  (8a)                          test ?S =~= test_Prop ?P
+  (7a)                               ?P =~= T with ?P : SProp
+  (8a)                          test ?S =~= test_SProp ?P
  Now the default 'check' instance with ?result := true resolves (6a) as
   (9a)                               ?S := @check true ?test ?frame
- Then (7a) can be solved precisely if T has sort at most (hence exactly) Prop,
- and then (8a) is solved by the check instance, yielding ?test := test_Prop T,
+ Then (7a) can be solved precisely if T has sort at most (hence exactly) SProp,
+ and then (8a) is solved by the check instance, yielding ?test := test_SProp T,
  and completing the solution of (2a), and _committing_ to it. But now (3) is
  inconsistent with (9a), and this makes the entire problem (1) fails.
-   If on the other hand T does not have sort Prop then (7a) fails and the
+   If on the other hand T does not have sort SProp then (7a) fails and the
  unification resorts to delta expanding (2a), which gives
   (2b) @condition (result ?S) (test ?S) =~= tt
  which is then reduced, using the test_negative instance, to
@@ -605,11 +607,11 @@ Module NonPropType.
  Both are solved using the check default instance, as in the (2a) branch, giving
   (9b)                               ?S := @check false test_negative ?frame
  Then (3) and (4) are similarly solved using check, giving the final assignment
-  (9)                                ?S := notProp T
+  (9)                                ?S := notSProp T
  Observe that we _must_ perform the actual test unification on the arguments
  of the initial canonical instance, and not on the instance itself as we do
  in mathcomp/matrix and mathcomp/vector, because we want the unification to
- fail when T has sort Prop. If both the test_of _and_ the result check
+ fail when T has sort SProp. If both the test_of _and_ the result check
  unifications were done as part of the structure telescope then the latter
  would be a sub-problem of the former, and thus failing the check would merely
  make the test_of unification backtrack and delta-expand and we would not get
@@ -617,11 +619,11 @@ Module NonPropType.
  **)
 
 Structure call_of@{s|l|} (condition : unit) (result : bool) := Call {callee : Type@{s|l}}.
-Definition maybeProp@{s|l|} (T : Type@{s|l}) := tt.
-Definition call@{s|l|} T := Call (maybeProp@{s|l} T) false T.
+Definition maybeSProp@{s|l|} (T : Type@{s|l}) := tt.
+Definition call@{s|l|} T := Call (maybeSProp@{s|l} T) false T.
 
 Structure test_of (result : bool) := Test {condition :> unit}.
-Definition test_Prop (P : Prop) := Test true (maybeProp P).
+Definition test_SProp (P : SProp) := Test true (maybeSProp P).
 Definition test_negative := Test false tt.
 
 Structure type :=
@@ -630,13 +632,13 @@ Definition check result test frame := @Check result test frame.
 
 Module Exports.
 Canonical call.
-Canonical test_Prop.
+Canonical test_SProp.
 Canonical test_negative.
 Canonical check.
 Notation nonPropType := type.
 Coercion callee : call_of >-> Sortclass.
 Coercion frame : type >-> call_of.
-Notation notProp T := (@check false test_negative (call T)).
+Notation notSProp T := (@check false test_negative (call T)).
 End Exports.
 
 End NonPropType.

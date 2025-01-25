@@ -426,7 +426,7 @@ let pirrel_rewrite ?(under=false) ?(map_redex=id_map_redex) pred rdx rdx_ty carr
       let j_uj_type = Reductionops.whd_all env sigma j.uj_type in
       let jr = ESorts.relevance_of_sort @@ EConstr.destSort sigma j_uj_type in
       let sigma = Typing.check_actual_type env sigma j tA in
-      let tP = mkLetIn (idA, rdx_ty, tA, mkLetIn (anonR, mkProp, mkType Univ.Universe.type1, tP)) in
+      let tP = mkLetIn (idA, rdx_ty, tA, mkLetIn (anonR, mkSProp, mkType Univ.Universe.type1, tP)) in
       (* Do not fully retype pred, we already know that the domain is well-typed.
          The way this is written makes it easier to profile which part of
          typing is takes time. *)
@@ -465,7 +465,7 @@ let pirrel_rewrite ?(under=false) ?(map_redex=id_map_redex) pred rdx rdx_ty carr
          let miss = Util.List.map_filter (fun (t, name) ->
              let evs = Evar.Set.elements (Evarutil.undefined_evars_of_term sigma t) in
              let open_evs = List.filter (fun k ->
-                 Sorts.InProp <> Retyping.get_sort_family_of
+                 Sorts.InSProp <> Retyping.get_sort_family_of
                    env sigma (Evd.evar_concl (Evd.find_undefined sigma k)))
                  evs in
              if open_evs <> [] then Some name else None)
@@ -645,7 +645,7 @@ let rwprocess_rule env dir rule =
         let lhs = a.(np - i) and rhs = a.(np + i - 3) in
         let a' = Array.copy a in let _ = a'.(np - i) <- EConstr.mkVar pattern_id in
         let r' = EConstr.mkCast (r, DEFAULTcast, EConstr.mkApp (s_eq, a')) in
-        sigma, (d, r', lhs, rhs, (s_eq, Sorts.Quality.qprop)) :: rs
+        sigma, (d, r', lhs, rhs, (s_eq, Sorts.Quality.qsprop)) :: rs
       | _ ->
         if red = 0 then loop d sigma r t rs 1
         else errorstrm Pp.(str "not a rewritable relation: " ++ pr_econstr_pat env sigma t
@@ -741,10 +741,10 @@ let rwargtac ?under ?map_redex ist ((dir, mult), (((oclr, occ), grx), (kind, gt)
   let interp_rpattern env sigma gc =
     try interp_rpattern env sigma gc
     with e when CErrors.noncritical e && snd mult = May ->
-      fail := true; { pat_sigma = sigma; pat_pat = T EConstr.mkProp } in
+      fail := true; { pat_sigma = sigma; pat_pat = T EConstr.mkSProp } in
   let interp env sigma gc =
     try interp_term env sigma ist gc
-    with e when CErrors.noncritical e && snd mult = May -> fail := true; (sigma, EConstr.mkProp) in
+    with e when CErrors.noncritical e && snd mult = May -> fail := true; (sigma, EConstr.mkSProp) in
   let rwtac =
     Proofview.Goal.enter begin fun gl ->
     let env = Proofview.Goal.env gl in

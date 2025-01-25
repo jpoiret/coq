@@ -71,7 +71,7 @@ Require Import ssreflect Sigma.
  Tagged2 T U x y == the {i : I & T i} with components x : T i and y : U i.
           sval u == the x of u : {x : T | P x}.
          s2val u == the x of u : {x : T | P x & Q x}.
-   The properties of sval u, s2val u are given by lemmas svalP, s2valP, and
+   The sproperties of sval u, s2val u are given by lemmas svalP, s2valP, and
    s2valP'. We provide coercions sigT2 >-> sigT and sig2 >-> sig >-> sigT.
    A suite of lemmas (all_sig, ...) let us skolemize sig, sig2, sigT, sigT2
    and pair, e.g.,
@@ -126,7 +126,7 @@ Require Import ssreflect Sigma.
       pcomp f1 f2 == composition of partial functions f1 and f2.
 
 
- - Properties of functions:
+ - SProperties of functions:
       injective f <-> f is injective.
        cancel f g <-> g is a left inverse of f / f is a right inverse of g.
       pcancel f g <-> g is a left inverse of f where g is partial.
@@ -134,7 +134,7 @@ Require Import ssreflect Sigma.
       bijective f <-> f is bijective (has a left and right inverse).
      involutive f <-> f is involutive.
 
- - Properties for operations.
+ - SProperties for operations.
               left_id e op <-> e is a left identity for op (e op x = x).
              right_id e op <-> e is a right identity for op (x op e = x).
      left_inverse e inv op <-> inv is a left inverse for op wrt identity e,
@@ -158,7 +158,7 @@ Require Import ssreflect Sigma.
                              x op1 (y op2 z) = (x op1 z) op2 (x op1 z).
         interchange op1 op2 <-> op1 and op2 satisfy an interchange law:
                         (x op2 y) op1 (z op2 t) = (x op1 z) op2 (y op1 t).
-  Note that interchange op op is a commutativity property.
+  Note that interchange op op is a commutativity sproperty.
          left_injective op <-> op is injective in its left argument:
                              x op y = z op y -> x = z.
         right_injective op <-> op is injective in its right argument:
@@ -363,18 +363,18 @@ Notation some := (Some) (only parsing).
 
 (**  Shorthand for some basic equality lemmas.  **)
 
-Notation erefl := eq_refl@{_ Prop|_}.
+Notation erefl := eq_refl@{_ SProp|_}.
 Notation ecast i T e x := (let: erefl in _ = i := e return T in x).
 Definition esym {A x y} := @sym_eq A x y.
 Definition nesym {A x y} := @sym_not_eq A x y.
 Definition etrans {A x y z}:= @trans_eq A x y z.
-Definition congr1 := f_equal@{_ _ Prop|_ _}.
-Definition congr2 := f_equal2@{_ _ _ Prop|_ _ _}.
+Definition congr1 := f_equal@{_ _ SProp|_ _}.
+Definition congr2 := f_equal2@{_ _ _ SProp|_ _ _}.
 (**  Force at least one implicit when used as a view.  **)
 Prenex Implicits esym nesym.
 
 (**  A predicate for singleton types.  **)
-Definition all_equal_to T (x0 : T) := forall x, unkeyed x = x0.
+Definition all_equal_to T (x0 : T) := forall x, unkeyed x ~ x0.
 
 Lemma unitE : all_equal_to tt. Proof. by case. Qed.
 
@@ -438,12 +438,12 @@ Section ExtensionalEquality.
 
 Variables A B C : Type.
 
-Definition eqfun (f g : B -> A) : Prop := forall x, f x = g x.
+Definition eqfun (f g : B -> A) : SProp := forall x, f x ~ g x.
 
-Definition eqrel (r s : C -> B -> A) : Prop := forall x y, r x y = s x y.
+Definition eqrel (r s : C -> B -> A) : SProp := forall x y, r x y ~ s x y.
 
 Lemma frefl f : eqfun f f. Proof. by []. Qed.
-Lemma fsym f g : eqfun f g -> eqfun g f. Proof. by move=> eq_fg x. Qed.
+Lemma fsym f g : eqfun f g -> eqfun g f. Proof. move=> eq_fg x. by rewrite eq_fg. Qed.
 
 Lemma ftrans f g h : eqfun f g -> eqfun g h -> eqfun f h.
 Proof. by move=> eq_fg eq_gh x; rewrite eq_fg. Qed.
@@ -481,7 +481,7 @@ Notation "f1 \o f2" := (comp f1 f2) : function_scope.
 Notation "f1 \; f2" := (catcomp f1 f2) : function_scope.
 
 Lemma compA {A B C D : Type} (f : B -> A) (g : C -> B) (h : D -> C) :
-  f \o (g \o h) = (f \o g) \o h.
+  f \o (g \o h) ~ (f \o g) \o h.
 Proof. by []. Qed.
 
 Notation "[ 'eta' f ]" := (fun x => f x) : function_scope.
@@ -501,16 +501,16 @@ Section OptionTheory.
 
 Variables (aT rT sT : Type) (f : aT -> rT) (g : rT -> sT).
 
-Lemma obindEapp (fo : aT -> option rT) : obind fo = oapp fo None.
+Lemma obindEapp (fo : aT -> option rT) : obind fo ~ oapp fo None.
 Proof. by []. Qed.
 
-Lemma omapEbind : omap f = obind (olift f).
+Lemma omapEbind : omap f ~ obind (olift f).
 Proof. by []. Qed.
 
-Lemma omapEapp : omap f = oapp (olift f) None.
+Lemma omapEapp : omap f ~ oapp (olift f) None.
 Proof. by []. Qed.
 
-Lemma oappEmap (y0 : rT) x : oapp f y0 x = odflt y0 (omap f x).
+Lemma oappEmap (y0 : rT) x : oapp f y0 x ~ odflt y0 (omap f x).
 Proof. by case: x. Qed.
 
 Lemma omap_comp : omap (g \o f) =1 omap g \o omap f.
@@ -522,7 +522,7 @@ Proof. by case. Qed.
 Lemma oapp_comp_f (x : rT) : oapp (g \o f) (g x) =1 g \o oapp f x.
 Proof. by case. Qed.
 
-Lemma olift_comp : olift (g \o f) = olift g \o f.
+Lemma olift_comp : olift (g \o f) ~ olift g \o f.
 Proof. by []. Qed.
 
 End OptionTheory.
@@ -578,9 +578,9 @@ Notation "@ 'sval'" := (@proj1_sig) (only parsing) : function_scope.
 
 Section Sig.
 
-Variables (T : Type) (P Q : T -> Prop).
+Variables (T : Type) (P Q : T -> SProp).
 
-Lemma svalP (u : sig P) : P (sval u). Proof. by case: u. Qed.
+Lemma svalP (u : sigma _ P) : P (sval u). Proof. by case: u. Qed.
 
 Definition s2val (u : Σ x, P x * Q x) : T := let: exist x _ := u in x.
 
@@ -597,6 +597,12 @@ Prenex Implicits svalP s2val s2valP s2valP'.
 (* Coercion sig_of_sig2 I P Q (u : @sigT2 I P Q) :=
   exist (fun i => P i /\ Q i) (s2val u) (pair (s2valP u) (s2valP' u)).*)
 
+#[warnings="-notation-overridden"]
+Notation "{ x : A | P }" := (sigP (A:=A) (fun x => P)) : type_scope.
+#[warnings="-notation-overridden"]
+Notation "{ x : A | P & Q }" := (sigP (A:=A) (fun x => P * Q)) :
+
+type_scope.
 Lemma all_sig I T P :
     (forall x : I, {y : T x | P x y}) ->
   {f : forall x, T x | forall x, P x (f x)}.
@@ -621,19 +627,19 @@ Section Morphism.
 
 Variables (aT rT sT : Type) (f : aT -> rT).
 
-(**  Morphism property for unary and binary functions  **)
-Definition morphism_1 aF rF := forall x, f (aF x) = rF (f x).
-Definition morphism_2 aOp rOp := forall x y, f (aOp x y) = rOp (f x) (f y).
+(**  Morphism sproperty for unary and binary functions  **)
+Definition morphism_1 aF rF := forall x, f (aF x) ~ rF (f x).
+Definition morphism_2 aOp rOp := forall x y, f (aOp x y) ~ rOp (f x) (f y).
 
-(**  Homomorphism property for unary and binary relations  **)
-Definition homomorphism_1 (aP rP : _ -> Prop) := forall x, aP x -> rP (f x).
-Definition homomorphism_2 (aR rR : _ -> _ -> Prop) :=
+(**  Homomorphism sproperty for unary and binary relations  **)
+Definition homomorphism_1 (aP rP : _ -> SProp) := forall x, aP x -> rP (f x).
+Definition homomorphism_2 (aR rR : _ -> _ -> SProp) :=
   forall x y, aR x y -> rR (f x) (f y).
 
-(**  Stability property for unary and binary relations  **)
-Definition monomorphism_1 (aP rP : _ -> sT) := forall x, rP (f x) = aP x.
+(**  Stability sproperty for unary and binary relations  **)
+Definition monomorphism_1 (aP rP : _ -> sT) := forall x, rP (f x) ~ aP x.
 Definition monomorphism_2 (aR rR : _ -> _ -> sT) :=
-  forall x y, rR (f x) (f y) = aR x y.
+  forall x y, rR (f x) (f y) ~ aR x y.
 
 End Morphism.
 
@@ -677,16 +683,16 @@ Section Injections.
 
 Variables (rT aT : Type) (f : aT -> rT).
 
-Definition injective := forall x1 x2, f x1 = f x2 -> x1 = x2.
+Definition injective := forall x1 x2, f x1 ~ f x2 -> x1 ~ x2.
 
-Definition cancel g := forall x, g (f x) = x.
+Definition cancel g := forall x, g (f x) ~ x.
 
-Definition pcancel g := forall x, g (f x) = Some x.
+Definition pcancel g := forall x, g (f x) ~ Some x.
 
-Definition ocancel (g : aT -> option rT) h := forall x, oapp h x (g x) = x.
+Definition ocancel (g : aT -> option rT) h := forall x, oapp h x (g x) ~ x.
 
 Lemma can_pcan g : cancel g -> pcancel (fun y => Some (g y)).
-Proof. by move=> fK x; congr (Some _). Qed.
+Proof. by move => fK x; apply f_equal. Qed.
 
 Lemma pcan_inj g : pcancel g -> injective.
 Proof. by move=> fK x y /(congr1 g); rewrite !fK => [[]]. Qed.
@@ -694,10 +700,10 @@ Proof. by move=> fK x y /(congr1 g); rewrite !fK => [[]]. Qed.
 Lemma can_inj g : cancel g -> injective.
 Proof. by move/can_pcan; apply: pcan_inj. Qed.
 
-Lemma canLR g x y : cancel g -> x = f y -> g x = y.
+Lemma canLR g x y : cancel g -> x ~ f y -> g x ~ y.
 Proof. by move=> fK ->. Qed.
 
-Lemma canRL g x y : cancel g -> f x = y -> x = g y.
+Lemma canRL g x y : cancel g -> f x ~ y -> x ~ g y.
 Proof. by move=> fK <-. Qed.
 
 End Injections.
@@ -714,7 +720,7 @@ Lemma esymK T x y : cancel (@esym T x y) (@esym T y x).
 Proof. by case: y /. Qed.
 *)
 
-Lemma etrans_id T x y (eqxy : x = y :> T : Prop) : transitivity _ (reflexivity x) eqxy = eqxy.
+Lemma etrans_id T (x y:T) (eqxy : x ~ y) : transitivity _ (reflexivity x) eqxy ~ eqxy.
 Proof. by case: y / eqxy. Qed.
 
 Section InjectionsTheory.
@@ -744,11 +750,10 @@ Lemma ocan_comp [fo : B -> option A] [ho : C -> option B]
     [f' : A -> B] [h' : B -> C] :
   ocancel fo f' -> ocancel ho h' -> ocancel (obind fo \o ho) (h' \o f').
 Proof.
-move=> fK hK c /=; rewrite -[RHS]hK/=. case hcE : (ho c) => [b|]//=.
-by rewrite -[b in RHS]fK; case: (fo b) => //=; have := hK c; rewrite hcE.
-Set Printing All.
+(* move=> fK hK c /=. red in hK. rewrite -[RHS] hK/=. case hcE : (ho c) => [b|]//=.
+by rewrite -[b in RHS]fK; case: (fo b) => //=; have := hK c; rewrite hcE.*)
 (* Qed. *)
-(* FIXME! something forces an eq@{Type Type} while an eq@{Type Prop} is expected (or the contrary...) *)
+(* FIXME! something forces an eq@{Type Prop} while an eq@{Type SProp} is expected (or the contrary...) *)
 Admitted.
 
 Lemma eq_inj : injective f -> f =1 g -> injective g.
@@ -766,7 +771,7 @@ Section Bijections.
 
 Variables (A B : Type) (f : B -> A).
 
-Variant bijective : Prop := Bijective g of cancel f g & cancel g f.
+Variant bijective : SProp := Bijective g of cancel f g & cancel g f.
 
 Hypothesis bijf : bijective.
 

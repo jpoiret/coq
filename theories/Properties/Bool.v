@@ -8,26 +8,23 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
+From Corelib Require Import observational.
+
 (** * Boolean Properties *)
 
 (** Basic properties of [andb] *)
-Lemma andb_prop (a b:bool) : andb a b = true -> (a = true) /\ (b = true).
+Lemma andb_prop_poly@{s se|l|} (a b:bool) : (andb a b = true :> _ : Type@{se|l}) ->
+  (a = true :> _ : Type@{se|l}) * (b = true :> _ : Type@{se|l}).
 Proof.
   destruct a, b; repeat split; assumption.
 Qed.
-#[global]
-Hint Resolve andb_prop: bool.
 
-Register andb_prop as core.bool.andb_prop.
+Definition andb_prop := andb_prop_poly@{Type Prop|0}.
 
-Lemma andb_prop_poly@{s| |} (a b:bool@{s|}) : andb a b ≡ true -> (a ≡ true) * (b ≡ true).
-Proof.
-  destruct a, b; repeat split; assumption.
-Qed.
-#[global]
+#[export]
 Hint Resolve andb_prop_poly: bool.
 
-Scheme eq_poly_nodep := Elimination for eq Sort Poly.
+Register andb_prop as core.bool.andb_prop.
 
 (* Scheme eq_poly_nodep' := Elimination for eq Sort Prop. *)
 (*
@@ -40,7 +37,7 @@ match e as e0 in (@eq _ _ a0) return (P a0 e0) with
 end.
 *)
 
-Lemma inj_type@{s| |} : eq@{Type Prop| _} true false -> empty@{s|}.
+Lemma inj_type@{s| |} : true ~ false -> empty@{s|}.
 Proof.
   intros.
   discriminate.
@@ -53,23 +50,18 @@ Proof.
 Abort.
 (* Register andb_prop_poly as core.bool.andb_prop. *)
 
-Lemma andb_true_intro (b1 b2 : bool) :
-  (b1 = true) /\ (b2 = true) -> andb b1 b2 = true.
+Lemma andb_true_intro_poly@{s se|l|} (b1 b2 : bool) :
+  (b1 = true :> _ : Type@{se|l}) * (b2 = true :> _ : Type@{se|l}) -> andb b1 b2 = true :> _ : Type@{se|l}.
 Proof.
   destruct b1; destruct b2; simpl; intros [? ?]; assumption.
 Qed.
-#[global]
-Hint Resolve andb_true_intro: bool.
+
+Definition andb_true_intro := andb_true_intro_poly@{Type Prop|0}.
+
+#[export]
+Hint Resolve andb_true_intro_poly: bool.
 
 Register andb_true_intro as core.bool.andb_true_intro.
-
-Lemma andb_true_intro_poly@{s| |} (b1 b2 : bool@{s|}) :
-  (b1 ≡ true) * (b2 ≡ true) -> (andb b1 b2 ≡ true).
-Proof.
-  destruct b1; destruct b2; simpl; intros [? ?]; assumption.
-Qed.
-#[global]
-Hint Resolve andb_true_intro_poly: bool.
 
 (* Register andb_true_intro as core.bool.andb_true_intro. *)
 
@@ -85,9 +77,7 @@ Register eq_true as core.eq_true.type.
 
 (** Interpreting booleans as propositions *)
 
-Definition is_true b := b = true.
-
-Definition is_true_poly@{s| |} (b : bool@{s|}) := b ≡ true.
+Definition is_true@{s| |} (b : bool@{s|}) := b ~ true.
 
 (** [is_true] can be activated as a coercion by
    ([Local]) [Coercion is_true : bool >-> Sortclass]. *)
@@ -128,7 +118,7 @@ Register BoolSpecF as core.BoolSpec.BoolSpecF.
 
 (** For instance, we could state the correctness of [Bool.eqb] via [reflect]: *)
 
-Lemma eqb_spec (b b' : bool) : reflect (b = b') (Bool.eqb b b').
+Lemma eqb_spec (b b' : bool) : reflect (b ~ b') (Bool.eqb b b').
 Proof.
  destruct b, b'; constructor; eauto; discriminate.
 Qed.
@@ -142,7 +132,7 @@ Qed.
     | true => b2 = true
     | false => True
   end.
-#[global]
+#[export]
 Hint Unfold le: bool.
 
 Lemma le_implb : forall b1 b2, le b1 b2 <-> implb b1 b2 = true.
@@ -155,7 +145,7 @@ Qed.
     | true => False
     | false => b2 = true
   end.
-#[global]
+#[export]
 Hint Unfold lt: bool.
 
 #[ local ] Definition compare (b1 b2 : bool) :=

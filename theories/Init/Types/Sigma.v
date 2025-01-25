@@ -74,7 +74,7 @@ Notation "( x ; .. ; y ; z )" := (exist x .. (exist y z) ..) : core_scope.
 
 (* Rule order is important to give printing priority to fully typed exists *)
 
-Notation "'exists' x .. y , p" := (ex (fun x => .. (ex (fun y => p)) ..))
+Notation "'exists' x .. y , p" := ((sigma _) (fun x => .. ((sigma _) (fun y => p)) ..))
   (at level 200, x binder, right associativity,
    format "'[' 'exists'  '/  ' x  ..  y ,  '/  ' p ']'")
   : type_scope.
@@ -87,6 +87,7 @@ Notation "'exists' x .. y , p" := (ex (fun x => .. (ex (fun y => p)) ..))
     of elements of the type [A] which satisfy both [P] and [Q]. *)
 
 Definition sig@{s|u|} {A:Type@{s|u}} (P:A -> Prop) : Type@{s|u} := sigma@{s Prop s| u 0} A P.
+Definition sigP@{s|u|} {A:Type@{s|u}} (P:A -> SProp) : Type@{s|u} := sigma@{s SProp s| u 0} A P.
  
 Definition sig_rect@{u u'} := sigma_elim@{Type SProp Type | u 0 u'}.
 
@@ -188,7 +189,7 @@ Notation "{ ' pat : A | P }" := (sig (A:=A) (fun pat => P)) : type_scope.
 Notation "{ ' pat & P }" := (sigT (fun pat => P)) : type_scope.
 Notation "{ ' pat : A & P }" := (@sigmaR A (fun pat => P)) : type_scope.
 
-Notation "'exists2' x , p & q" := (sigma@{_ Prop Prop| _ 0} _ (fun x => p /\ q))
+Notation "'exists2' x , p & q" := (sigma@{_ SProp SProp| _ 0} _ (fun x => p * q))
   (at level 200, x binder, right associativity,
    format "'[' 'exists2'  '/  ' x  ,  '/  ' p & '/ ' q ']'")
   : type_scope.

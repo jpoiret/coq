@@ -19,6 +19,9 @@ Inductive empty@{s| |} : Type@{s|0} :=.
 Definition empty_rect@{α | u | } : forall (P : empty@{Type|} -> Type@{α | u }) (e : empty), P e
     := fun P e => match e with end.
 
+Definition empty_ind := empty_elim@{Prop|0}.
+Definition empty_sind := empty_elim@{SProp|0}.
+
 Notation False := empty@{Prop|}.
 Notation SFalse := empty@{SProp|}.
 

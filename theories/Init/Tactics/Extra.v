@@ -191,9 +191,6 @@ Ltac now_show c := change c.
 
 Set Implicit Arguments.
 
-Definition empty_ind := empty_elim@{Prop|0}.
-Set Printing Universes.
-
 Lemma decide_left : forall (C:Prop) (decide:(C+not C)),
   C -> forall P:(C+(not C) : Prop)->Prop, (forall H:C, P (left _ H)) -> P decide.
 Proof.

@@ -14,15 +14,18 @@ Require Import Typeclasses.
 Require Import Empty.
 
 
-Class Has_refl@{sa se|la le|} (eq : forall A : Type@{sa | la}, A -> A -> Type@{se|le}) := refl : forall A x, eq A x x.
+Class Has_refl@{sa se|la le|} (eq : forall A : Type@{sa | la}, A -> A -> Type@{se|le})
+  := refl : forall A x, eq A x x.
 
 Arguments refl {_ _}.
 
 Register Has_refl as rocq.core.Has_refl.
 
 
-Class Has_J@{sa se sp|la le lp|} (eq : forall A : Type@{sa | la}, A -> A -> Type@{se|le}) (Has_refl : Has_refl eq) :=
-  J : forall (A : Type@{sa | la}) (x : A) (P : forall y : A, eq A x y -> Type@{sp | lp}), P x (refl A x) -> forall y e, P y e.
+Class Has_J@{sa se sp|la le lp|} (eq : forall A : Type@{sa | la}, A -> A -> Type@{se|le})
+  (Has_refl : Has_refl eq) :=
+  J : forall (A : Type@{sa | la}) (x : A) (P : forall y : A, eq A x y -> Type@{sp | lp}),
+    P x (refl A x) -> forall y e, P y e.
 
 Arguments J {_ _ _}.
 

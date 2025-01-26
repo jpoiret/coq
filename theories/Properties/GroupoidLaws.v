@@ -79,14 +79,12 @@ Section GroupoidLaws.
   Definition lunit {x y : A} (e : x = y :> A) : refl A x ⋅ e = e.
   Proof. apply J with (P := fun y e => refl A x ⋅ e = e). apply runit. Defined.
 
-(** listings: eqassoc **)
-Definition assoc {x y z w : A} (e1 : x = y :> A) (e2 : y = z :> A) (e3 : z = w :> A) :
+  Definition assoc {x y z w : A} (e1 : x = y :> A) (e2 : y = z :> A) (e3 : z = w :> A) :
     e1 ⋅ (e2 ⋅ e3) = (e1 ⋅ e2) ⋅ e3.
-(** listings: end **)
-Proof. apply J with (P := fun w e3 => e1 ⋅ e2 ⋅ e3 = (e1 ⋅ e2) ⋅ e3).
-  etransitivity. { unshelve eapply ap; try eassumption. unshelve eapply leibniz_refl. }
-  symmetry. unshelve eapply leibniz_refl.
-Qed.
+  Proof. apply J with (P := fun w e3 => e1 ⋅ e2 ⋅ e3 = (e1 ⋅ e2) ⋅ e3).
+    etransitivity. { unshelve eapply ap; try eassumption. unshelve eapply leibniz_refl. }
+    symmetry. unshelve eapply leibniz_refl.
+  Qed.
 
   Definition inv_refl {x : A} : eq_sym (refl A x) = (refl A x : eq A x x).
   Proof. apply leibniz_refl with (P :=fun y0 : A => y0 = x :> A). Defined.

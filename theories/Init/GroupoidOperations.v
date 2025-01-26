@@ -22,14 +22,6 @@ Section GroupoidOperations.
   Definition not_eq_sym {x y : A} : x <> y -> y <> x :=
     fun ne e => ne (eq_sym e).
 
-(*  Definition apD {B : A -> _} (f : forall (a:A), B a) {x y : A} (e : x = y) : eq' _ (f x) (f y) :=
-      leibniz _ _ (fun y => eq' B (f x) (f y)) (refl _ _) _ e.
-*)
-    (*
-   Definition tr@{b|} {B : Type@{sa|b}} (e : @eq@{_ sa|max(a+1,b+1)} Type@{sa|max(a,b)} A B) : A -> B :=
-    match e in @eq _ _ B return A -> B with | eq_refl _ => fun x => x end.
-*)
-
 End GroupoidOperations.
 
 

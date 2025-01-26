@@ -11,7 +11,8 @@
 (** * Boolean Properties *)
 
 (** Basic properties of [andb] *)
-Lemma andb_prop_poly@{s se|l|} (a b:bool) : (andb a b = true :> _ : Type@{se|l}) ->
+Lemma andb_prop_poly@{s se|l|} (a b:bool) :
+  (andb a b = true :> _ : Type@{se|l}) ->
   (a = true :> _ : Type@{se|l}) * (b = true :> _ : Type@{se|l}).
 Proof.
   destruct a, b; repeat split; assumption.

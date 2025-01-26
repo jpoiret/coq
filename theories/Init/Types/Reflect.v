@@ -18,7 +18,7 @@ From Corelib Require Import Types.Empty.
     relating propositions and booleans
 ************************************************)
 
-Inductive reflect@{s sb se|l|} (P : 𝒰@{s|l}) : bool@{sb|} -> Type@{se |l} :=
+Inductive reflect@{s sb se|l|} (P : Type@{s|l}) : bool@{sb|} -> Type@{se |l} :=
  | ReflectT : P -> reflect P true
  | ReflectF : ~ P -> reflect P false.
 

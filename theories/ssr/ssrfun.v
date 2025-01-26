@@ -746,10 +746,7 @@ Lemma ocan_comp [fo : B -> option A] [ho : C -> option B]
 Proof.
 move=> fK hK c /=; rewrite -[RHS]hK/=. case hcE : (ho c) => [b|]//=.
 by rewrite -[b in RHS]fK; case: (fo b) => //=; have := hK c; rewrite hcE.
-Set Printing All.
-(* Qed. *)
-(* FIXME! something forces an eq@{Type Type} while an eq@{Type Prop} is expected (or the contrary...) *)
-Admitted.
+Qed.
 
 Lemma eq_inj : injective f -> f =1 g -> injective g.
 Proof. by move=> injf eqfg x y; rewrite -2!eqfg; apply: injf. Qed.

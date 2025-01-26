@@ -21,7 +21,7 @@ Check (fun _ _ => eq_refl) : forall n n', 2 + n ++ 3 + n' = 5 + (n ++ n').
 Eval lazy  in fun n n' => 2 + n ++ 3 + n'.
 Eval cbv   in fun n n' => 2 + n ++ 3 + n'.
 Eval cbn   in fun n n' => 2 + n ++ 3 + n'.
-Eval simpl in fun n n' => 2 + n ++ 3 + n'. (* Does not reduce *)
+Eval simpl in fun n n' => 2 + n ++ 3 + n'.
 
 (* Example with more pattern constructions and higher-order in patterns *)
 #[unfold_fix] Symbol raise : forall P: Type, P.

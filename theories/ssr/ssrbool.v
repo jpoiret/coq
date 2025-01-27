@@ -2165,14 +2165,10 @@ Lemma ocan_in_comp [A B C : Type] (D : {pred B}) (D' : {pred C})
   {in D, ocancel f f'} -> {in D', ocancel h h'} ->
   {in D', ocancel (obind f \o h) (h' \o f')}.
 Proof.
-(*
 move=> hD fK hK c cD /=; rewrite -[RHS]hK/=; case hcE : (h c) => [b|]//=.
 have bD : (b \in D) by have := hD _ cD; rewrite hcE inE.
 by rewrite -[b in RHS]fK; case: (f b) => //=; have /hK := cD; rewrite hcE.
 Qed.
-*)
-(** FixMe **)
-Admitted.
 
 Section in_sig.
 

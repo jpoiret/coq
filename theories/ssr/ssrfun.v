@@ -750,11 +750,9 @@ Lemma ocan_comp [fo : B -> option A] [ho : C -> option B]
     [f' : A -> B] [h' : B -> C] :
   ocancel fo f' -> ocancel ho h' -> ocancel (obind fo \o ho) (h' \o f').
 Proof.
-(* move=> fK hK c /=. red in hK. rewrite -[RHS] hK/=. case hcE : (ho c) => [b|]//=.
-by rewrite -[b in RHS]fK; case: (fo b) => //=; have := hK c; rewrite hcE.*)
-(* Qed. *)
-(* FIXME! something forces an eq@{Type Prop} while an eq@{Type SProp} is expected (or the contrary...) *)
-Admitted.
+move=> fK hK c /=. red in hK. rewrite -[RHS] hK/=. case hcE : (ho c) => [b|]//=.
+by rewrite -[b in RHS]fK; case: (fo b) => //=; have := hK c; rewrite hcE.
+Qed.
 
 Lemma eq_inj : injective f -> f =1 g -> injective g.
 Proof. by move=> injf eqfg x y; rewrite -2!eqfg; apply: injf. Qed.

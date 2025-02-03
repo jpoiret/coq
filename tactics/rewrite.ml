@@ -324,10 +324,10 @@ end) = struct
 
   (** Folding/unfolding of the tactic constants. *)
 
-  let unfold_impl n sigma t =
+  let unfold_impl env n sigma t =
     match EConstr.kind sigma t with
     | App (arrow, [| a; b |])(*  when eq_constr arrow (Lazy.force impl) *) ->
-      mkProd (make_annot n ERelevance.relevant, a, lift 1 b)
+      mkProd (make_annot n (Retyping.relevance_of_type env sigma a), a, lift 1 b)
     | _ -> assert false
 
   let unfold_all sigma t =
@@ -347,15 +347,7 @@ end) = struct
     | _ -> assert false
 
   let arrow_morphism env evd n ta tb a b =
-    let ap = is_Prop (goalevars evd) ta and bp = is_Prop (goalevars evd) tb in
-      if ap && bp then app_poly env evd impl [| a; b |], unfold_impl n
-      else if ap then (* Domain in Prop, CoDomain in Type *)
-        (app_poly env evd arrow [| a; b |]), unfold_impl n
-        (* (evd, mkProd (Anonymous, a, b)), (fun x -> x) *)
-      else if bp then (* Dummy forall *)
-        (app_poly env evd rocq_all [| a; mkLambda (make_annot n ERelevance.relevant, a, lift 1 b) |]), unfold_forall
-      else (* None in Prop, use arrow *)
-        (app_poly env evd arrow [| a; b |]), unfold_impl n
+    (app_poly env evd arrow [| a; b |]), unfold_impl env n
 
   let rec decomp_pointwise env sigma n c =
     if Int.equal n 0 then Some c
@@ -386,8 +378,8 @@ end) = struct
       app_poly env evars pointwise_relation [| t; lift (-1) car; lift (-1) rel |]
     else
       app_poly env evars forall_relation
-        [| t; mkLambda (make_annot n ERelevance.relevant, t, car);
-           mkLambda (make_annot n ERelevance.relevant, t, rel) |]
+        [| t; mkLambda (make_annot n (Retyping.relevance_of_type env (fst evars) t), t, car);
+           mkLambda (make_annot n (Retyping.relevance_of_type env (fst evars) t), t, rel) |]
 
   let lift_cstr env evars (args : constr list) c ty cstr =
     let start evars env car =
@@ -786,7 +778,7 @@ let resolve_morphism env m args args' (b,cstr) evars =
     let _, dosub = app_poly_sort b env evars dosub [||] in
     let _, appsub = app_poly_nocheck env evars appsub [||] in
     let dosub_id = Id.of_string "do_subrelation" in
-    let env' = EConstr.push_named (LocalDef (make_annot dosub_id ERelevance.relevant, dosub, appsub)) env in
+    let env' = EConstr.push_named (LocalDef (make_annot dosub_id (Retyping.relevance_of_type env (fst evars) appsub), dosub, appsub)) env in
     let evars, morph = new_cstr_evar evars env' app in
     (* Replace the free [dosub_id] in the evar by the global reference *)
     let morph = Vars.replace_vars (fst evars) [dosub_id , dosub] morph in
@@ -873,7 +865,7 @@ let e_app_poly env evars f args =
     evars := evars';
     c
 
-let make_leibniz_proof env c ty r =
+let make_leibniz_proof env sigma c ty r =
   let evars = ref r.rew_evars in
   let prf =
     match r.rew_prf with
@@ -882,7 +874,7 @@ let make_leibniz_proof env c ty r =
         let prf =
           e_app_poly env evars rocq_f_equal
                 [| r.rew_car; ty;
-                   mkLambda (make_annot Anonymous ERelevance.relevant, r.rew_car, c);
+                   mkLambda (make_annot Anonymous (Retyping.relevance_of_type env sigma r.rew_car), r.rew_car, c);
                    r.rew_from; r.rew_to; prf |]
         in RewPrf (rel, prf)
     | RewCast k -> r.rew_prf
@@ -1141,7 +1133,7 @@ let subterm all flags (s : 'a pure_strategy) : 'a pure_strategy =
           match c' with
           | Success r ->
             let case = mkCase (EConstr.contract_case env (goalevars evars) (ci, (lift 1 p,rp), map_invert (lift 1) iv, mkRel 1, Array.map (lift 1) brs)) in
-            let res = make_leibniz_proof env case ty r in
+            let res = make_leibniz_proof env (fst evars) case ty r in
               state, Success (coerce env (prop,cstr) res)
           | Fail | Identity ->
             if Array.for_all (Int.equal 0) ci.ci_cstr_ndecls then
@@ -1163,7 +1155,7 @@ let subterm all flags (s : 'a pure_strategy) : 'a pure_strategy =
                 match found with
                 | Some r ->
                   let ctxc = mkCase (EConstr.contract_case env (goalevars evars) (ci, (lift 1 p, rp), map_invert (lift 1) iv, lift 1 c, Array.of_list (List.rev (brs' c')))) in
-                    state, Success (make_leibniz_proof env ctxc ty r)
+                    state, Success (make_leibniz_proof env (fst evars) ctxc ty r)
                 | None -> state, c'
             else
               match try Some (fold_match env (goalevars evars) t) with Not_found -> None with
@@ -1469,7 +1461,7 @@ let cl_rewrite_clause_aux ?(abs=None) strat env avoid sigma concl is_hyp : resul
           match abs with
           | None -> p
           | Some (t, ty) ->
-            mkApp (mkLambda (make_annot (Name (Id.of_string "lemma")) ERelevance.relevant, ty, p), [| t |])
+            mkApp (mkLambda (make_annot (Name (Id.of_string "lemma")) (Retyping.relevance_of_type env evars ty), ty, p), [| t |])
         in
         let proof = match is_hyp with
           | None -> term
@@ -1494,7 +1486,7 @@ let cl_rewrite_clause_newtac ?abs ?origsigma ~progress strat clause =
       (Reductionops.nf_betaiota, DEFAULTcast)
   in
   let beta_hyp id = Tactics.reduct_in_hyp ~check:false ~reorder:false Reductionops.nf_betaiota (id, InHyp) in
-  let treat sigma res state =
+  let treat env sigma res state =
     match res with
     | None -> newfail 0 (str "Nothing to rewrite")
     | Some None ->
@@ -1515,19 +1507,17 @@ let cl_rewrite_clause_newtac ?abs ?origsigma ~progress strat clause =
             Proofview.Unsafe.tclEVARS undef <*>
             tclTHENFIRST (assert_replacing id newt tac) (beta_hyp id)
         | Some id, None ->
+            let rl = Retyping.relevance_of_type env undef newt in
             Proofview.Unsafe.tclEVARS undef <*>
-            convert_hyp ~check:false ~reorder:false (LocalAssum (make_annot id ERelevance.relevant, newt)) <*>
+            convert_hyp ~check:false ~reorder:false (LocalAssum (make_annot id rl, newt)) <*>
             beta_hyp id
         | None, Some p ->
             Proofview.Unsafe.tclEVARS undef <*>
-            Proofview.Goal.enter begin fun gl ->
-            let env = Proofview.Goal.env gl in
             let make = begin fun sigma ->
               let (sigma, ev) = Evarutil.new_evar env sigma newt in
               (sigma, mkApp (p, [| ev |]))
             end in
             Refine.refine ~typecheck:true make <*> Proofview.Unsafe.tclNEWGOALS gls
-            end
         | None, None ->
             Proofview.Unsafe.tclEVARS undef <*>
             convert_concl ~cast:false ~check:false newt DEFAULTcast
@@ -1541,7 +1531,7 @@ let cl_rewrite_clause_newtac ?abs ?origsigma ~progress strat clause =
     | None -> concl
     | Some id -> EConstr.of_constr (Environ.named_type id env)
     in
-    let env = match clause with
+    let env0 = match clause with
     | None -> env
     | Some id ->
       (* Only consider variables not depending on [id] *)
@@ -1552,10 +1542,10 @@ let cl_rewrite_clause_newtac ?abs ?origsigma ~progress strat clause =
     in
     try
       let res =
-        cl_rewrite_clause_aux ?abs strat env Id.Set.empty sigma ty clause
+        cl_rewrite_clause_aux ?abs strat env0 Id.Set.empty sigma ty clause
       in
       let sigma = match origsigma with None -> sigma | Some sigma -> sigma in
-      treat sigma res state <*>
+      treat env sigma res state <*>
       (* For compatibility *)
       beta <*> Proofview.shelve_unifiable
     with

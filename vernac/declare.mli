@@ -102,6 +102,7 @@ module Info : sig
   val make
     : ?poly:bool
     -> ?sort_poly:bool
+    -> ?cumulative:bool
     -> ?inline : bool
     -> ?kind : Decls.logical_kind
     (** Theorem, etc... *)
@@ -439,6 +440,7 @@ type constant_entry =
 val prepare_parameter
   : poly:bool
   -> sort_poly:bool
+  -> cumulative:bool
   -> udecl:UState.poly_decl
   -> types:EConstr.types
   -> Evd.evar_map

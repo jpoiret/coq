@@ -284,10 +284,10 @@ let ppqvarset l = pp (hov 1 (str "{" ++ prlist_with_sep spc prqvar (Quality.QVar
 let ppqset qs = pp (hov 1 (str "{" ++ prlist_with_sep spc (Quality.pr prqvar) (Quality.Set.elements qs) ++ str "}"))
 let ppuniverse_set l = pp (Level.Set.pr prlev l)
 let ppuniverse_instance l = pp (Instance.pr prqvar prlev l)
+let ppuniverse_level_instance l = pp (LevelInstance.pr prqvar prlev l)
 let ppuniverse_context l = pp (UVars.UContext.pr prqvar prlev l)
 let ppuniverse_context_set l = pp (PolyConstraints.ContextSet.pr prqvar prlev l)
 let ppuniverse_subst l = pp (UnivSubst.pr_universe_subst Level.raw_pr l)
-let ppuniverse_opt_subst l = pp (UnivFlex.pr Level.raw_pr l)
 let ppqvar_subst l = pp (UVars.pr_quality_level_subst Quality.QVar.raw_pr l)
 let ppuniverse_level_subst l = pp (UVars.pr_universe_level_subst Level.raw_pr l)
 let ppustate l = pp (UState.pr l)
@@ -412,9 +412,6 @@ let constr_display csr =
   and quality_display q =
     incr cnt; pp (str "with " ++ int !cnt ++ str" " ++ Quality.raw_pr q ++ fnl ())
 
-  and level_display u =
-    incr cnt; pp (str "with " ++ int !cnt ++ str" " ++ Level.raw_pr u ++ fnl ())
-
   and sort_display = function
     | SProp -> "SProp"
     | Set -> "Set"
@@ -431,7 +428,7 @@ let constr_display csr =
         (if not(i="") then (" "^i) else ""))
         qs ""
     in
-    Array.fold_right (fun x i -> level_display x; (string_of_int !cnt)^(if not(i="")
+    Array.fold_right (fun x i -> univ_display x; (string_of_int !cnt)^(if not(i="")
         then (" "^i) else "")) us (if qs = "" then "" else (qs^" | "))
 
   and name_display x = match x.binder_name with
@@ -575,7 +572,7 @@ let print_pure_constr csr =
   and universes_display u =
     let qs, us = Instance.to_array u in
     Array.iter (fun u -> print_space (); pp (Quality.raw_pr u)) qs;
-    Array.iter (fun u -> print_space (); pp (Level.raw_pr u)) us
+    Array.iter (fun u -> print_space (); pp (Universe.pr Level.raw_pr u)) us
 
   and sort_display = function
     | SProp -> print_string "SProp"

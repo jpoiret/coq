@@ -1464,7 +1464,7 @@ end =
 struct
 
 type 'constr partial_subst = {
-  subst: ('constr, Quality.t, Univ.Level.t) Partial_subst.t;
+  subst: ('constr, Quality.t, Univ.Universe.t) Partial_subst.t;
   rhs: constr;
 }
 

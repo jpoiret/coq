@@ -56,7 +56,7 @@ type t = {
   nuparams : int option;
   univ_binders : UState.named_universes_entry;
   implicits : DeclareInd.one_inductive_impls list;
-  uctx : PolyConstraints.ContextSet.t;
+  uctx : Univ.ContextSet.t;
   where_notations : Metasyntax.notation_interpretation_decl list;
   coercions : Libnames.qualid list;
   indlocs : DeclareInd.indlocs;
@@ -82,8 +82,7 @@ type syntax_allows_template_poly = SyntaxAllowsTemplatePoly | SyntaxNoTemplatePo
 val interp_mutual_inductive_constr
   :  sigma:Evd.evar_map
   -> flags:flags
-  -> udecl:UState.poly_decl
-  -> variances:Entries.variance_entry
+  -> udecl:UState.universe_decl
   -> ctx_params:EConstr.rel_context
   -> indnames:Names.Id.t list
   -> arities_explicit:bool list
@@ -91,7 +90,7 @@ val interp_mutual_inductive_constr
   -> template_syntax:syntax_allows_template_poly list
   -> constructors:(Names.Id.t list * EConstr.constr list) list
   (** Names and types of constructors, not including parameters (as in kernel entries) *)
-  -> env_ar:Environ.env
+  -> env_ar_params:Environ.env
   (** Environment with the inductives in the rel_context *)
   -> private_ind:bool
   -> DeclareInd.default_dep_elim list
@@ -99,7 +98,7 @@ val interp_mutual_inductive_constr
      * (* for global universe names, used by DeclareInd *)
      UState.named_universes_entry
      * (* global universes to declare before the inductive (ie without the template univs) *)
-     PolyConstraints.ContextSet.t
+     Univ.ContextSet.t
 
 (************************************************************************)
 (** Internal API, exported for Record                                   *)
@@ -110,16 +109,6 @@ val maybe_unify_params_in : Environ.env -> Evd.evar_map -> ninds:int -> nparams:
 (** [nparams] is the number of parameters which aren't treated as
     uniform, ie the length of params (including letins) where the env
     is [uniform params, inductives, params, binders]. *)
-
-val variance_of_entry
-  : cumulative:bool
-  -> variances:Entries.variance_entry
-  -> Entries.inductive_universes_entry
-  -> Entries.variance_entry option
-(** Will return None if non-cumulative, and resize if there are more
-    universes than originally specified.
-    If monomorphic, [cumulative] is treated as [false].
-*)
 
 module Internal :
 sig

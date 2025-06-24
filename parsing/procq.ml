@@ -321,7 +321,9 @@ module Prim =
 
     let name = Entry.make "name"
     let identref = Entry.make "identref"
-    let poly_decl = Entry.make "poly_decl"
+    let cumul_univ_decl = Entry.make "cumul_univ_decl"
+    let univ_decl = Entry.make "univ_decl"
+    let cumul_ident_decl = Entry.make "cumul_ident_decl"
     let ident_decl = Entry.make "ident_decl"
     let pattern_ident = Entry.make "pattern_ident"
 
@@ -347,10 +349,10 @@ module Constr =
     let binder_constr = Entry.make "binder_constr"
     let ident = Entry.make "ident"
     let global = Entry.make "global"
+    let universe = Entry.make "universe"
     let universe_name = Entry.make "universe_name"
     let sort = Entry.make "sort"
     let sort_quality_or_set = Entry.make "sort_quality_or_set"
-    let sort_quality_var = Entry.make "sort_quality_var"
     let pattern = Entry.make "pattern"
     let constr_pattern = Entry.make "constr_pattern"
     let cpattern = Entry.make "cpattern"

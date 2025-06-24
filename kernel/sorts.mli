@@ -44,7 +44,7 @@ val levels : t -> Univ.Level.Set.t
 
 val super : t -> t
 
-val subst_fn : (Quality.QVar.t -> Quality.t) * (Univ.Universe.t -> Univ.Universe.t) -> t -> t
+val subst_fn : (Quality.QVar.t -> Quality.t) * (Univ.Level.t -> Univ.Universe.t) -> t -> t
 
 (** On binders: is this variable proof relevant *)
 (* TODO put in submodule or new file *)
@@ -67,7 +67,7 @@ val raw_pr : t -> Pp.t
 type pattern =
   | PSProp | PSSProp | PSSet | PSType of int option | PSQSort of int option * int option
 
-val pattern_match : pattern -> t -> ('t, Quality.t, Univ.Level.t) Partial_subst.t -> ('t, Quality.t, Univ.Level.t) Partial_subst.t option
+val pattern_match : pattern -> t -> ('t, Quality.t, Univ.Universe.t) Partial_subst.t -> ('t, Quality.t, Univ.Universe.t) Partial_subst.t option
 
 val enforce_eq_quality : Quality.t -> Quality.t -> Quality.ElimConstraints.t -> Quality.ElimConstraints.t
 

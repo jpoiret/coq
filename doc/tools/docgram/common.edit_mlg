@@ -642,15 +642,17 @@ inline: [
 ]
 
 poly_decl: [
-| REPLACE "@{" test_poly_decl LIST0 identref "|" LIST0 identref [ "+" | ] poly_decl_constraints
-| WITH    "@{" OPT [ LIST0 identref "|" ] LIST0 identref  OPT "+"  OPT [ "|" LIST0 poly_constraint SEP "," OPT "+" ] "}"
-| DELETE "@{" LIST0 identref [ "+" | ] poly_decl_constraints
+| REPLACE "@{" LIST0 identref ";" LIST0 identref [ "?" | ] poly_decl_constraints
+| WITH    "@{" OPT [ LIST0 identref [ "|" | ";" ] ] LIST0 identref  OPT "?"  OPT [ "|" LIST0 poly_constraint SEP "," OPT "?" ] "}"
+| DELETE "@{" LIST0 identref [ "?" | ] poly_decl_constraints
+| DELETE "@{" LIST0 identref "|" LIST0 identref [ "?" | ] poly_decl_constraints
 ]
 
 cumul_poly_decl: [
-| REPLACE "@{" test_cumul_poly_decl LIST0 identref "|" LIST0 variance_identref [ "+" | ] poly_decl_constraints
-| WITH "@{" OPT [ LIST0 identref "|" ] LIST0 variance_identref    OPT "+"   OPT [ "|" LIST0 poly_constraint SEP "," OPT "+" ] "}"
-| DELETE "@{" LIST0 variance_identref [ "+" | ] poly_decl_constraints
+| REPLACE "@{" LIST0 identref ";" LIST0 variance_identref [ "?" | ] poly_decl_constraints
+| WITH "@{" OPT [ LIST0 identref [ "|" | ";" ] ] LIST0 variance_identref    OPT "?"   OPT [ "|" LIST0 poly_constraint SEP "," OPT "?" ] "}"
+| DELETE "@{" LIST0 variance_identref [ "?" | ] poly_decl_constraints
+| DELETE "@{" LIST0 identref "|" LIST0 variance_identref [ "?" | ] poly_decl_constraints
 ]
 
 of_type: [
@@ -1529,6 +1531,8 @@ query_command: [
 | WITH "Compute" lconstr
 | REPLACE "Check" lconstr "."
 | WITH "Check" lconstr
+| REPLACE "Check" "Constraint" LIST1 univ_constraint SEP "," "."
+| WITH "Check" "Constraint" LIST1 univ_constraint SEP ","
 | REPLACE "About" smart_global OPT univ_name_list "."
 | WITH "About" smart_global OPT univ_name_list
 | REPLACE "SearchPattern" constr_pattern in_or_out_modules "."

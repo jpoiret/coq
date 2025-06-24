@@ -18,7 +18,7 @@ option is template universe polymorphic
 Arguments option A%_type_scope
 Expands to: Inductive Corelib.Init.Datatypes.option
 Declared in library Corelib.Init.Datatypes, line 202, characters 10-16
-option : Type@{option.u0} -> Type@{max(Set,option.u0)}
+option : Type@{option.u0} -> Type@{option.u0}
 
 option is template universe polymorphic on option.u0 (cannot be instantiated to Prop)
 Arguments option A%_type_scope
@@ -47,8 +47,8 @@ sunit is not universe polymorphic
 sunit may only be eliminated to produce values whose type is SProp.
 Expands to: Inductive Inductive.sunit
 Declared in library Inductive, line 38, characters 10-15
-sempty@{q |  |} : Type@{q | Set}
-(* q |  |=  *)
+sempty@{q ; } : Type@{q ; 0}
+(* q ;  |=  *)
 
 sempty is universe polymorphic
 sempty@{q | } may only be eliminated to produce values whose type is in sort quality q,

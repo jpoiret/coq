@@ -1024,11 +1024,10 @@ let loc_of_conv_pb evd (pbty,env,t1,t2) =
 
 type rigid = UState.rigid =
   | UnivRigid
-  | UnivFlexible of bool (** Is substitution by an algebraic ok? *)
+  | UnivFlexible
 
 let univ_rigid = UnivRigid
-let univ_flexible = UnivFlexible false
-let univ_flexible_alg = UnivFlexible true
+let univ_flexible = UnivFlexible
 
 let ustate d = d.universes
 
@@ -1042,11 +1041,12 @@ let sort_context_set d = UState.sort_context_set d.universes
 
 let to_universe_context evd = UState.context evd.universes
 
-let univ_entry ~poly evd = UState.univ_entry ~poly evd.universes
+let univ_entry ~poly ?variances evd = UState.univ_entry ~poly ?variances evd.universes
 
-let check_poly_decl ~poly evd decl = UState.check_poly_decl ~poly evd.universes decl
+let check_poly_decl ~poly ~cumulative ~kind evd decl =
+  UState.check_univ_decl ~poly ~cumulative ~kind evd.universes decl
 
-let check_poly_decl_early ~poly ~sort_poly ~with_obls sigma udecl terms =
+let check_poly_decl_early ~poly ~sort_poly ~cumulative ~with_obls sigma udecl terms =
   let () =
     if with_obls && not poly &&
        (not udecl.UState.polydecl_extensible_instance
@@ -1060,13 +1060,10 @@ let check_poly_decl_early ~poly ~sort_poly ~with_obls sigma udecl terms =
   let uctx = ustate sigma in
   let uctx = UState.collapse_sort_variables ~to_type:(not sort_poly) uctx in
   let uctx = UState.restrict uctx vars in
-  ignore (UState.check_poly_decl ~poly uctx udecl)
+  ignore (UState.check_poly_decl ~poly ~cumulative ~kind:(UVars.Assumption) uctx udecl)
 
 let restrict_universe_context evd vars =
   { evd with universes = UState.restrict evd.universes vars }
-
-let universe_subst evd =
-  UState.subst evd.universes
 
 let merge_context_set ?loc ?(sideff=false) rigid evd uctx' =
   {evd with universes = UState.merge ?loc ~sideff rigid evd.universes uctx'}
@@ -1095,16 +1092,13 @@ let new_quality_variable ?loc ?name evd =
   let uctx, q = UState.new_sort_variable ?loc ?name evd.universes in
   {evd with universes = uctx}, q
 
-let new_sort_variable ?loc rigid sigma =
-  let (sigma, u) = new_univ_variable ?loc rigid sigma in
+let new_sort_variable ?loc ?name rigid sigma =
+  let (sigma, u) = new_univ_variable ?loc ?name rigid sigma in
   let uctx, q = UState.new_sort_variable sigma.universes in
   ({ sigma with universes = uctx }, Sorts.qsort q u)
 
 let add_forgotten_univ d u =
   { d with universes = UState.add_forgotten_univ d.universes u }
-
-let make_nonalgebraic_variable evd u =
-  { evd with universes = UState.make_nonalgebraic_variable evd.universes u }
 
 (****************************************)
 (* Operations on constants              *)
@@ -1131,7 +1125,11 @@ let fresh_global ?loc ?(rigid=univ_flexible) ?names env evd gr =
 
 let is_flexible_level evd l =
   let uctx = evd.universes in
-  UnivFlex.mem l (UState.subst uctx)
+  UState.is_flexible l uctx
+
+let is_declared_level evd l =
+  let uctx = evd.universes in
+  UState.is_declared uctx l
 
 let is_eq_sort s1 s2 =
   if Sorts.equal s1 s2 then None
@@ -1142,7 +1140,7 @@ let universe_rigidity evd l =
   let uctx = evd.universes in
   (* XXX why are we considering all locals to be flexible here? *)
   if Univ.Level.Set.mem l (PolyConstraints.ContextSet.levels (UState.context_set uctx)) then
-    UnivFlexible (UState.is_algebraic l uctx)
+    UnivFlexible
   else UnivRigid
 
 let normalize_universe_instance evd l =
@@ -1163,11 +1161,11 @@ let set_eq_sort evd s1 s2 =
     else
       evd
 
-let set_eq_level d u1 u2 =
-  add_univ_constraints d (Univ.enforce_eq_level u1 u2 Univ.UnivConstraints.empty)
+let set_eq_univ d u1 u2 =
+  add_univ_constraints d (Univ.enforce_eq u1 u2 Univ.UnivConstraints.empty)
 
-let set_leq_level d u1 u2 =
-  add_univ_constraints d (Univ.enforce_leq_level u1 u2 Univ.UnivConstraints.empty)
+let set_leq_univ d u1 u2 =
+  add_univ_constraints d (Univ.enforce_leq u1 u2 Univ.UnivConstraints.empty)
 
 let set_eq_instances ?(flex=false) d u1 u2 =
   add_constraints d
@@ -1216,6 +1214,9 @@ let check_constraints evd (qcsts,ucsts) =
 let fix_undefined_variables evd =
   { evd with universes = UState.fix_undefined_variables evd.universes }
 
+let disable_universe_extension evd ~with_cstrs =
+  { evd with universes = UState.disable_universe_extension evd.universes ~with_cstrs }
+
 let nf_univ_variables evd =
   let uctx = UState.normalize_variables evd.universes in
   {evd with universes = uctx}
@@ -1224,13 +1225,16 @@ let collapse_sort_variables ?except ?(to_type = true) evd =
   let universes = UState.collapse_sort_variables ?except ~to_type evd.universes in
   { evd with universes }
 
-let minimize_universes ?(collapse_sort_variables=true) ?(to_type = true) evd =
+let get_variances evd = UState.get_variances evd.universes
+let set_variances evd variances = {evd with universes = UState.set_variances evd.universes variances}
+
+let minimize_universes ?(collapse_sort_variables=true) ?(to_type = true) ?(partial=false) evd =
   let uctx' = if collapse_sort_variables
     then UState.collapse_sort_variables ~to_type evd.universes
     else evd.universes
   in
   let uctx' = UState.normalize_variables uctx' in
-  let uctx' = UState.minimize uctx' in
+  let uctx' = UState.minimize ~partial uctx' in
   {evd with universes = uctx'}
 
 let universe_of_name evd s = UState.universe_of_name evd.universes s
@@ -1731,10 +1735,7 @@ module MiniEConstr = struct
 
   let to_constr_gen ~expand ~ignore_missing sigma c =
     let saw_evar = ref false in
-    let lsubst = universe_subst sigma in
-    let univ_value l =
-      UnivFlex.normalize_univ_variable lsubst l
-    in
+    let univ_value l = UState.subst_fn sigma.universes l in
     let relevance_value r = UState.nf_relevance sigma.universes r in
     let qvar_value q = UState.nf_qvar sigma.universes q in
     let next s = { s with evc_lift = s.evc_lift + 1 } in

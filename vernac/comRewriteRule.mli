@@ -1,5 +1,5 @@
 val do_symbols : poly:bool -> sort_poly:bool -> unfold_fix:bool ->
-  (Vernacexpr.coercion_flag * ((Names.lident * Constrexpr.poly_decl_expr option) list * Constrexpr.constr_expr)) list
+  (Vernacexpr.coercion_flag * ((Names.lident * Constrexpr.cumul_poly_decl_expr option) list * Constrexpr.constr_expr)) list
   -> unit
 
 val do_rules :

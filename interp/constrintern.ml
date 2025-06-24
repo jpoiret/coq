@@ -1266,12 +1266,16 @@ let intern_sort ~local_univs (q,l) =
   Option.map (intern_qvar ~local_univs) q,
   map_glob_sort_gen (List.map (on_fst (intern_sort_name ~local_univs))) l
 
+let intern_universe ~local_univs s =
+  let map l = List.map (on_fst (intern_sort_name ~local_univs)) l in
+  map_glob_sort_gen map s
+
 let intern_instance ~local_univs = function
-  | None -> None
-  | Some (qs, us) ->
-    let qs = List.map (intern_quality ~local_univs) qs in
-    let us = List.map (map_glob_sort_gen (intern_sort_name ~local_univs)) us in
-    Some (qs, us)
+| None -> None
+| Some (qs, us) ->
+  let qs = List.map (intern_quality ~local_univs) qs in
+  let us = List.map (intern_universe ~local_univs) us in
+  Some (qs, us)
 
 let intern_name_alias = function
   | { CAst.v = CRef(qid,u) } ->
@@ -1354,10 +1358,7 @@ let find_projection_data c =
   | GRef (GlobRef.ConstRef cst,us) -> Some (cst, us, [], Structure.projection_nparams cst)
   | _ -> None
 
-let glob_sort_of_level (level: glob_level) : glob_sort =
-  match level with
-  | UAnonymous _ as l -> None, l
-  | UNamed id -> None, UNamed [id, 0]
+let glob_sort_of_level (univ: glob_univ) : glob_sort = None, univ
 
 (* Is it a global reference or a syntactic definition? *)
 let intern_qualid ?(no_secvar=false) qid intern env ntnvars us args =
@@ -2950,10 +2951,14 @@ let interp_known_level evd u =
   let u = intern_sort_name ~local_univs:{bound = bound_univs evd; unb_univs=false} u in
   known_glob_level evd u
 
-let interp_univ_constraint evd (u,c,v) =
-  let u = interp_known_level evd u in
-  let v = interp_known_level evd v in
-  u,c,v
+let interp_universe evd u =
+  let le = List.map (on_fst (interp_known_level evd)) u in
+  Univ.Universe.of_list le
+
+let interp_univ_constraint evd (u,(c, b) ,v) =
+  let u = interp_universe evd u in
+  let v = interp_universe evd v in
+  (if b then Univ.Universe.super u else u),c,v
 
 let interp_univ_constraints env evd cstrs =
   let interp (evd,cstrs) cstr =
@@ -3018,10 +3023,17 @@ let interp_poly_decl env decl =
     polydecl_elim_constraints = elim_cstrs;
     polydecl_instance = instance;
     polydecl_extensible_instance = decl.polydecl_extensible_instance;
+    polydecl_variances = None;
     polydecl_univ_constraints = univ_cstrs;
     polydecl_extensible_constraints = decl.polydecl_extensible_constraints;
   }
-  in evd, decl
+  in
+  evd, decl
+
+let variance_of_entry arr =
+  if Array.is_empty arr then None
+  else if Array.for_all Option.is_empty arr then None
+  else Some arr
 
 let interp_cumul_poly_decl env decl =
   let open UState in
@@ -3046,11 +3058,17 @@ let interp_cumul_poly_decl env decl =
     polydecl_elim_constraints = elim_cstrs;
     polydecl_instance = instance;
     polydecl_extensible_instance = decl.polydecl_extensible_instance;
+    polydecl_variances = variance_of_entry variances;
     polydecl_univ_constraints = univ_cstrs;
     polydecl_extensible_constraints = decl.polydecl_extensible_constraints;
   }
   in
-  evd, decl, variances
+  let evd =
+    if not decl.univdecl_extensible_instance then
+      Evd.disable_universe_extension evd ~with_cstrs:(not decl.univdecl_extensible_constraints)
+    else evd
+  in
+  evd, decl
 
 let interp_poly_decl_opt env l =
   match l with
@@ -3058,7 +3076,7 @@ let interp_poly_decl_opt env l =
   | Some decl -> interp_poly_decl env decl
 
 let interp_cumul_poly_decl_opt env = function
-  | None -> Evd.from_env env, UState.default_poly_decl, [| |]
+  | None -> Evd.from_env env, UState.default_poly_decl
   | Some decl -> interp_cumul_poly_decl env decl
 
 let interp_mutual_poly_decl_opt env udecls =
@@ -3070,8 +3088,8 @@ let interp_mutual_poly_decl_opt env udecls =
       | Some ls , Some us ->
         let open UState in
         let lsu = ls.polydecl_instance and usu = us.polydecl_instance in
-        if not (CList.for_all2eq (fun x y -> Id.equal x.CAst.v y.CAst.v) lsu usu) then
+        if not (CList.for_all2eq (fun x y -> Id.equal (fst x).CAst.v (fst y).CAst.v) lsu usu) then
           CErrors.user_err Pp.(str "Mutual definitions should all have the same universe binders.");
         Some us) udecls None
   in
-  interp_poly_decl_opt env udecl
+  interp_cumul_poly_decl_opt env udecl

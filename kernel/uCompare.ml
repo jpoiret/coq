@@ -45,13 +45,13 @@ let convert_instances_cumul ~flex pb ~nargs var u u' (s, check) =
   (check.compare_cumul_instances ~flex pb ~nargs var u u' s, check)
 
 let get_cumulativity_constraints cv_pb ~nargs variance u u' =
-  let pri = UVars.Instance.pr Sorts.QVar.raw_pr (Univ.Universe.pr Univ.Level.raw_pr) in
+  let pri = UVars.Instance.pr Quality.QVar.raw_pr (Univ.Universe.pr Univ.Level.raw_pr) in
   debug Pp.(fun () -> str"get_cumulativity_constraints: " ++ pri u ++ spc () ++ pr_conv_pb cv_pb ++ spc () ++ pri u' ++ str" variances: " ++ UVars.Variances.pr variance);
   match cv_pb with
   | CONV ->
-    UVars.enforce_eq_variance_instances ~nargs variance u u' Sorts.QUConstraints.empty
+    UVars.enforce_eq_variance_instances ~nargs variance u u' PolyConstraints.empty
   | CUMUL ->
-    UVars.enforce_leq_variance_instances ~nargs variance u u' Sorts.QUConstraints.empty
+    UVars.enforce_leq_variance_instances ~nargs variance u u' PolyConstraints.empty
 
 let inductive_cumulativity_arguments (mind,ind) =
   mind.Declarations.mind_nparams +
@@ -63,7 +63,7 @@ let convert_inductives_gen cmp_instances cmp_cumul env cv_pb (mind, ind) ~nargs 
   | None -> cmp_instances u1 u2 s
   | Some variances ->
     let num_param_arity = inductive_cumulativity_arguments (mib,ind) in
-    let pri = UVars.Instance.pr Sorts.QVar.raw_pr (Univ.Universe.pr Univ.Level.raw_pr) in
+    let pri = UVars.Instance.pr Quality.QVar.raw_pr (Univ.Universe.pr Univ.Level.raw_pr) in
     debug Pp.(fun () -> str"convert_inductives with variances: " ++
       Names.GlobRef.print (Names.GlobRef.IndRef (mind, ind)) ++ str"," ++
       pri u1 ++ spc () ++ pr_conv_pb cv_pb ++ spc () ++ pri u2 ++ str" variances: " ++ UVars.Variances.pr variances);
@@ -107,7 +107,7 @@ let convert_constants_gen cmp_instances cmp_cumul env cv_pb cst ~nargs u1 u2 s =
   (match Declareops.universes_variances cb.Declarations.const_universes with
   | None -> cmp_instances u1 u2 s
   | Some variance ->
-    let pri = UVars.Instance.pr Sorts.QVar.raw_pr (Univ.Universe.pr Univ.Level.raw_pr) in
+    let pri = UVars.Instance.pr Quality.QVar.raw_pr (Univ.Universe.pr Univ.Level.raw_pr) in
     debug Pp.(fun () -> str"conv_table_key: " ++ Names.GlobRef.print (Names.GlobRef.ConstRef cst) ++ str"," ++ pri u1 ++ spc () ++ pr_conv_pb cv_pb ++ spc () ++ pri u2 ++ str" variances: " ++ UVars.Variances.pr variance);
     cmp_cumul ~nargs cv_pb variance u1 u2 s)
 

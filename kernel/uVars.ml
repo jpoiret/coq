@@ -163,28 +163,28 @@ end
 
 type impred_qvars_status =
   | Predicative
-  | Impredicative of Sorts.QVar.Set.t
+  | Impredicative of Quality.QVar.Set.t
 type impred_qvars = impred_qvars_status option
 
-let update_impred_qvars (f : Sorts.QVar.t -> Sorts.Quality.t option) vars =
+let update_impred_qvars (f : Quality.QVar.t -> Quality.t option) vars =
   match vars with
   | None -> None
   | Some Predicative -> Some Predicative
   | Some (Impredicative vars) ->
-    let pred = Sorts.QVar.Set.fold (fun qv impred ->
+    let pred = Quality.QVar.Set.fold (fun qv impred ->
       match impred with
       | Predicative -> impred
       | Impredicative impred as acc ->
         match f qv with
         | None -> (* A unification variable, might become impredicative *)
-          Impredicative (Sorts.QVar.Set.add qv impred)
+          Impredicative (Quality.QVar.Set.add qv impred)
         | Some q ->
-          let open Sorts.Quality in
+          let open Quality in
           match q with
-          | QVar v -> Impredicative (Sorts.QVar.Set.add v impred)
+          | QVar v -> Impredicative (QVar.Set.add v impred)
           | QConstant (QProp | QSProp) -> acc
           | QConstant QType -> Predicative)
-      vars (Impredicative Sorts.QVar.Set.empty)
+      vars (Impredicative Quality.QVar.Set.empty)
     in Some pred
 
 let pr_impred_qvars (qvars : impred_qvars) =
@@ -192,22 +192,22 @@ let pr_impred_qvars (qvars : impred_qvars) =
   let pr_pred = function
   | Predicative -> str "predicative"
   | Impredicative qvars ->
-    let elems = Sorts.QVar.Set.elements qvars in
+    let elems = Quality.QVar.Set.elements qvars in
     if List.is_empty elems then str"impredicative"
-    else str"(im)predicative depending on " ++ prlist_with_sep spc Sorts.QVar.raw_pr elems
+    else str"(im)predicative depending on " ++ prlist_with_sep spc Quality.QVar.raw_pr elems
   in Pp.(pr_opt pr_pred qvars)
 
 let impred_qvars_of_quality q =
-  let open Sorts.Quality in
+  let open Quality in
   match q with
-  | QVar qv -> Impredicative (Sorts.QVar.Set.singleton qv)
-  | QConstant (QProp | QSProp) -> Impredicative Sorts.QVar.Set.empty
+  | QVar qv -> Impredicative (QVar.Set.singleton qv)
+  | QConstant (QProp | QSProp) -> Impredicative Quality.QVar.Set.empty
   | QConstant QType -> Predicative
 
 let equal_qvars (x : impred_qvars) (y : impred_qvars) =
   let eq_pred x y = match x, y with
   | Predicative, Predicative -> true
-  | Impredicative qvars, Impredicative qvars' -> Sorts.QVar.Set.equal qvars qvars'
+  | Impredicative qvars, Impredicative qvars' -> Quality.QVar.Set.equal qvars qvars'
   | _, _ -> false
   in Option.equal eq_pred x y
 
@@ -215,7 +215,7 @@ let union_impred_qvars impred_qvars impred_qvars' =
   let union_pred x y =
     match x, y with
     | Predicative, _ | _, Predicative -> Predicative
-    | Impredicative s, Impredicative s' -> Impredicative (Sorts.QVar.Set.union s s')
+    | Impredicative s, Impredicative s' -> Impredicative (Quality.QVar.Set.union s s')
   in
   match impred_qvars, impred_qvars' with
   | Some s, Some s' -> Some (union_pred s s')
@@ -362,7 +362,7 @@ struct
      le_binders in_topfix_binders in_topfix_binders' &&
      opt_pair_le in_term in_term' &&
      opt_pair_le in_type in_type')
-    (* Option.equal Sorts.QVar.Set.equal under_impred_qvars under_impred_qvars') Does not matter for subtyping *)
+    (* Option.equal Quality.QVar.Set.equal under_impred_qvars under_impred_qvars') Does not matter for subtyping *)
 
   let opt_union_proj p f x y =
     match x, y with
@@ -631,9 +631,9 @@ module Instance : sig
   val hcons : t -> int * t
   val hash : t -> int
 
-  val subst_fn : (Sorts.QVar.t -> Quality.t) * (Level.t -> Universe.t) -> t -> t
+  val subst_fn : (Quality.QVar.t -> Quality.t) * (Level.t -> Universe.t) -> t -> t
 
-  val pr : (Sorts.QVar.t -> Pp.t) -> (Universe.t -> Pp.t) -> ?variances:Variances.t -> t -> Pp.t
+  val pr : (Quality.QVar.t -> Pp.t) -> (Universe.t -> Pp.t) -> ?variances:Variances.t -> t -> Pp.t
   val levels : t -> Quality.Set.t * Level.Set.t
   type mask = Quality.pattern array * int option array
 
@@ -813,11 +813,6 @@ let subst_instance_constraint s (u,d,v as c) =
     if u' == u && v' == v then c
     else (u',d,v')
 
-let subst_instance_constraints s csts =
-  Constraints.fold
-    (fun c csts -> Constraints.add (subst_instance_constraint s c) csts)
-    csts Constraints.empty
-
 let subst_level_instance_level s l =
   match Level.var_index l with
   | Some n -> LevelInstance.lookup_level s n
@@ -829,13 +824,13 @@ let subst_level_instance_level_universe s l =
   | None -> Universe.make l
 
 let subst_level_instance_qvar s v =
-  match Sorts.QVar.var_index v with
+  match Quality.QVar.var_index v with
   | Some n -> LevelInstance.lookup_quality s n
   | None -> Quality.QVar v
 
 let subst_level_instance_quality s l =
   match l with
-  | Quality.QVar v -> begin match Sorts.QVar.var_index v with
+  | Quality.QVar v -> begin match Quality.QVar.var_index v with
       | Some n -> LevelInstance.lookup_quality s n
       | None -> l
     end

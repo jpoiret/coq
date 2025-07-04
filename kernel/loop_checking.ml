@@ -2242,8 +2242,8 @@ let premises_of_universe m u =
 
 let decompose_eq_constraints u k v =
   match k with
-  | Le -> [(u, v)]
-  | Eq -> [(u, v); (v, u)]
+  | UnivConstraint.Le -> [(u, v)]
+  | UnivConstraint.Eq -> [(u, v); (v, u)]
 
 let enforce_constraint u k v (m : t) =
   let pu = premises_of_universe m u in
@@ -2261,8 +2261,8 @@ let enforce u k v m =
   let res = enforce_constraint u k v m in
   Option.map (fun (m, equivs) -> m, unrepr_equivalences m equivs) res
 
-let enforce_eq u v m = enforce u Eq v m
-let enforce_leq u v m = enforce u Le v m
+let enforce_eq u v m = enforce u UnivConstraint.Eq v m
+let enforce_leq u v m = enforce u UnivConstraint.Le v m
 let enforce_lt u v m = enforce_leq (Universe.addn u 1) v m
 
 let check_leq_can canu canv model =
@@ -2287,12 +2287,12 @@ let check_constraint (m : t) u k u' =
   let cls = decompose_eq_constraints pu k pu' in
   List.fold_left (fun check cl -> check && check_leq_premises m cl) true cls
 
-let check_leq m u v = check_constraint m u Le v
+let check_leq m u v = check_constraint m u UnivConstraint.Le v
 let check_eq m u v =
   match Universe.repr u, Universe.repr v with
   | [ur], [vr] -> check_eq_level_expr ur vr m
-   (* || check_constraint m u Eq v *)
-  | _, _ -> check_constraint m u Eq v
+   (* || check_constraint m u UnivConstraint.Eq v *)
+  | _, _ -> check_constraint m u UnivConstraint.Eq v
 
 let enforce_constraint (u, k, v) (m : t) = enforce u k v m
 
@@ -2383,7 +2383,7 @@ let _can_clause_of_clause_eqs m (prems, concl) =
   in
   (premeqs, concleq), (prems, concl)
 
-let get_explanation ((l, k, r) : univ_constraint) model : explanation =
+let get_explanation ((l, k, r) : UnivConstraint.t) model : explanation =
   let get_explanation (prems, concl) =
     let head = Universe.super prems in
     let conclcan = canonical_repr_level_expr model concl in
@@ -2415,8 +2415,8 @@ let get_explanation ((l, k, r) : univ_constraint) model : explanation =
     | None -> (u, [])
   in
   match k with
-  | Le -> get_explanation_le l r
-  | Eq -> if check_leq model l r then get_explanation_le r l else get_explanation_le l r
+  | UnivConstraint.Le -> get_explanation_le l r
+  | UnivConstraint.Eq -> if check_leq model l r then get_explanation_le r l else get_explanation_le l r
 
 (* Precondition: all mentionned universes are canonical *)
 let merge_clauses premsfwd can cank premsbwd concl conclk =
@@ -2637,16 +2637,16 @@ let remove_set_clauses l model =
 let pr_constraint_type k =
   let open Pp in
   match k with
-  | Eq -> str " = "
-  | Le -> str " ≤ "
+  | UnivConstraint.Eq -> str " = "
+  | UnivConstraint.Le -> str " ≤ "
 
 let constraint_type_ord c1 c2 = match c1, c2 with
-| Le, Le -> 0
-| Le, Eq -> -1
-| Eq, Eq -> 0
-| Eq, Le -> 1
+| UnivConstraint.Le, UnivConstraint.Le -> 0
+| UnivConstraint.Le, UnivConstraint.Eq -> -1
+| UnivConstraint.Eq, UnivConstraint.Eq -> 0
+| UnivConstraint.Eq, UnivConstraint.Le -> 1
 
-type univ_constraint = Universe.t * constraint_type * Universe.t
+type univ_constraint = Universe.t * UnivConstraint.kind * Universe.t
 
 module UConstraintOrd =
 struct
@@ -2695,7 +2695,7 @@ let constraints_of_clauses ?(only_local = false) m clauses =
           (vp, k)) prems
       in
       let prem = Universe.unrepr prems in
-      Constraints.add (Universe.of_list [(Index.repr concl m.table, k)], Le, prem) cstrs)
+      Constraints.add (Universe.of_list [(Index.repr concl m.table, k)], UnivConstraint.Le, prem) cstrs)
       bwd cstrs)
     clauses Constraints.empty
 
@@ -2739,12 +2739,12 @@ let constraints_for ~(kept:Level.Set.t) model (fold : 'a constraint_fold) (accu 
       let csts =
         if Index.equal u arcu.canon then csts
         else
-          add_cst (NeList.tip (u, 0)) Eq (NeList.tip (arcu.canon, k)) csts
+          add_cst (NeList.tip (u, 0)) UnivConstraint.Eq (NeList.tip (arcu.canon, k)) csts
       in
       PMap.add arcu.canon arcu.canon rmap, csts
     else
       match PMap.find arcu.canon rmap with
-      | v -> rmap, add_cst (NeList.tip (u, 0)) Eq (NeList.tip (v, k)) csts
+      | v -> rmap, add_cst (NeList.tip (u, 0)) UnivConstraint.Eq (NeList.tip (v, k)) csts
       | exception Not_found -> PMap.add arcu.canon u rmap, csts)
     keptp (PMap.empty, accu)
   in
@@ -2797,7 +2797,7 @@ let constraints_for ~(kept:Level.Set.t) model (fold : 'a constraint_fold) (accu 
   let add_from u csts prems k =
     let cprems = repr_premises model prems in
     if not (NeList.exists (fun (v, _) -> PSet.mem v.canon removed) cprems) then
-      (add_cst (NeList.tip (canon_repr u, k)) Le (can_prem_to_prem cprems) csts)
+      (add_cst (NeList.tip (canon_repr u, k)) UnivConstraint.Le (can_prem_to_prem cprems) csts)
     else csts
   in
   let fold u acc =

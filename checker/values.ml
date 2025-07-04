@@ -196,7 +196,7 @@ let v_cstrs =
   v_annot_c
     ("Univ.constraints",
      v_set
-       (v_tuple "univ_constraint"
+       (v_tuple "UnivConstraint.kind"
           [|v_univ;v_enum "order_request" 2;v_univ|]))
 
 let v_level_instance = v_annot_c ("level_instance", v_pair (v_array v_quality) (v_array v_level))

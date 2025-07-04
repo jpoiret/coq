@@ -200,8 +200,6 @@ sig
 
   val subst_fn : (Level.t -> t) -> t -> t
 
-  val map : (Level.t -> Level.t) -> t -> t
-
   module Set : CSet.ExtS with type elt  = t
   module Map : CMap.ExtS with type key = t and module Set := Set
 
@@ -236,7 +234,7 @@ end
 (** Enforcing UnivConstraints.t. *)
 type 'a constraint_function = 'a -> 'a -> UnivConstraints.t -> UnivConstraints.t
 
-val enforce : Universe.t -> constraint_type -> Universe.t -> Constraints.t -> Constraints.t
+val enforce : Universe.t -> UnivConstraint.kind -> Universe.t -> UnivConstraints.t -> UnivConstraints.t
 
 val enforce_eq : Universe.t constraint_function
 val enforce_leq : Universe.t constraint_function

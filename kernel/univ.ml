@@ -465,12 +465,6 @@ struct
     assert (not (List.is_empty l));
     sort l
 
-  let map f u =
-    let f = Expr.map f in
-    let u' = List.Smart.map f u in
-    if u == u' then u
-    else unrepr u'
-
   let decompose_succ (x : t) : t option =
     if List.for_all (fun (_, k) -> k > 0) x then
       Some (List.map (fun (l, k) -> (l, pred k)) x)
@@ -561,7 +555,7 @@ struct
 
   let pr prl c =
     v 0 (prlist_with_sep spc (fun (u1, op, u2) ->
-      hov 0 (prl u1 ++ UnivConstraint.pr_kind op ++ prl u2))
+      hov 0 (Universe.pr prl u1 ++ UnivConstraint.pr_kind op ++ Universe.pr prl u2))
         (elements c))
 
   module Hconstraints = CSet.Hashcons(UnivConstraint)(struct

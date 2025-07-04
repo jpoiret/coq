@@ -50,7 +50,7 @@ type level_equivalences = (Level.t * (Level.t * int)) list
 val enforce_eq : Universe.t -> Universe.t -> t -> (t * level_equivalences) option
 val enforce_leq : Universe.t -> Universe.t -> t -> (t * level_equivalences) option
 val enforce_lt : Universe.t -> Universe.t -> t -> (t * level_equivalences) option
-val enforce_constraint : univ_constraint -> t -> (t * level_equivalences) option
+val enforce_constraint : UnivConstraint.t -> t -> (t * level_equivalences) option
 
 (** Normalize a level to its canonical representative.
   This uses the internally maintained substitution from levels to universes.
@@ -77,11 +77,11 @@ type extended_constraint_type =
 
 type explanation = Universe.t * (extended_constraint_type * Universe.t) list
 
-val get_explanation : univ_constraint -> t -> explanation
+val get_explanation : UnivConstraint.t -> t -> explanation
 (** Assuming that the corresponding call to [enforce_*] returned [None], this
     will give a trace for the failure. *)
 
-type 'a constraint_fold = univ_constraint -> 'a -> 'a
+type 'a constraint_fold = UnivConstraint.t -> 'a -> 'a
 
 (** [constraints_of graph ?only_local fold acc = (levels, acc', equivs)]
 

@@ -143,7 +143,7 @@ let simplify_variables solve_flexibles above_prop above_zero partial ctx flex va
     | None -> (* Unused variable *) acc
     | Some UVars.Predicative -> (* Used in some predicative contexts *) acc
     | Some (UVars.Impredicative qs) ->
-      if not partial && Sorts.QVar.Set.is_empty qs then collapse_to_zero u acc
+      if not partial && Quality.QVar.Set.is_empty qs then collapse_to_zero u acc
       else acc
   in
   let simplify_min u (ctx, flex, variances, graph as acc) =

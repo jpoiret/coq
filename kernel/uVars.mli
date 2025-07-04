@@ -73,14 +73,14 @@ end
 
 type impred_qvars_status =
   | Predicative
-  | Impredicative of Sorts.QVar.Set.t
+  | Impredicative of Quality.QVar.Set.t
   (** Set of potentially impredicative QVars under which the universe lives.
     If there is an occurrence under a non-impredicative QVar somewhere,
     this is empty. *)
 type impred_qvars = impred_qvars_status option (* None = not occurring *)
 
-val impred_qvars_of_quality : Sorts.Quality.t -> impred_qvars_status
-val update_impred_qvars : (Sorts.QVar.t -> Sorts.Quality.t option) -> impred_qvars -> impred_qvars
+val impred_qvars_of_quality : Quality.t -> impred_qvars_status
+val update_impred_qvars : (Quality.QVar.t -> Quality.t option) -> impred_qvars -> impred_qvars
 val pr_impred_qvars : impred_qvars -> Pp.t
 val union_impred_qvars : impred_qvars -> impred_qvars -> impred_qvars
 
@@ -269,14 +269,14 @@ sig
   val hash : t -> int
   (** Hash value *)
 
-  val pr : (QVar.t -> Pp.t) -> (Universe.t -> Pp.t) -> ?variances:Variances.t -> t -> Pp.t
+  val pr : (Quality.QVar.t -> Pp.t) -> (Universe.t -> Pp.t) -> ?variances:Variances.t -> t -> Pp.t
   (** Pretty-printing, no comments *)
 
   val levels : t -> Quality.Set.t * Level.Set.t
   (** The set of levels in the instance *)
 
   val subst_fn
-    : (QVar.t -> Quality.t) * (Level.t -> Universe.t)
+    : (Quality.QVar.t -> Quality.t) * (Level.t -> Universe.t)
     -> t -> t
 
   type mask = Quality.pattern array * int option array
@@ -409,7 +409,7 @@ val map_univ_abstracted : ('a -> 'b) -> 'a univ_abstracted -> 'b univ_abstracted
 
 (** {6 Substitution} *)
 
-type universe_level_subst = Level.t Level.Map.t
+type universe_level_subst = Universe.t Level.Map.t
 type sort_level_subst = Quality.t Quality.QVar.Map.t * universe_level_subst
 
 val empty_level_subst : universe_level_subst
@@ -469,9 +469,9 @@ val make_abstract_instance : AbstractContext.t -> Instance.t
 
 (** {6 Pretty-printing of universes. } *)
 
-val pr_universe_context : (QVar.t -> Pp.t) -> (Level.t -> Pp.t) -> ?variances:variances ->
+val pr_universe_context : (Quality.QVar.t -> Pp.t) -> (Level.t -> Pp.t) -> ?variances:variances ->
   UContext.t -> Pp.t
-val pr_abstract_universe_context : (QVar.t -> Pp.t) -> (Level.t -> Pp.t) -> ?variances:variances ->
+val pr_abstract_universe_context : (Quality.QVar.t -> Pp.t) -> (Level.t -> Pp.t) -> ?variances:variances ->
   AbstractContext.t -> Pp.t
 
 (** {6 Hash-consing } *)

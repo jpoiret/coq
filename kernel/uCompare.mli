@@ -28,7 +28,7 @@ type ('a, 'err) universe_compare = {
 type ('a, 'err) universe_state = 'a * ('a, 'err) universe_compare
 
 val get_cumulativity_constraints : conv_pb -> nargs:UVars.application -> UVars.Variances.t ->
-    UVars.Instance.t -> UVars.Instance.t -> Sorts.QUConstraints.t
+    UVars.Instance.t -> UVars.Instance.t -> PolyConstraints.t
 
 val inductive_cumulativity_arguments : (Declarations.mutual_inductive_body * int) -> int
 val constructor_cumulativity_arguments : (Declarations.mutual_inductive_body * int * int) -> int

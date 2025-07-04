@@ -1000,7 +1000,8 @@ let process_constraints uctx cstrs =
   let unify_universes cst local =
     let cst = nf_constraint local cst in
     if UnivProblem.is_trivial cst then local
-    else
+    else match cst with
+     | QEq (a, b) ->
       (* TODO sort_inconsistency should be able to handle raw
          qualities instead of having to make a dummy sort *)
       let mk q = Sorts.make q Universe.type0 in

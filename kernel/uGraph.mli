@@ -68,6 +68,9 @@ val merge_constraints : UnivConstraints.t -> t -> t * level_equivalences
 val check_constraint  : t -> UnivConstraint.t -> bool
 val check_constraints : UnivConstraints.t -> t -> bool
 
+val check_eq_sort : QGraph.t -> t -> Sorts.t -> Sorts.t -> bool
+val check_leq_sort : QGraph.t -> t -> Sorts.t -> Sorts.t -> bool
+
 val normalize : t -> Level.t -> Universe.t option
 
 exception InconsistentEquality

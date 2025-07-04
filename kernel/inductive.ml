@@ -289,7 +289,7 @@ let instantiate_template_constraints (quality_substs, lvl_substs) templ =
       | Some u -> Int.Map.get u lvl_substs
       in Universe.subst_fn level_fn u
     in
-    PolyConstraints.add (u, cst, v) accu
+    UnivConstraints.add (u, cst, v) accu
   in
   PolyConstraints.fold (foldq, foldu) cstrs PolyConstraints.empty
 

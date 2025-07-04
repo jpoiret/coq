@@ -454,7 +454,7 @@ let add_constraints src (elim_csts,univ_csts as c) env =
   then env
   else
     map_qualities (QGraph.merge_constraints src elim_csts) @@
-      map_universes (UGraph.merge_constraints univ_csts) env
+      map_universes (fun univ -> fst (UGraph.merge_constraints univ_csts univ)) env
 
 let check_univ_constraints univ_csts env =
   UGraph.check_constraints univ_csts env.env_universes

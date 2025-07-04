@@ -449,14 +449,14 @@ let extended_const_variance cb nargs =
 
 let compute_impred_qvars qs vocc =
   let vars = UVars.VarianceOccurrence.under_impred_qvars vocc in
-  update_impred_qvars (fun qv -> Option.map (fun idx -> qs.(idx)) (Sorts.QVar.var_index qv)) vars
+  update_impred_qvars (fun qv -> Option.map (fun idx -> qs.(idx)) (Quality.QVar.var_index qv)) vars
 
 (** Compute variances from f@{u1 ... un} knowing f@{l1(vn) ... ln(vn)} variance information *)
 let infer_cumulative_instance gr cv_pb (is_type, typing_v) nargs gvariances variances u =
   let qs, us = Instance.to_array u in
   debug_infer_term Pp.(fun () -> str"infer_cumulative_instance: " ++ Variances.pr gvariances ++ str " for " ++
     Names.GlobRef.print gr ++ (match nargs with FullyApplied -> str"fully applied" | NumArgs n -> str" applied to " ++ int n ++ str" arguments:") ++
-    Instance.pr Sorts.QVar.raw_pr (Universe.pr Level.raw_pr) u ++
+    Instance.pr Quality.QVar.raw_pr (Universe.pr Level.raw_pr) u ++
     str" in typing variance position " ++ Variance.pr typing_v ++
     str " is_type = " ++ if is_type == IsType then str "IsType" else str "IsTerm");
   Array.fold_left2 (fun variances vocc u ->

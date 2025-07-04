@@ -316,7 +316,7 @@ let array_variances : UVars.variances =
 let array_univs : AbstractContext.t * Variances.t option =
   let open VariancePair in
   let open VarianceOccurrence in
-  AbstractContext.make { quals = [||]; univs = Names.[|Name (Id.of_string "u")|]} UnivConstraints.empty,
+  AbstractContext.make { quals = [||]; univs = Names.[|Name (Id.of_string "u")|]} PolyConstraints.empty,
   Some (Variances.make [| { default_occ with in_binders = Some { cumul_variance = Variance.Invariant; typing_variance = Variance.Contravariant }, [0];
     in_type = Some { cumul_variance = Variance.Covariant; typing_variance = Variance.Covariant };
     under_impred_qvars = Some Predicative } |])
@@ -481,7 +481,7 @@ let nparams x = List.length (params x)
 let array_ops_univs : AbstractContext.t * Variances.t option =
   let open VariancePair in
   let open VarianceOccurrence in
-  AbstractContext.make { quals = [||]; univs = Names.[|Name (Id.of_string "u")|] } UnivConstraints.empty,
+  AbstractContext.make { quals = [||]; univs = Names.[|Name (Id.of_string "u")|] } PolyConstraints.empty,
   Some (Variances.make [| { default_occ with in_binders = Some { cumul_variance = Variance.Invariant; typing_variance = Variance.Contravariant }, [0];
     under_impred_qvars = Some Predicative } |])
 

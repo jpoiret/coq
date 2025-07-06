@@ -74,7 +74,7 @@ val normalize_univ_variable : t -> UnivSubst.universe_subst_fn
 val normalize_universe : t -> Universe.t -> Universe.t
 (** Apply the substitution to an algebraic universe. *)
 
-val normalize_constraints : t -> Constraints.t -> Constraints.t
+val normalize_constraints : t -> UnivConstraints.t -> UnivConstraints.t
 (** Apply the substitution to universe constraints. *)
 
 val pr : (Level.t -> Pp.t) -> t -> Pp.t

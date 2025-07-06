@@ -87,7 +87,7 @@ val elim_graph : t -> QGraph.t
 
 val eliminates_to_prop : t -> Quality.QVar.t -> bool
 
-val constraints : t -> PolyConstraints.Constraints.t
+val constraints : t -> PolyConstraints.t
 (** Shorthand for {!context_set} composed with {!ContextSet.constraints}. *)
 
 val context : t -> UVars.UContext.t
@@ -255,7 +255,7 @@ type pre_variances =
   UVars.Variance.t option array option
 
 type poly_decl =
-  (QVar.t list, Quality.ElimConstraints.t, Level.t list, pre_variances, Univ.UnivConstraints.t) gen_poly_decl
+  (Quality.QVar.t list, Quality.ElimConstraints.t, Level.t list, pre_variances, Univ.UnivConstraints.t) gen_poly_decl
 
 val default_poly_decl : poly_decl
 

@@ -488,7 +488,7 @@ let push_context ?(strict=false) src ctx env =
   map_universes (add_universes ~strict ctx) env
 
 let add_universes_set ~strict ctx g =
-  debug Pp.(fun () -> str"Adding universes context" ++ Univ.ContextSet.pr Univ.Level.raw_pr ctx);
+  debug Pp.(fun () -> str"Adding universes context" ++ PolyConstraints.ContextSet.pr Quality.QVar.raw_pr Univ.Level.raw_pr ctx);
   let g = Univ.Level.Set.fold
             (* Be lenient, module typing reintroduces universes and constraints due to includes *)
             (fun v g -> try UGraph.add_universe ~strict ~rigid:true v g with UGraph.AlreadyDeclared -> g)
@@ -510,7 +510,7 @@ let push_quality_set qs env =
   set_qualities g env
 
 let gather_new_constraints restricted g =
-  let _, failed = PolyConstraints.partition (UGraph.check_constraint g) restricted in
+  let _, failed = Univ.UnivConstraints.partition (UGraph.check_constraint g) restricted in
   failed
 
 let push_subgraph (levels,(_, univ_csts)) env =
@@ -520,9 +520,9 @@ let push_subgraph (levels,(_, univ_csts)) env =
     (if not (Univ.UnivConstraints.is_empty univ_csts) then
        let restricted = UGraph.constraints_for ~kept:(UGraph.domain g) newg in
        let missing = gather_new_constraints restricted g in
-       (if not (Univ.Constraints.is_empty missing) then
+       (if not (Univ.UnivConstraints.is_empty missing) then
           CErrors.anomaly Pp.(str "Local constraints imply new transitive constraints: " ++ fnl () ++
-            Univ.Constraints.pr Univ.Level.raw_pr missing)));
+            Univ.UnivConstraints.pr Univ.Level.raw_pr missing)));
     newg
   in
   map_universes add_subgraph env

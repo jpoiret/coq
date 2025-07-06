@@ -150,7 +150,7 @@ GRAMMAR EXTEND Gram
       | "SProp" -> { None, UNamed [CSProp, 0] }
       | "Type" -> { None, UAnonymous {rigid=UnivFlexible} }
       | "Type"; "@{"; "_"; "}" -> { None, UAnonymous {rigid=UnivRigid} }
-      | "Type"; "@{"; test_old_sort_qvar; q = reference; pipe_loc = [ "|" -> { loc } ]; u = universe_opt; "}" -> {
+      | "Type"; "@{"; test_sort_qvar; q = reference; pipe_loc = [ "|" -> { loc } ]; u = universe_opt; "}" -> {
           warn_old_sort_syntax ~loc:pipe_loc ();
           Some (CQVar q), u
         }

@@ -25,7 +25,7 @@ type t =
   | QElimTo of Quality.t * Quality.t
   | ULe of Sorts.t * Sorts.t
   | UEq of Sorts.t * Sorts.t
-  | ULub of constraint_type * Universe.t * Universe.t
+  | ULub of UnivConstraint.kind * Universe.t * Universe.t
   | UWeak of Universe.t * Universe.t
 
 val is_trivial : t -> bool

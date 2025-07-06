@@ -63,15 +63,16 @@ let sort_expr_eq (q1, l1) (q2, l2) =
 let instance_expr_eq (q1,u1) (q2,u2) =
   List.equal quality_expr_eq q1 q2 && List.equal opt_universe_expr_eq u1 u2
 
-let cumul_of_univ_decl : Constrexpr.universe_decl_expr -> Constrexpr.cumul_univ_decl_expr =
+let cumul_of_poly_decl : Constrexpr.poly_decl_expr -> Constrexpr.cumul_poly_decl_expr =
   fun x ->
-    { univdecl_qualities = x.univdecl_qualities;
-    univdecl_extensible_qualities = x.univdecl_extensible_qualities;
-    univdecl_instance = List.map (fun lid -> lid, None) x.univdecl_instance;
-    univdecl_extensible_instance = x.univdecl_extensible_instance;
-    univdecl_variances = x.univdecl_variances;
-    univdecl_constraints = x.univdecl_constraints;
-    univdecl_extensible_constraints = x.univdecl_extensible_constraints }
+    { polydecl_qualities = x.polydecl_qualities;
+    polydecl_extensible_qualities = x.polydecl_extensible_qualities;
+    polydecl_elim_constraints = x.polydecl_elim_constraints;
+    polydecl_instance = List.map (fun lid -> lid, None) x.polydecl_instance;
+    polydecl_extensible_instance = x.polydecl_extensible_instance;
+    polydecl_variances = x.polydecl_variances;
+    polydecl_univ_constraints = x.polydecl_univ_constraints;
+    polydecl_extensible_constraints = x.polydecl_extensible_constraints }
 
 (***********************)
 (* For binders parsing *)

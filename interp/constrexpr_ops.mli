@@ -138,4 +138,4 @@ val isCSort : constr_expr -> bool
 (** For cases pattern parsing errors *)
 val error_invalid_pattern_notation : ?loc:Loc.t -> unit -> 'a
 
-val cumul_of_univ_decl : Constrexpr.universe_decl_expr -> Constrexpr.cumul_univ_decl_expr
+val cumul_of_poly_decl : Constrexpr.poly_decl_expr -> Constrexpr.cumul_poly_decl_expr

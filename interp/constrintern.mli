@@ -230,7 +230,7 @@ val interp_poly_decl : Environ.env -> poly_decl_expr ->
 val interp_poly_decl_opt : Environ.env -> poly_decl_expr option ->
                        Evd.evar_map * UState.poly_decl
 
-val interp_cumul_poly_decl_opt : Environ.env -> cumul_univ_decl_expr option ->
+val interp_cumul_poly_decl_opt : Environ.env -> cumul_poly_decl_expr option ->
   Evd.evar_map * UState.poly_decl
 (** BEWARE the variance entry needs to be adjusted by
    [ComInductive.variance_of_entry] if the instance is extensible. *)

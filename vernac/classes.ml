@@ -606,7 +606,7 @@ let new_instance_program ~locality ~pm ~poly ~sort_poly ~cumulative instid ctx c
 let new_instance ~locality ~poly ~sort_poly ~cumulative instid ctx cl props ?hook pri =
   let env = Global.env() in
   let id, env', sigma, k, u, cty, ctx', ctx, imps, subst, decl =
-    new_instance_common ~program_mode:false ~sort_poly ~cumulative env instid ctx cl in
+    new_instance_common ~program_mode:false ~sort_poly env instid ctx cl in
   do_instance env env' sigma ?hook ~locality ~poly ~sort_poly ~cumulative
     cty k ctx ctx' pri decl imps subst id props;
   id

@@ -758,19 +758,19 @@ let compare_cumulative_instances ~flex cv_pb ~nargs variances u u' sigma =
   | sigma ->
   let cstrs, soft = Array.fold_left3 (fun (cstrs, soft) v u u' ->
       let open UVars.Variance in
-      let open Univ.UnivConstraint in
+      let open Univ in
       let v = UVars.VarianceOccurrence.variance_app nargs v in
       match v.cumul_variance with
       | Irrelevant -> cstrs, Set.add (UWeak (u,u')) soft
       | Covariant when cv_pb == Conversion.CUMUL ->
         if flex then cstrs, Set.add (ULub (Le,u,u')) soft
-        else Univ.Constraints.add (u,Univ.Le,u') cstrs, soft
+        else UnivConstraints.add (u,Le,u') cstrs, soft
       | Contravariant when cv_pb == Conversion.CUMUL ->
         if flex then cstrs, Set.add (ULub (Le,u',u)) soft
-        else Univ.Constraints.add (u',Univ.Le,u) cstrs, soft
+        else UnivConstraints.add (u',Le,u) cstrs, soft
       | Covariant | Contravariant | Invariant ->
         if flex then cstrs, Set.add (ULub (Eq,u,u')) soft
-        else Univ.Constraints.add (u,Univ.Eq,u') cstrs, soft)
+        else UnivConstraints.add (u,Eq,u') cstrs, soft)
       (cstrs,soft) (UVars.Variances.repr variances) us us'
   in
   try

@@ -31,7 +31,7 @@ type uniform_inductive_flag =
 val do_mutual_inductive
   : flags:flags
   -> ?typing_flags:Declarations.typing_flags
-  -> cumul_univ_decl_expr option
+  -> cumul_poly_decl_expr option
   -> (one_inductive_expr * notation_declaration list) list
   -> private_ind:bool
   -> uniform:uniform_inductive_flag
@@ -56,7 +56,7 @@ type t = {
   nuparams : int option;
   univ_binders : UState.named_universes_entry;
   implicits : DeclareInd.one_inductive_impls list;
-  uctx : Univ.ContextSet.t;
+  uctx : PolyConstraints.ContextSet.t;
   where_notations : Metasyntax.notation_interpretation_decl list;
   coercions : Libnames.qualid list;
   indlocs : DeclareInd.indlocs;
@@ -69,7 +69,7 @@ val interp_mutual_inductive
   :  env:Environ.env
   -> flags:flags
   -> ?typing_flags:Declarations.typing_flags
-  -> cumul_univ_decl_expr option
+  -> cumul_poly_decl_expr option
   -> (one_inductive_expr * notation_declaration list) list
   -> private_ind:bool
   -> uniform:uniform_inductive_flag
@@ -82,7 +82,7 @@ type syntax_allows_template_poly = SyntaxAllowsTemplatePoly | SyntaxNoTemplatePo
 val interp_mutual_inductive_constr
   :  sigma:Evd.evar_map
   -> flags:flags
-  -> udecl:UState.universe_decl
+  -> udecl:UState.poly_decl
   -> ctx_params:EConstr.rel_context
   -> indnames:Names.Id.t list
   -> arities_explicit:bool list
@@ -98,7 +98,7 @@ val interp_mutual_inductive_constr
      * (* for global universe names, used by DeclareInd *)
      UState.named_universes_entry
      * (* global universes to declare before the inductive (ie without the template univs) *)
-     Univ.ContextSet.t
+     PolyConstraints.ContextSet.t
 
 (************************************************************************)
 (** Internal API, exported for Record                                   *)

@@ -160,7 +160,7 @@ let do_definition_interactive ?loc ~program_mode ?hook ~name ~scope ?clearbody ~
     let inference_hook = if program_mode then Some Declare.Obls.program_inference_hook else None in
     Pretyping.solve_remaining_evars ?hook:inference_hook flags env evd in
   let evd = UnivVariances.register_universe_variances_of_type env evd typ in
-  let evd = Evd.minimize_universes ~to_type:(not sort_poly) ~partial:udecl.univdecl_extensible_instance evd in
+  let evd = Evd.minimize_universes ~to_type:(not sort_poly) ~partial:udecl.polydecl_extensible_instance evd in
   Pretyping.check_evars_are_solved ~program_mode env evd;
   let typ = EConstr.to_constr evd typ in
   Evd.check_poly_decl_early ~poly ~sort_poly ~cumulative ~with_obls:false evd udecl [typ];

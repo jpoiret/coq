@@ -289,6 +289,7 @@ let pr_universe_instance_binder evd inst csts =
   let open Univ in
   let prqvar = Termops.pr_evd_qvar evd in
   let prl = Termops.pr_evd_level evd in
+  let pru = Termops.pr_evd_universe evd in
   let pcsts = if UnivConstraints.is_empty csts then begin
       if fst (UVars.Instance.length inst) = 0 then mt()
       else str " |"
@@ -298,7 +299,7 @@ let pr_universe_instance_binder evd inst csts =
            (fun (u,d,v) -> hov 0 (Universe.pr prl u ++ UnivConstraint.pr_kind d ++ Universe.pr prl v))
            (UnivConstraints.elements csts)
   in
-  str"@{" ++ UVars.LevelInstance.pr prqvar prl inst ++ pcsts ++ str"}"
+  str"@{" ++ UVars.Instance.pr prqvar pru inst ++ pcsts ++ str"}"
 
 let pr_universe_instance evd inst =
   let prqvar = Termops.pr_evd_qvar evd in

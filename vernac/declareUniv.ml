@@ -288,11 +288,10 @@ let add_constraint_source x ctx =
     Lib.add_leaf (constraint_obj v)
 
 let check_constraint env sigma l =
-  let open Univ in
   let constraints = List.fold_left (fun acc cst ->
       let cst = Constrintern.interp_univ_constraint sigma cst in
-      Constraints.add cst acc)
-      Constraints.empty l
+      PolyConstraints.add_univ cst acc)
+      PolyConstraints.empty l
   in
   if Evd.check_constraints sigma constraints then ()
   else CErrors.user_err (Pp.str"Constraints do not hold")

@@ -1700,7 +1700,7 @@ let infer_leq (univs, elims, cstrs as cuniv) s s' =
   if UGraph.check_leq_sort elims univs s s' then Result.Ok cuniv
   else
     try
-      let cstrs' = UnivSubst.enforce_leq_sort s s' Constraints.empty in
+      let cstrs' = UnivSubst.enforce_leq_sort s s' UnivConstraints.empty in
       Result.Ok (fst (UGraph.merge_constraints cstrs' univs), elims, UnivConstraints.union cstrs cstrs')
     with UGraph.UniverseInconsistency err -> Result.Error (Some (Univ err))
 

@@ -100,7 +100,8 @@ let compute_variances_type env sigma ?(position=Position.InType) ?(ctx_position 
   compute_variances_type_constr env sigma status ~position ~ctx_position ~ctx_cumul_pb ~ctx_typing_pb ~cumul_pb
     (EConstr.to_constr ~abort_on_undefined_evars:false sigma c)
 
-let init_status_ustate ?(position=Position.InType) ?(udecl : UState.universe_decl option) ustate =
+let init_status_ustate ?(position=Position.InType) ?(udecl : UState.poly_decl option) ustate =
+  let open PolyConstraints in
   match UState.get_variances ustate with
   | Some variances -> Inf.start_variances variances position
   | None ->
@@ -110,7 +111,7 @@ let init_status_ustate ?(position=Position.InType) ?(udecl : UState.universe_dec
     | None -> Inf.start_inference (ContextSet.levels ctx) position
     | Some udecl ->
       let levels = ContextSet.levels ctx in
-      let us = udecl.UState.univdecl_instance and variances = udecl.UState.univdecl_variances in
+      let us = udecl.UState.polydecl_instance and variances = udecl.UState.polydecl_variances in
       match variances with
       | None -> Inf.start_inference levels position
       | Some vs ->
@@ -127,7 +128,7 @@ let init_status_ustate ?(position=Position.InType) ?(udecl : UState.universe_dec
           levels Level.Map.empty
         in Inf.start_variances map position
 
-let init_status ?(position=Position.InType) ?(udecl : UState.universe_decl option) sigma =
+let init_status ?(position=Position.InType) ?(udecl : UState.poly_decl option) sigma =
   let ustate = Evd.ustate sigma in
   init_status_ustate ~position ?udecl ustate
 

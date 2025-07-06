@@ -161,7 +161,7 @@ val ppuniverse_context : UVars.UContext.t -> unit
 val ppaucontext : UVars.AbstractContext.t -> unit
 val ppuniverse_context_set : PolyConstraints.ContextSet.t -> unit
 val ppuniverse_subst : UnivSubst.universe_subst -> unit
-val ppqvar_subst : Quality.t QVar.Map.t -> unit
+val ppqvar_subst : Quality.t Quality.QVar.Map.t -> unit
 val ppuniverse_level_subst : UVars.universe_level_subst -> unit
 val ppustate : UState.t -> unit
 val ppconstraints : Univ.UnivConstraints.t -> unit

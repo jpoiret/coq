@@ -99,8 +99,8 @@ let optimize_non_type_induction_scheme kind dep sort env _handle ind =
         let _, univs = UVars.Instance.to_array (snd cte) in
         let last = Option.get (Univ.Universe.level (CArray.last univs)) in
         let rigidctx = (sorts, Univ.Level.Set.remove last levels), cstrs in
-        let sigma = Evd.merge_context_set Evd.UnivFlexible sigma (Univ.Level.Set.singleton last, Univ.Constraints.empty) in
-        Evd.merge_sort_context_set Evd.UnivRigid sigma rigidctx, cte
+        let sigma = Evd.merge_context_set Evd.UnivFlexible sigma (Univ.Level.Set.singleton last, PolyConstraints.empty) in
+        Evd.merge_sort_context_set Evd.UnivRigid QGraph.Internal sigma rigidctx, cte
       else Evd.fresh_constant_instance env sigma ~rigid:Evd.UnivRigid cte in
     let c = mkConstU cte in
     let t = Typeops.type_of_constant_in env cte in
@@ -115,7 +115,7 @@ let optimize_non_type_induction_scheme kind dep sort env _handle ind =
         mib.mind_nparams in
     (* here, if [sort] is [Type] then it means that it's actually a [Set]:
        we optimise non-[Type] schemes *)
-    let sigma, sort = Evd.fresh_sort_in_quality sigma ~rigid:Evd.UnivRigid sort in
+    let sigma, sort = Evd.fresh_sort_in_quality sigma sort in
     let sigma, t', c' = weaken_sort_scheme env sigma sort npars c t in
     let sigma = UnivVariances.register_universe_variances_of env sigma ~typ:(EConstr.of_constr t') (EConstr.of_constr c') in
     let sigma = Evd.minimize_universes sigma in

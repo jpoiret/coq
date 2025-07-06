@@ -43,7 +43,7 @@ type sort_expr = (qvar_expr option * opt_universe_expr)
 type instance_expr = quality_expr list * opt_universe_expr list
 
 (** UnivConstraints don't have anonymous universes *)
-type univ_constraint_expr = universe_expr * (Univ.UnivConstraint.kind * sort_name_expr) * universe_expr
+type univ_constraint_expr = universe_expr * (Univ.UnivConstraint.kind * bool) * universe_expr
 type elim_constraint_expr = quality_expr * Quality.ElimConstraint.kind * quality_expr
 
 type poly_constraint_expr =
@@ -55,7 +55,7 @@ type cumul_poly_decl_expr =
   (lident list, elim_constraint_expr list, (lident * UVars.Variance.t option) list, unit, univ_constraint_expr list) UState.gen_poly_decl
 
 type ident_decl = lident * poly_decl_expr option
-type cumul_ident_decl = lident * cumul_univ_decl_expr option
+type cumul_ident_decl = lident * cumul_poly_decl_expr option
 type name_decl = lname * cumul_poly_decl_expr option
 
 type notation_with_optional_scope = LastLonelyNotation | NotationInScope of string

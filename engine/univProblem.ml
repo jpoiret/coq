@@ -15,7 +15,7 @@ type t =
   | QElimTo of Quality.t * Quality.t
   | ULe of Sorts.t * Sorts.t
   | UEq of Sorts.t * Sorts.t
-  | ULub of constraint_type * Universe.t * Universe.t
+  | ULub of UnivConstraint.kind * Universe.t * Universe.t
   | UWeak of Universe.t * Universe.t
 
 let is_trivial = function
@@ -53,7 +53,7 @@ module Set = struct
         else if Sorts.equal u v' && Sorts.equal v u' then 0
         else i
       | ULub (c, u, v), ULub (c', u', v') ->
-        let i = constraint_type_ord c c' in
+        let i = UnivConstraint.compare_kind c c' in
         if Int.equal i 0 then
           let i = Universe.compare u u' in
           if Int.equal i 0 then Universe.compare v v'

@@ -74,7 +74,7 @@ let constrain_variables diff us ctx =
       | Some (Some u) -> match Universe.level u with
         | None -> acc
         | Some u ->
-          ((Level.Set.add l univs, enforce_eq_level l u cstrs),
+          ((Level.Set.add l univs, PolyConstraints.add_univ (Universe.make l, UnivConstraint.Eq, Universe.make u) cstrs),
            {subst = Level.Map.remove l subst}))
     diff
     (ctx,us)

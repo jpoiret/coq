@@ -20,7 +20,7 @@ val register_universe_variances_of_undefined : Environ.env -> Evd.evar_map -> Ev
 val register_universe_variances_of_type : Environ.env -> Evd.evar_map -> EConstr.t -> Evd.evar_map
 
 val register_universe_variances_of_inductive : Environ.env -> Evd.evar_map ->
-  udecl:UState.universe_decl ->
+  udecl:UState.poly_decl ->
   cumulative:bool ->
   params:EConstr.rel_context ->
   arities:EConstr.t list ->

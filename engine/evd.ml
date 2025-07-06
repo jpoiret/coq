@@ -1044,7 +1044,7 @@ let to_universe_context evd = UState.context evd.universes
 let univ_entry ~poly ?variances evd = UState.univ_entry ~poly ?variances evd.universes
 
 let check_poly_decl ~poly ~cumulative ~kind evd decl =
-  UState.check_univ_decl ~poly ~cumulative ~kind evd.universes decl
+  UState.check_poly_decl ~poly ~cumulative ~kind evd.universes decl
 
 let check_poly_decl_early ~poly ~sort_poly ~cumulative ~with_obls sigma udecl terms =
   let () =

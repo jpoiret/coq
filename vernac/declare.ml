@@ -663,7 +663,7 @@ let declare_constant ~loc ?(local = Locality.ImportDefaultBehavior) ~name ~kind 
       let ubinders = make_ubinders ctx univ_entry in
       Entries.PrimitiveEntry e, false, ubinders, None, ctx
     | SymbolEntry { symb_entry_type=typ; symb_entry_unfold_fix=un_fix; symb_entry_universes=entry_univs } ->
-      let univ_entry, ctx = extract_monomorphic (fst entry_univs) in
+      let univ_entry, ctx = extract_monomorphic entry_univs in
       let () = Global.push_context_set QGraph.Internal ctx in
       let e = {
         Entries.symb_entry_type = typ;

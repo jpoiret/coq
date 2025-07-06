@@ -316,6 +316,8 @@ type t =
  { names : univ_names;
    (** Printing/location information *)
 
+   local : PolyConstraints.ContextSet.t; (** The local graph of universes (variables and constraints) *)
+
    local_variables : Level.Set.t;
    (** The rigid variables: those that must stay in the universe context. *)
 
@@ -360,6 +362,7 @@ let is_flexible l uctx = Level.Set.mem l uctx.flexible_variables
 let is_declared uctx l = UGraph.is_declared uctx.universes l
 let empty =
   { names = UnivNames.empty_binders, (QVar.Map.empty, Level.Map.empty);
+    local = PolyConstraints.ContextSet.empty ;
     local_variables = Level.Set.empty;
     demoted_local_context = PolyConstraints.ContextSet.empty;
     flexible_variables = Level.Set.empty;
@@ -445,7 +448,7 @@ let pr ?(local=false) ctx =
       (str"UNIVERSE VARIABLES:" ++ brk(0,1) ++
        h (Level.Set.pr prl ctx.local_variables) ++ fnl () ++
        str"DEMOTED (GLOBAL) UNIVERSE VARIABLES:" ++ brk(0,1) ++
-       h (PolyConstraints.ContextSet.pr prl ctx.demoted_local_context) ++ fnl () ++
+       h (PolyConstraints.ContextSet.pr QVar.raw_pr prl ctx.demoted_local_context) ++ fnl () ++
        str"FLEXIBLE UNIVERSE VARIABLES:" ++ brk(0,1) ++
        h (Level.Set.pr prl ctx.flexible_variables) ++ fnl () ++
        str"UNIVERSES:"++brk(0,1)++
@@ -458,29 +461,33 @@ let pr ?(local=false) ctx =
        h (pr_weak prl ctx) ++ fnl ())
 
 
-let filter_set_constraints cstrs =
-  Constraints.filter (fun (l, d, r) -> not (Universe.is_type0 l && d == Le)) cstrs
-
-let rigid_levels_constraints_of_substitution variables gvariables substitution (levels, cstrs) =
-  Level.Map.fold (fun l (locality, u) (levels, cstrs) ->
-    if Level.Set.mem l variables then
-      Level.Set.add l levels, Constraints.add (Universe.make l, Eq, u) cstrs
-    else if locality == UGraph.Global || Level.Set.mem l gvariables then
-      levels, Constraints.add (Universe.make l, Eq, u) cstrs
-    else levels, cstrs) substitution (levels, cstrs)
+(* let filter_set_constraints cstrs = *)
+(*   UnivConstraints.filter (fun (l, d, r) -> not (Universe.is_type0 l && d == Le)) cstrs *)
+(**)
+(* let rigid_levels_constraints_of_substitution variables gvariables substitution (levels, cstrs) = *)
+(*   Level.Map.fold (fun l (locality, u) (levels, cstrs) -> *)
+(*     if Level.Set.mem l variables then *)
+(*       Level.Set.add l levels, UnivConstraints.add (Universe.make l, Eq, u) cstrs *)
+(*     else if locality == UGraph.Global || Level.Set.mem l gvariables then *)
+(*       levels, UnivConstraints.add (Universe.make l, Eq, u) cstrs *)
+(*     else levels, cstrs) substitution (levels, cstrs) *)
 
 let context_set uctx : PolyConstraints.ContextSet.t =
-  let levels, cstrs, eqs =
-    UGraph.constraints_of_universes ~only_local:true uctx.universes in
-  let cstrs = filter_set_constraints cstrs in
-  let levels = Level.Set.union uctx.local_variables levels in
-  let dlevels, dcstrs = uctx.demoted_local_context in
-  rigid_levels_constraints_of_substitution uctx.local_variables dlevels eqs
-    (Level.Set.diff levels dlevels, Constraints.union dcstrs cstrs)
+  uctx.local
+  (* let levels, cstrs, eqs = *)
+  (*   UGraph.constraints_of_universes ~only_local:true uctx.universes in *)
+  (* let cstrs = filter_set_constraints cstrs in *)
+  (* let levels = Level.Set.union uctx.local_variables levels in *)
+  (* let dlevels, dcstrs = uctx.demoted_local_context in *)
+  (* let univ_dcstrs = PolyConstraints.univs dcstrs in  *)
+  (* let lvls, univ_cstrs = rigid_levels_constraints_of_substitution uctx.local_variables dlevels eqs *)
+  (*   (Level.Set.diff levels dlevels, UnivConstraints.union univ_dcstrs cstrs) *)
+  (* in  *)
+  (*   lvls, PolyConstraints.ContextSet. univ_cstrs *)
 
 let context_set uctx =
   let ctx = context_set uctx in
-  debug Pp.(fun () -> str"Rigid context set of " ++ pr ~local:true uctx ++ fnl () ++ str" = " ++ ContextSet.pr Level.raw_pr ctx);
+  debug Pp.(fun () -> str"Rigid context set of " ++ pr ~local:true uctx ++ fnl () ++ str" = " ++ PolyConstraints.ContextSet.pr Quality.QVar.raw_pr Level.raw_pr ctx);
   ctx
 
 let merge_univ_constraints uctx cstrs g =
@@ -546,6 +553,7 @@ let union uctx uctx' =
     let levelsr = Level.Set.diff levelsr uctx.local_variables in
     let levelsr = Level.Set.diff levelsr (Level.Map.domain uctx_subst) in
     let () = debug Pp.(fun () -> str"Levelsr = " ++ Level.Set.pr Level.raw_pr levelsr) in
+    let local = PolyConstraints.ContextSet.union uctx.local uctx'.local in
     let names = names_union uctx.names uctx'.names in
     let variances = Option.union InferCumulativity.union_variances uctx.variances uctx'.variances in
     let extra = UnivMinim.extra_union uctx.minim_extra uctx'.minim_extra in
@@ -569,13 +577,14 @@ let union uctx uctx' =
       update_univ_subst local_variables flexible_variables variances equivs
     in
     debug Pp.(fun () -> str"Union of substitutions = " ++ UGraph.pr ~local:true Level.raw_pr universes);
-    let universes, equivs = merge_constraints_graph uctx cstrsr universes in
+    let universes, equivs = merge_univ_constraints uctx cstrsr universes in
     let local_variables, flexible_variables, variances =
       update_univ_expr_subst local_variables flexible_variables variances equivs
     in
     let uctx = { names;
+        local;
         local_variables;
-        demoted_local_context = ContextSet.union uctx.demoted_local_context uctx'.demoted_local_context;
+        demoted_local_context = PolyConstraints.ContextSet.union uctx.demoted_local_context uctx'.demoted_local_context;
         flexible_variables;
         fixed_rigid_universes = uctx.fixed_rigid_universes;
         fixed_rigid_constraints = uctx.fixed_rigid_constraints;
@@ -630,7 +639,7 @@ let univ_entry ~poly ?variances uctx =
 (** Merge the given constraint set in the universe context. Assumes the universes
   from the constraints are already declared. *)
 let merge_constraints uctx cstrs =
-  let universes, equivs = merge_constraints_graph uctx cstrs uctx.universes in
+  let universes, equivs = merge_univ_constraints uctx cstrs uctx.universes in
   let local_variables, flexible_variables, variances =
     update_univ_expr_subst uctx.local_variables uctx.flexible_variables uctx.variances equivs
   in
@@ -643,16 +652,16 @@ let merge_constraints uctx cstrs =
 (** Merge the given context set in the universe context.
   Does not assume the universes from the context are already declared. *)
 let merge_context_universes ~strict uctx (us, csts)  =
-  debug Pp.(fun () -> str"merge_context_universes : " ++ ContextSet.pr Level.raw_pr (us, csts));
+  debug Pp.(fun () -> str"merge_context_universes : " ++ PolyConstraints.ContextSet.pr QVar.raw_pr Level.raw_pr (us, csts));
   let declarenew g = Level.Set.fold (fun v g -> if Level.is_set v then g else
     try UGraph.add_universe v ~strict ~rigid:true g with UGraph.AlreadyDeclared -> g) us g in
   let uctx = merge_constraints { uctx with universes = declarenew uctx.universes;
-    initial_universes = declarenew uctx.initial_universes } csts in
+    initial_universes = declarenew uctx.initial_universes } (PolyConstraints.univs csts) in
   debug Pp.(fun () -> str"After merge of context set: " ++ pr uctx);
   uctx
 
 let of_context_set env ((qs,us),csts) =
-  debug Pp.(fun () -> str"of_context_set: " ++ ContextSet.pr Level.raw_pr (us, csts));
+  debug Pp.(fun () -> str"of_context_set: " ++ PolyConstraints.ContextSet.pr QVar.raw_pr Level.raw_pr (us, csts));
   let sort_variables = QState.of_set qs in
   let universes = UGraph.set_local (Environ.universes env) in
   let uctx = { empty with local_variables = us; initial_universes = universes; universes; sort_variables;} in
@@ -774,10 +783,6 @@ let add_local_univ cstr local =
   let local = update_local_expr_equivalences local equivs in
   { local with universes }
 
-let add_elim_local cst local =
-  { local with
-        local_cst = PolyConstraints.add_quality cst local.local_cst }
-
 (* Constraint with algebraic on the left and a single level on the right *)
 let enforce_leq_up u v local =
   add_local_univ (u, Le, Universe.make v) local
@@ -833,7 +838,7 @@ let add_local_univ fo c local =
     else
     let local' = add_local_univ c local in
     let newcstrs = UGraph.constraints_for ~kept:(Level.Set.diff local.local_variables local.flexible_variables) local'.universes in
-    if Constraints.for_all (fun c -> UGraph.check_constraint local.universes c) newcstrs then
+    if UnivConstraints.for_all (fun c -> UGraph.check_constraint local.universes c) newcstrs then
       local'
     else
       (* The constraint is too strict *)
@@ -1006,7 +1011,9 @@ let process_constraints uctx cstrs =
          qualities instead of having to make a dummy sort *)
       let mk q = Sorts.make q Universe.type0 in
       unify_quality CONV (mk a) (mk b) local
-    | QElimTo (a, b) -> add_elim_local (a, ElimTo, b) local
+      | QElimTo (a, b) -> 
+          let local' = PolyConstraints.ContextSet.add_elim_constraints (ElimConstraints.singleton (a, ElimConstraint.ElimTo, b)) local.local in
+        { local with local = local' }
     | ULe (l, r) -> enforce_le false local l r
     | ULub (c, l, r) ->
       if all_flexible local l || all_flexible local r then
@@ -1053,7 +1060,15 @@ let process_constraints (uctx : t) cstrs =
       ++ UGraph.explain_universe_inconsistency QVar.raw_pr (pr_uctx_level uctx) incon); raise e
   end
 
-let add_constraints uctx cstrs = process_constraints uctx cstrs
+(* let add_constraints uctx cstrs = process_constraints uctx cstrs *)
+
+let add_constraints src uctx cstrs =
+  let uctx' = process_constraints uctx cstrs in
+  let sorts = uctx'.sort_variables in
+  { uctx with
+    sort_variables =
+          QState.merge_constraints (merge_elim_constraints src uctx (PolyConstraints.qualities @@ PolyConstraints.ContextSet.constraints uctx'.local)) sorts ;
+    }
 
 let problem_of_univ_constraints cstrs =
   UnivConstraints.fold (fun (l,d,r) acc ->
@@ -1422,7 +1437,7 @@ let check_poly_decl ~poly ~cumulative ~kind uctx decl =
       let uctx, variances = check_poly_univ_decl ~cumulative ~kind uctx decl in
       Polymorphic_entry (uctx, Option.map (fun v -> Entries.Check_variances v) variances)
     else
-      if not (Option.is_empty decl.univdecl_variances) then
+      if not (Option.is_empty decl.polydecl_variances) then
         CErrors.user_err
           Pp.(strbrk "Universe variance was specified but this definition will not be cumulative.")
       else Monomorphic_entry (check_mono_poly_decl uctx decl) in
@@ -1435,7 +1450,7 @@ let merge_graph_context g (us, csts) =
   UGraph.merge_constraints csts g
 
 let restrict_universe_context (univs, csts) keep =
-  debug Pp.(fun () -> str"Restricting universe context set: "  ++ ContextSet.pr Level.raw_pr (univs, csts) ++
+  debug Pp.(fun () -> str"Restricting universe context set: "  ++ PolyConstraints.ContextSet.pr QVar.raw_pr Level.raw_pr (univs, csts) ++
     str " to " ++ Level.Set.pr Level.raw_pr keep);
   let removed = Level.Set.diff univs keep in
   if Level.Set.is_empty removed then univs, csts
@@ -1451,7 +1466,7 @@ let restrict_universe_context (univs, csts) keep =
   let univ_csts = UnivConstraints.filter (fun (l,d,r) -> not (Universe.is_type0 l && d == Le)) univ_csts in
   let uctx = (Level.Set.inter univs keep, PolyConstraints.make elim_csts univ_csts) in
   (* debug Pp.(fun () -> str"Extras" ++ Level.Set.pr Level.raw_pr extras); *)
-  debug Pp.(fun () -> str"Restricted universe context" ++ PolyConstraints.ContextSet.pr Level.raw_pr uctx);
+  debug Pp.(fun () -> str"Restricted universe context" ++ PolyConstraints.ContextSet.pr QVar.raw_pr Level.raw_pr uctx);
   uctx
 
 let restrict_uctx uctx keep =
@@ -1501,7 +1516,7 @@ let univ_flexible = UnivFlexible
 let merge ?loc ~sideff rigid uctx uctx' =
   if PolyConstraints.ContextSet.is_empty uctx' then uctx
   else
-    let () = debug Pp.(fun () -> str"merge (sideff: " ++ bool sideff ++ str"):  " ++ ContextSet.pr (pr_uctx_level uctx) uctx' ++
+    let () = debug Pp.(fun () -> str"merge (sideff: " ++ bool sideff ++ str"):  " ++ PolyConstraints.ContextSet.pr QVar.raw_pr (pr_uctx_level uctx) uctx' ++
       str " in " ++ fnl () ++ pr ~local:true uctx) in
     let levels = PolyConstraints.ContextSet.levels uctx' in
     let declare g =
@@ -1549,7 +1564,7 @@ let merge ?loc ~sideff rigid uctx uctx' =
     in
     let uctx = { uctx with names; demoted_local_context; universes; variances; initial_universes = initial } in
     let uctx =
-      merge_univ_constraints uctx cstrs'
+      merge_constraints uctx (PolyConstraints.univs cstrs')
       (* with Loop_checking.Undeclared u ->
         CErrors.user_err Pp.(str"Undeclared universe " ++ Level.raw_pr u ++ str" during UState.merge" ++
           bool (UGraph.is_declared uctx.universes u)) in *)
@@ -1584,8 +1599,8 @@ let merge_sort_context ?loc ~sideff rigid src uctx ((qvars,levels),csts) =
   let uctx = merge_sort_variables ?loc ~sideff uctx src qvars (PolyConstraints.qualities csts) in
   merge ?loc ~sideff rigid uctx (levels,csts)
 
-let demote_global_univs (lvl_set,(_,univ_csts)) (uctx : t) =
-  debug Pp.(fun () -> str"demote_global_univs:" ++ ContextSet.pr Level.raw_pr (lvl_set,univ_csts) ++ fnl () ++ str"From: " ++ pr ~local:false uctx);
+let demote_global_univs (lvl_set,(elim_csts,univ_csts as csts) : PolyConstraints.ContextSet.t) (uctx : t) =
+  debug Pp.(fun () -> str"demote_global_univs:" ++ PolyConstraints.ContextSet.pr QVar.raw_pr Level.raw_pr (lvl_set,csts) ++ fnl () ++ str"From: " ++ pr ~local:false uctx);
   let local_variables = Level.Set.fold Level.Set.remove lvl_set uctx.local_variables in
   let flexible_variables = Level.Set.fold Level.Set.remove lvl_set uctx.flexible_variables in
   let update_ugraph g =
@@ -1601,7 +1616,7 @@ let demote_global_univs (lvl_set,(_,univ_csts)) (uctx : t) =
   let universes, _equivs' = update_ugraph uctx.universes in
   let demoted_local_context =
     let lvls, cstrs = uctx.demoted_local_context in
-     Level.Set.union lvl_set lvls, Constraints.union cstrs csts_set
+     Level.Set.union lvl_set lvls, PolyConstraints.union cstrs csts
   in
   { uctx with local_variables; demoted_local_context; flexible_variables; universes; initial_universes }
 
@@ -1627,7 +1642,7 @@ let merge_seff (uctx : t) (uctx' : t) =
     str " in " ++ Level.Set.pr Level.raw_pr uctx.local_variables ++ pr ~local:true uctx);
   let (levels, constraints, subst) = UGraph.constraints_of_universes ~only_local:true uctx'.universes in
   (* Declare all levels: we are going to [set] the defined ones *)
-  debug Pp.(fun () -> str"merge_seff constraints: " ++ Constraints.pr Level.raw_pr constraints);
+  debug Pp.(fun () -> str"merge_seff constraints: " ++ UnivConstraints.pr Level.raw_pr constraints);
   let levels = Level.Set.union levels (Level.Map.domain subst) in
   let declare g =
     Level.Set.fold (fun u g ->
@@ -1642,7 +1657,7 @@ let merge_seff (uctx : t) (uctx' : t) =
     flexible_variables = Level.Set.union uctx.flexible_variables uctx'.flexible_variables; }
   in
   let uctx = merge_subst uctx subst in
-  let uctx = merge_univ_constraints uctx constraints in
+  let uctx = merge_constraints uctx constraints in
   debug Pp.(fun () -> str"Merge result: " ++ pr ~local:true uctx);
   uctx
 
@@ -1732,7 +1747,6 @@ let normalize_quality_variables uctx =
   { uctx with local = (lvls, (elim_cstrs, lvl_cstrs)) }
 
 let normalize_variables uctx =
-  let uctx = normalize_lvl_variables uctx in
   normalize_quality_variables uctx
 
 let fix_undefined_variables uctx =
@@ -1740,8 +1754,6 @@ let fix_undefined_variables uctx =
 
 let disable_universe_extension uctx ~with_cstrs =
   { uctx with fixed_rigid_universes = true; fixed_rigid_constraints = with_cstrs }
-
-let normalize_variables uctx = uctx
 
 let collapse_elim_to_prop_sort_variables ~to_prop uctx =
   let sorts = QState.collapse_elim_to_prop ~to_prop uctx.sort_variables in
@@ -1782,6 +1794,7 @@ let minimize
         ~binders:(fst uctx.names) uctx.minim_extra
     in
     { names = uctx.names;
+      local = uctx.local;
       local_variables = local_variables;
       demoted_local_context = uctx.demoted_local_context;
       flexible_variables = flexible_variables;
@@ -1818,7 +1831,7 @@ let check_poly_decl_rev uctx decl =
   let uctx, univ_csts =
     if decl.polydecl_extensible_constraints
     then uctx, univ_csts
-    else restrict_univ_constraints uctx decl.polydecl_univ_constraints,
+    else restrict_univ_constraints uctx (PolyConstraints.make decl.polydecl_elim_constraints decl.polydecl_univ_constraints),
          univ_csts
   in
   let uctx, elim_csts =

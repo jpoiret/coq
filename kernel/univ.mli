@@ -187,6 +187,7 @@ sig
   val is_type0 : t -> bool
   val is_typen : int -> t -> bool
 
+  val sort : (Level.t * int) list -> t 
   val exists : (Level.t * int -> bool) -> t -> bool
   val for_all : (Level.t * int -> bool) -> t -> bool
 

@@ -581,17 +581,16 @@ let check_add_elimination_constraints ~primitive env univs record_quality proj_t
     else
       let open Quality in
       let new_elim_cstr = record_quality, ElimConstraint.ElimTo, proj_quality in
-      let (entry, binders) = univs in
-      let entry = match entry with
-        | UState.Polymorphic_entry uctx ->
+      let entry = match univs.UState.universes_entry_universes with
+        | UState.Polymorphic_entry (uctx, variances) ->
           let open UVars.UContext in
           let (elim_cstrs, univ_cstrs) = constraints uctx in
           let elim_cstrs' = ElimConstraints.add new_elim_cstr elim_cstrs  in
           let uctx' = make (names uctx) (instance uctx, (elim_cstrs', univ_cstrs)) in
-          UState.Polymorphic_entry uctx'
-        | _ -> entry
+          UState.Polymorphic_entry (uctx', variances)
+        | _ -> univs.UState.universes_entry_universes
       in
-      (entry, binders)
+      { univs with universes_entry_universes = entry }
 
 (* TODO: refactor the declaration part here; this requires some
    surgery as Evarutil.finalize is called too early in the path *)
@@ -626,7 +625,7 @@ let build_named_proj ~primitive ~flags ~univs ~uinstance ~kind env paramdecls
   let univs = check_add_elimination_constraints ~primitive env univs record_q proj_typ in
   let univs = match univs.UState.universes_entry_universes with
   | UState.Monomorphic_entry _ ->
-    { univs with universes_entry_universes = UState.Monomorphic_entry Univ.ContextSet.empty }
+    { univs with universes_entry_universes = UState.Monomorphic_entry PolyConstraints.ContextSet.empty }
   | UState.Polymorphic_entry (uctx, variances) -> univs
   in
   let entry = Declare.definition_entry ~univs ~types:proj_typ proj in

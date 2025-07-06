@@ -221,7 +221,7 @@ let name_of_cumul_ident_decl : cumul_ident_decl -> name_decl =
 
 let name_of_ident_decl : ident_decl -> name_decl =
   fun x ->
-    (lname_of_lident (fst x), Option.map cumul_of_univ_decl (snd x))
+    (lname_of_lident (fst x), Option.map cumul_of_poly_decl (snd x))
 
 let test_variance_ident =
   let open Procq.Lookahead in
@@ -229,14 +229,18 @@ let test_variance_ident =
     lk_kws ["=";"+";"-";"*"] >> lk_ident
   end
 
-let test_poly_decl =
+let test_doublepipe_poly_decl =
   let open Procq.Lookahead in
-  to_entry "test_poly_decl" (lk_ident_list >> lk_kw "|" >> lk_ident_list >> (lk_kw "+" <+> lk_empty) >> (lk_kw "|" <+> lk_kw "|}"))
+  to_entry "test_doublepipe_poly_decl" (lk_ident_list >> lk_kw "|" >> lk_ident_list >> (lk_kw "+" <+> lk_empty) >> (lk_kw "|" <+> lk_kw "|}"))
 
-let test_cumul_poly_decl =
+let test_doublepipe_cumul_poly_decl =
   let open Procq.Lookahead in
-  let lk_list_variance_ident = lk_list (lk_kw "+" <+> lk_kw "*" <+> lk_kw "=" <+> lk_kw "-" <+> lk_ident) in
+  let lk_list_variance_ident = lk_list (lk_kw "+" <+> lk_kw "*" <+> lk_kw "=" <+> lk_ident) in
   to_entry "test_doublepipe_cumul_poly_decl" (lk_ident_list >> lk_kw "|" >> lk_list_variance_ident >> (lk_kw "+" <+> lk_empty) >> (lk_kw "|" <+> lk_kw "|}"))
+
+let test_semicolon_cumul_poly_decl =
+  let open Procq.Lookahead in
+  to_entry "test_semicolon_cumul_poly_decl" (lk_ident_list >> lk_kw ";")
 
 let test_univ_cst =
   let open Procq.Lookahead in
@@ -364,9 +368,9 @@ GRAMMAR EXTEND Gram
       | -> { NoInline } ] ]
   ;
   poly_constraint:
-    [ [ test_univ_cst; l = universe_name;
-        ord = [ "<" -> { (Univ.UnivConstraint.Lt, true) } | "=" -> { (Univ.UnivConstraint.Eq, false) } | "<=" -> { (Univ.UnivConstraint.Le, false) } ];
-        r = universe_name -> { UnivCst (l, ord, r) }
+    [ [ test_univ_cst; l = universe;
+        ord = [ "<" -> { (Univ.UnivConstraint.Le, true) } | "=" -> { (Univ.UnivConstraint.Eq, false) } | "<=" -> { (Univ.UnivConstraint.Le, false) } ];
+        r = universe -> { UnivCst (l, ord, r) }
         | l = sort_quality_var; "~>"; r = sort_quality_var
           -> { ElimCst (l, Quality.ElimConstraint.ElimTo, r) } ] ]
   ;
@@ -391,18 +395,19 @@ GRAMMAR EXTEND Gram
            polydecl_instance = l;
            polydecl_extensible_instance = ext;
            polydecl_variances = ();
-           polydecl_constraints = fst cs;
+           polydecl_univ_constraints = univ_constraints @@ fst cs;
            polydecl_extensible_constraints = snd cs } }
     | "@{" ; l0 = LIST0 identref; ";";  l = LIST0 identref; ext = [ "+" -> { true } | -> { false } ];
-        cs = univ_decl_constraints
+        cs = poly_decl_constraints
         ->
          { let open UState in
          { polydecl_qualities = l0;
            polydecl_extensible_qualities = false;
+           polydecl_elim_constraints = elim_constraints @@ fst cs;
            polydecl_instance = l;
            polydecl_extensible_instance = ext;
            polydecl_variances = ();
-           polydecl_constraints = fst cs;
+           polydecl_univ_constraints = univ_constraints @@ fst cs;
            polydecl_extensible_constraints = snd cs } }
     | "@{" ; l = LIST0 identref; ext = [ "+" -> { true } | -> { false } ];
          cs = poly_decl_constraints
@@ -414,7 +419,7 @@ GRAMMAR EXTEND Gram
            polydecl_instance = l;
            polydecl_extensible_instance = ext;
            polydecl_variances = ();
-           polydecl_constraints = fst cs;
+           polydecl_univ_constraints = univ_constraints @@ fst cs;
            polydecl_extensible_constraints = snd cs } }
     ] ]
   ;
@@ -433,7 +438,7 @@ GRAMMAR EXTEND Gram
     ] ]
   ;
   cumul_poly_decl:
-    [ [ "@{" ; test_cumul_poly_decl; l0 = LIST0 identref; "|";
+    [ [ "@{" ; test_doublepipe_cumul_poly_decl; l0 = LIST0 identref; pipe_loc = [ "|" -> { loc } ];
         l = LIST0 variance_identref; ext = [ "+" -> { true } | -> { false } ];
          cs = poly_decl_constraints
          ->
@@ -445,12 +450,12 @@ GRAMMAR EXTEND Gram
            polydecl_instance = l;
            polydecl_extensible_instance = ext;
            polydecl_variances = ();
-           polydecl_constraints = fst cs;
+           polydecl_univ_constraints = univ_constraints @@ fst cs;
            polydecl_extensible_constraints = snd cs } }
 
-       | "@{" ; test_semicolon_cumul_univ_decl; l0 = LIST0 identref; ";";
+       | "@{" ; test_semicolon_cumul_poly_decl; l0 = LIST0 identref; ";";
         l = LIST0 variance_identref; ext = [ "+" -> { true } | -> { false } ];
-         cs = univ_decl_constraints
+         cs = poly_decl_constraints
          ->
          { let open UState in
          { polydecl_qualities = l0;
@@ -459,7 +464,7 @@ GRAMMAR EXTEND Gram
            polydecl_instance = l;
            polydecl_extensible_instance = ext;
            polydecl_variances = ();
-           polydecl_constraints = fst cs;
+           polydecl_univ_constraints = univ_constraints @@ fst cs;
            polydecl_extensible_constraints = snd cs } }
 
        | "@{" ; l = LIST0 variance_identref; ext = [ "+" -> { true } | -> { false } ];
@@ -472,7 +477,7 @@ GRAMMAR EXTEND Gram
            polydecl_instance = l;
            polydecl_extensible_instance = ext;
            polydecl_variances = ();
-           polydecl_constraints = fst cs;
+           polydecl_univ_constraints = univ_constraints @@ fst cs;
            polydecl_extensible_constraints = snd cs } }
     ] ]
   ;

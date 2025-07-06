@@ -807,9 +807,9 @@ let subst_instance_instance s i =
   let us' = Array.Smart.map (fun l -> subst_instance_universe s l) us in
   if qs' == qs && us' == us then i else Instance.of_array (qs', us')
 
-let subst_instance_constraint s (u,d,v as c) =
-  let u' = subst_instance_universe s u in
-  let v' = subst_instance_universe s v in
+let subst_instance_constraint subst_instance s (u,d,v as c) =
+  let u' = subst_instance s u in
+  let v' = subst_instance s v in
     if u' == u && v' == v then c
     else (u',d,v')
 
@@ -859,22 +859,22 @@ let subst_level_instance_sort u s =
 let subst_level_instance_relevance u r =
   Sorts.relevance_subst_fn (subst_level_instance_qvar u) r
 
-let subst_level_instance_constraint s (u,d,v as c) =
-  let u' = subst_level_instance_universe s u in
-  let v' = subst_level_instance_universe s v in
-    if u' == u && v' == v then c
-    else (u', d, v')
+(* let subst_level_instance_constraint s (u,d,v as c) = *)
+(*   let u' = subst_level_instance_universe s u in *)
+(*   let v' = subst_level_instance_universe s v in *)
+(*     if u' == u && v' == v then c *)
+(*     else (u', d, v') *)
 
 let subst_instance_elim_constraint =
   subst_instance_constraint subst_instance_quality
 
 let subst_instance_univ_constraint =
-  subst_instance_constraint subst_instance_level
+  subst_instance_constraint subst_instance_universe
 
 let subst_instance_constraints s csts =
   PolyConstraints.fold
     ((fun q csts -> ElimConstraints.add (subst_instance_elim_constraint s q) csts),
-     (fun c csts -> Constraints.add (subst_level_instance_constraint s c) csts))
+     (fun c csts -> UnivConstraints.add (subst_instance_univ_constraint s c) csts))
     csts PolyConstraints.empty
 
 type 'a puniverses = 'a * Instance.t
@@ -906,7 +906,7 @@ struct
   let empty = (empty_bound_names, (LevelInstance.empty, PolyConstraints.empty))
   let is_empty (_, (univs, csts)) = LevelInstance.is_empty univs && PolyConstraints.is_empty csts
 
-  let pr prq prl ?variances (_, (univs, csts) as uctx) =
+  let pr prq prl ?(variances : variances option) (_, (univs, csts) as uctx : t) =
     if is_empty uctx then mt() else
       h (LevelInstance.pr prq prl ?variances univs ++ str " |= ") ++ h (v 0 (PolyConstraints.pr prq prl csts))
 
@@ -963,6 +963,8 @@ end
 type universe_context = UContext.t
 type 'a in_universe_context = 'a * universe_context
 
+let hcons_universe_context = UContext.hcons
+
 module AbstractContext =
 struct
   type t = bound_names constrained
@@ -1008,6 +1010,8 @@ type 'a univ_abstracted = {
   univ_abstracted_binder : AbstractContext.t;
 }
 
+let hcons_abstract_universe_context = AbstractContext.hcons
+
 let map_univ_abstracted f {univ_abstracted_value;univ_abstracted_binder} =
   let univ_abstracted_value = f univ_abstracted_value in
   {univ_abstracted_value;univ_abstracted_binder}
@@ -1036,18 +1040,18 @@ let subst_univs_level_level subst l =
   try Level.Map.find l subst
   with Not_found -> Universe.make l
 
-let subst_univs_level_universe subst =
+let subst_univs_level_universe (subst : Universe.t Level.Map.t) u =
   let modified = ref false in
-  let rec aux u' = function
+ let rec aux u' = function
     | [] -> u'
-    | (l, k as e) :: u ->
+    | (l, k as e) :: tl ->
       match Level.Map.find l subst with
-      | exception Not_found -> aux (e :: u') u
+      | exception Not_found -> aux (e :: u') tl
       | univ ->
         modified := true;
-        aux (List.append (Universe.addn univ k) u') u
+        aux (List.append (Universe.repr (Universe.addn univ k)) u') tl
   in
-  let u' = aux [] u in
+  let u' = aux [] (Universe.repr u) in
   if not !modified then u
   else Universe.sort u'
 
@@ -1163,3 +1167,6 @@ let abstract_universes uctx =
   in
   let ctx = (nas, cstrs) in
   instance, ctx
+
+let pr_universe_context = UContext.pr
+let pr_abstract_universe_context = AbstractContext.pr

@@ -10,7 +10,6 @@
 
 open Univ
 open UnivSubst
-open PolyConstraints
 open InferCumulativity
 
 let _debug_minim, debug = CDebug.create_full ~name:"univMinim" ()

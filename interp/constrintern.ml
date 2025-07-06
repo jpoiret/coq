@@ -3064,8 +3064,8 @@ let interp_cumul_poly_decl env decl =
   }
   in
   let evd =
-    if not decl.univdecl_extensible_instance then
-      Evd.disable_universe_extension evd ~with_cstrs:(not decl.univdecl_extensible_constraints)
+    if not decl.polydecl_extensible_instance then
+      Evd.disable_universe_extension evd ~with_cstrs:(not decl.polydecl_extensible_constraints)
     else evd
   in
   evd, decl

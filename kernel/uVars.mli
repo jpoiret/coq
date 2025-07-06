@@ -352,7 +352,7 @@ sig
   val to_context_set : t -> Quality.QVar.Set.t * ContextSet.t
   (** Discard the names and order of the universes *)
 
-  val pr : (Quality.QVar.t -> Pp.t) -> (Level.t -> Pp.t) -> ?variance:Variance.t array -> t -> Pp.t
+  val pr : (Quality.QVar.t -> Pp.t) -> (Level.t -> Pp.t) -> ?variances:variances -> t -> Pp.t
 end
 (** A value in a universe context. *)
 type 'a in_universe_context = 'a * UContext.t
@@ -396,7 +396,7 @@ sig
   val names : t -> bound_names
   (** Return the names of the bound universe variables *)
 
-  val pr : (Quality.QVar.t -> Pp.t) -> (Level.t -> Pp.t) -> ?variance:Variance.t array -> t -> Pp.t
+  val pr : (Quality.QVar.t -> Pp.t) -> (Level.t -> Pp.t) -> ?variances:variances -> t -> Pp.t
 end
 
 type 'a univ_abstracted = {
@@ -416,7 +416,7 @@ val empty_level_subst : universe_level_subst
 val is_empty_level_subst : universe_level_subst -> bool
 
 (** Substitution of universes. *)
-val subst_univs_level_level : universe_level_subst -> Level.t -> Level.t
+val subst_univs_level_level : universe_level_subst -> Level.t -> Universe.t
 val subst_univs_level_universe : universe_level_subst -> Universe.t -> Universe.t
 val subst_univs_constraints : sort_level_subst -> PolyConstraints.t -> PolyConstraints.t
 

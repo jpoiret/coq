@@ -379,12 +379,12 @@ let dump_universes output g =
     | UGraph.Node ltle ->
       List.iter (fun (k, v) ->
         if k = 1 then
-          output UnivConstraint.Lt (Universe.of_expr (u, 0)) v
+          output Lt (Universe.of_expr (u, 0)) v
         else
-          output UnivConstraint.Le (Universe.of_expr (u, k)) v)
+          output Le (Universe.of_expr (u, k)) v)
         ltle;
     | UGraph.Alias v ->
-      output UnivConstraint.Eq (Universe.make u) v
+      output Eq (Universe.make u) v
   in
   Univ.Level.Map.iter dump_arc g
 
@@ -399,7 +399,6 @@ let dump_universes_gen prl g s =
       let init = lazy (Printf.fprintf output "digraph universes {\n") in
       begin fun kind left right ->
         let () = Lazy.force init in
-        let open UnivConstraint in
         match kind with
           | Lt ->
             Printf.fprintf output "  \"%s\" -> \"%s\" [style=bold];\n" right left
@@ -413,7 +412,6 @@ let dump_universes_gen prl g s =
       end
     end else begin
       begin fun kind left right ->
-        let open UnivConstraint in
         let kind = match kind with
           | Lt -> "<"
           | Le -> "<="
@@ -664,7 +662,7 @@ let to_source_path u p =
     | [] -> u, []
     | (k, v, ref) :: p ->
       match k with
-      | Univ.Le ->
+      | Univ.UnivConstraint.Le ->
         if decomp_ok then
           match Univ.Universe.decompose_succ u with
           | None -> let v', p' = aux decomp_ok v p in
@@ -674,15 +672,13 @@ let to_source_path u p =
             u', (Lt, v', ref) :: p'
         else let v', p' = aux decomp_ok v p in
           (u, (Le, v', ref) :: p')
-      | Univ.Eq -> let v', p' = aux false v p in
+      | Univ.UnivConstraint.Eq -> let v', p' = aux false v p in
         u, (Eq, v', ref) :: p'
     in aux true u p
 
 let pr_source_path prl u src =
   if CList.is_empty src then mt()
   else
-    let open Univ in
-    let open UnivConstraint in
     let pr_rel = function
       | Eq -> str"=" | Le -> str"<=" | Lt -> str"<"
     in
@@ -1110,14 +1106,14 @@ module Preprocessed_Mind_decl = struct
   type flags = ComInductive.flags
   type record = {
     flags : flags;
-    udecl : Constrexpr.cumul_univ_decl_expr option;
+    udecl : Constrexpr.cumul_poly_decl_expr option;
     primitive_proj : bool;
     kind : Vernacexpr.inductive_kind;
     records : Record.Ast.t list;
   }
   type inductive = {
     flags : flags;
-    udecl : Constrexpr.cumul_univ_decl_expr option;
+    udecl : Constrexpr.cumul_poly_decl_expr option;
     typing_flags : Declarations.typing_flags option;
     private_ind : bool;
     uniform : ComInductive.uniform_inductive_flag;
@@ -1187,7 +1183,7 @@ let check_proj_flags rf =
   { pf_coercion; pf_instance; pf_canonical = rf.rf_canonical }
 
 let preprocess_defclass ~atts udecl (id, bl, c, l) =
-  let (poly, sort_poly, cumulative), mode =
+  let ((poly, sort_poly), cumulative), mode =
     Attributes.(parse Notations.(polymorphic_cumulative ~is_defclass:true ++ sort_polymorphic ++ mode_attr) atts)
   in
   let flags = {
@@ -1798,7 +1794,7 @@ let vernac_instance_program ~atts ~pm name bl t props info =
 let vernac_instance_interactive ~atts name bl t info props =
   Dumpglob.dump_constraint (fst name) false "inst";
   let ((locality, poly), sort_poly), cumulative =
-    Attributes.(parse (Notations.(hint_locality ++ polymorphic ++ sort_polymorphic ++ cumulative))) atts
+    Attributes.(parse (Notations.(hint_locality ++ polymorphic ++ sort_polymorphic ++ cumulative UVars.Definition))) atts
   in
   let _id, pstate =
     Classes.new_instance_interactive ~locality ~poly ~sort_poly ~cumulative name bl t info props in
@@ -2222,7 +2218,7 @@ let check_may_eval env sigma redexp rc =
   let sigma = Evd.minimize_universes sigma in
   let uctx = Evd.universe_context_set sigma in
   let (qs, us), csts = Evd.sort_context_set sigma in
-  let env = Environ.push_context_set uctx (Evarutil.nf_env_evar sigma env) in
+  let env = Environ.push_context_set QGraph.Static uctx (Evarutil.nf_env_evar sigma env) in
   let { Environ.uj_val=c; uj_type=ty; } =
     if Evarutil.has_undefined_evars sigma c
     || List.exists (Context.Named.Declaration.exists (Evarutil.has_undefined_evars sigma))
@@ -2879,7 +2875,7 @@ let translate_pure_vernac ?loc ~atts v = let open Vernactypes in match v with
     end
 
   | VernacDeclareInstance (id, bl, inst, info) ->
-    vtdefault(fun () -> vernac_declare_instance ~atts (fst id, Option.map Constrexpr_ops.cumul_of_univ_decl (snd id)) bl inst info)
+    vtdefault(fun () -> vernac_declare_instance ~atts (fst id, Option.map Constrexpr_ops.cumul_of_poly_decl (snd id)) bl inst info)
   | VernacContext sup ->
     vtdefault(fun () -> vernac_context ~atts sup)
   | VernacExistingInstance insts ->

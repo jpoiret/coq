@@ -35,7 +35,7 @@ let create_clos_infos env sigma flags =
 
 (* TODO: Check usages of finalize with proper to_type *)
 let finalize ?abort_on_undefined_evars ?(to_type) sigma ?(partial=false) f =
-  let sigma = minimize_universes sigma ~partial in
+  let sigma = minimize_universes ?to_type sigma ~partial in
   let uvars = ref Univ.Level.Set.empty in
   let nf_constr c =
     let _, varsc = EConstr.universes_of_constr sigma c in

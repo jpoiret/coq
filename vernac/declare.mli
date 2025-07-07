@@ -561,6 +561,7 @@ type progress =
 (** Prepare API, to be removed once we provide the corresponding 1-step API *)
 val prepare_obligations
   :  name:Id.t
+  -> sort_poly:bool
   -> ?types:EConstr.t
   -> body:EConstr.t
   -> Environ.env

@@ -1150,15 +1150,14 @@ let declare_definition ~info ~cinfo ~opaque ~sort_poly ~obls ~body ?using sigma 
   let gref = List.hd (declare_possibly_mutual_definitions ~info ~cinfo:[cinfo] ~obls obj) in
   gref, uctx
 
-let prepare_obligations ~name ?types ~body env sigma =
+let prepare_obligations ~name ~sort_poly ?types ~body env sigma =
   let env = Global.env () in
   let types = match types with
     | Some t -> t
     | None -> Retyping.get_type_of env sigma body
   in
-  (* TODO: Default to Type or use sort poly flag? *)
   let sigma = UnivVariances.register_universe_variances_of env sigma ~typ:types body in
-  let sigma, (body, types) = Evarutil.finalize ~abort_on_undefined_evars:false
+  let sigma, (body, types) = Evarutil.finalize ~abort_on_undefined_evars:false ~to_type:(not sort_poly)
       sigma (fun nf -> nf body, nf types)
   in
   RetrieveObl.check_evars env sigma;

@@ -652,7 +652,7 @@ let interp_mutual_inductive_constr ~sigma ~flags ~udecl ~ctx_params ~indnames ~a
      (ie v <= template_u with v getting restricted away). *)
   let sigma = UnivVariances.register_universe_variances_of_inductive ~cumulative env_ar_params sigma ~udecl ~params:ctx_params ~arities ~constructors in
 
-  let sigma = Evd.minimize_universes ~collapse_sort_variables:sort_poly ~to_type:(not sort_poly) sigma in
+  let sigma = Evd.minimize_universes ~collapse_sort_variables:(not sort_poly) ~to_type:(not sort_poly) sigma in
   let sigma = restrict_inductive_universes sigma ctx_params arities constructors in
 
   let sigma, univ_entry, ubinders, global_cstrs =

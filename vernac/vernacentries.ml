@@ -1183,7 +1183,7 @@ let check_proj_flags rf =
   { pf_coercion; pf_instance; pf_canonical = rf.rf_canonical }
 
 let preprocess_defclass ~atts udecl (id, bl, c, l) =
-  let ((poly, sort_poly), cumulative), mode =
+  let ((poly, cumulative), sort_poly), mode =
     Attributes.(parse Notations.(polymorphic_cumulative ~is_defclass:true ++ sort_polymorphic ++ mode_attr) atts)
   in
   let flags = {

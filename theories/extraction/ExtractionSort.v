@@ -6,13 +6,13 @@ Constraint Type ~> Extr.
 Set Universe Polymorphism.
 Set Sort Polymorphism.
 
-Class LargeElimSort@{s t; l l' | t ~> Type, l < l'} : Type@{t;l'+1} :=
-{ Univ : Type@{s;l'} ;
+Class LargeElimSort@{s t; l| t ~> Type} : Type@{t;l+2} :=
+{ Univ : Type@{s;l+1} ;
   code : Type@{s;l} -> Univ ;   
   El : Univ -> Type@{s;l} ;
   El_code A : El (code A) = A :> Type@{s;l} }.
 
-Instance ExtrLargeElimSort@{l l'| l < l'} : LargeElimSort@{Extr Type; l l'}. 
+Instance ExtrLargeElimSort@{l} : LargeElimSort@{Extr Type; l}. 
 Admitted. 
 
 Inductive nat : Type :=
@@ -23,22 +23,22 @@ Inductive unit : Type := tt.
 Inductive empty : Type := .
 
 Definition nat_rect@{i} := nat_poly@{Type Type; i}.
-Definition nat_rec@{i} := nat_poly@{Type Type; i}.
-Definition nat_ind@{i} := nat_poly@{Type Prop; i}.
-Definition nat_sind@{i} := nat_poly@{Type SProp; i}.
+Definition nat_rec@{} := nat_poly@{Type Type; 0}.
+Definition nat_ind@{} := nat_poly@{Type Prop; 0}.
+Definition nat_sind@{} := nat_poly@{Type SProp; 0}.
 
-Definition P@{s;u u'|u <u'} {H:LargeElimSort@{s Type;u u'}} (n : nat@{s;}) :=
+Definition P@{s;u} {H:LargeElimSort@{s Type;u}} (n : nat@{s;}) :=
   match n return H.(Univ) with
     O => code unit@{s;u}
   | _ => code empty@{s;u}
   end.
 
-Lemma eq_true@{s;u u'|u <u'} {H:LargeElimSort@{s Type;u u'}} : forall (n:nat@{s;}), O = n -> H.(El) (P n).
+Lemma eq_true@{s;u} {H:LargeElimSort@{s Type;u}} : forall (n:nat@{s;}), O = n -> H.(El) (P n).
 Proof.
   intros b e. destruct e. cbn. eapply (eq_poly _ (fun X => X) tt _ (eq_sym@{Type s;_ _} (H.(El_code) unit))).
 Qed.
 
-Lemma nat_discr@{s;u u'|u <u'} {H:LargeElimSort@{s Type;u u'}} (n : nat@{s;}): O = S n -> empty@{s;u}.
+Lemma nat_discr@{s;u} {H:LargeElimSort@{s Type;u}} (n : nat@{s;}): O = S n -> empty@{s;u}.
 Proof.
   intro e. pose proof (eq_true _ e). eapply (eq_poly _ (fun X => X) X _ (H.(El_code) _)).
 Qed.

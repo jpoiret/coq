@@ -267,10 +267,10 @@ Notation "( x , y , .. , z )" := (pair .. (pair x y) .. z) : core_scope.
 
 Arguments pair {A B} _ _.
 
-Definition prod_rect@{i j k} := prod_poly@{Type Type Type Type | i j k}.
-Definition prod_rec@{i j k} := prod_poly@{Type Type Type Type | i j k}.
-Definition prod_ind@{i j k} := prod_poly@{Type Type Type Prop | i j k}.
-Definition prod_sind@{i j k} := prod_poly@{Type Type Type SProp | i j k}.
+Definition prod_rect@{i j k} := prod_poly@{Type Type Type Type; i j k}.
+Definition prod_rec@{i j k} := prod_poly@{Type Type Type Type; i j k}.
+Definition prod_ind@{i j k} := prod_poly@{Type Type Type Prop; i j k}.
+Definition prod_sind@{i j k} := prod_poly@{Type Type Type SProp; i j k}.
 
 Register prod as core.prod.type.
 Register pair as core.prod.intro.

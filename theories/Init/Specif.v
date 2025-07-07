@@ -25,15 +25,15 @@ Require Import Logic.
     Similarly [(sig2 A P Q)], or [{x:A | P x & Q x}], denotes the subset
     of elements of the type [A] which satisfy both [P] and [Q]. *)
 
-Set Universe Polymorphism.    
-Set Sort Polymorphism.    
+Set Universe Polymorphism.
+Set Sort Polymorphism.
 
-Inductive sigma (A:Type) (P:A -> Type) : Type :=
+Inductive sigma (A:𝒰) (P:A -> Type) : Type :=
     exist_poly : forall x:A, P x -> sigma P.
 
-Definition sig@{i j} := sigma@{Type Prop Type | i j}.
-Definition exist@{i j} := exist_poly@{Type Prop Type | i j}.
-Definition sig_rect@{i j k} := sigma_poly@{Type Prop Type Type| i j k}.
+Definition sig@{i j} := sigma@{Type Prop Type; i j}.
+Definition exist@{i j} := exist_poly@{Type Prop Type; i j}.
+Definition sig_rect@{i j k} := sigma_poly@{Type Prop Type Type; i j k}.
 
 Register sig as core.sig.type.
 Register exist as core.sig.intro.
@@ -42,24 +42,24 @@ Register sig_rect as core.sig.rect.
 Inductive sigma2 (A:Type) (P Q:A -> Type) : Type :=
     exist2_poly : forall x:A, P x -> Q x -> sigma2 P Q.
 
-Definition sig2@{i j k} := sigma2@{Type Prop Prop Type | i j k}.
-Definition exist2@{i j k} := exist2_poly@{Type Prop Prop Type | i j k}.
-Definition sig2_rect@{i j k l} := sigma2_poly@{Type Prop Prop Type Type | i j k l}.
+Definition sig2@{i j k} := sigma2@{Type Prop Prop Type; i j k}.
+Definition exist2@{i j k} := exist2_poly@{Type Prop Prop Type; i j k}.
+Definition sig2_rect@{i j k l} := sigma2_poly@{Type Prop Prop Type Type; i j k l}.
 
 (** [(sigT A P)], or more suggestively [{x:A & (P x)}] is a Sigma-type.
     Similarly for [(sigT2 A P Q)], also written [{x:A & (P x) & (Q x)}]. *)
 
-Definition sigT@{i j} := sigma@{Type Type Type | i j}.
-Definition existT@{i j} := exist_poly@{Type Type Type | i j}.
-Definition sigT_rect@{i j k} := sigma_poly@{Type Type Type Type| i j k}.
+Definition sigT@{i j} := sigma@{Type Type Type; i j}.
+Definition existT@{i j} := exist_poly@{Type Type Type; i j}.
+Definition sigT_rect@{i j k} := sigma_poly@{Type Type Type Type; i j k}.
 
 Register sigT as core.sigT.type.
 Register existT as core.sigT.intro.
 Register sigT_rect as core.sigT.rect.
 
-Definition sigT2@{i j k} := sigma2@{Type Type Type Type | i j k}.
-Definition existT2@{i j k} := exist2_poly@{Type Type Type Type | i j k}.
-Definition sigT2_rect@{i j k l} := sigma2_poly@{Type Type Type Type Type | i j k l}.
+Definition sigT2@{i j k} := sigma2@{Type Type Type Type; i j k}.
+Definition existT2@{i j k} := exist2_poly@{Type Type Type Type; i j k}.
+Definition sigT2_rect@{i j k l} := sigma2_poly@{Type Type Type Type Type; i j k l}.
 
 (* Notations *)
 
@@ -109,9 +109,7 @@ Add Printing Let sigT2.
     [(proj1_sig y)] is the witness [a] and [(proj2_sig y)] is the
     proof of [(P a)] *)
 
-(* Set Universe Polymorphism. *)
 Section Subset_projections.
-
   Variable A : Type.
   Variables P : A -> Type.
 
@@ -126,8 +124,8 @@ Section Subset_projections.
 
 End Subset_projections.
 
-Definition proj1_sig@{i j} := proj1_sigma@{Type Prop Type| i j}.
-Definition proj2_sig@{i j} := proj2_sigma@{Type Prop Type| i j}.
+Definition proj1_sig@{i j} := proj1_sigma@{Type Prop Type; i j}.
+Definition proj2_sig@{i j} := proj2_sigma@{Type Prop Type; i j}.
 
 Register proj1_sig as core.sig.proj1.
 Register proj2_sig as core.sig.proj2.
@@ -145,7 +143,7 @@ Definition sigma_of_sigma2 (A : Type) (P Q : A -> Type) (X : sigma2 P Q) : sigma
            (let (a, _, _) := X in a)
            (let (x, p, _) as s return (P (let (a, _, _) := s in a)) := X in p).
 
-Definition sig_of_sig2@{i j k} := sigma_of_sigma2@{Type Prop Prop Type Type| i j k}.
+Definition sig_of_sig2@{i j k} := sigma_of_sigma2@{Type Prop Prop Type Type; i j k}.
 
 (** Projections of [sig2]
 
@@ -167,7 +165,7 @@ Section Subset_projections2.
 
 End Subset_projections2.
 
-Definition proj3_sig@{i j k} := proj3_sigma@{Type Prop Prop Type Type | i j k}.
+Definition proj3_sig@{i j k} := proj3_sigma@{Type Prop Prop Type Type; i j k}.
 
 (** Projections of [sigT]
 
@@ -178,8 +176,8 @@ Definition proj3_sig@{i j k} := proj3_sigma@{Type Prop Prop Type Type | i j k}.
 
 Section Projections.
 
-  Definition projT1@{i j} := proj1_sigma@{Type Type Type| i j}.
-  Definition projT2@{i j} := proj2_sigma@{Type Type Type| i j}.
+  Definition projT1@{i j} := proj1_sigma@{Type Type Type; i j}.
+  Definition projT2@{i j} := proj2_sigma@{Type Type Type; i j}.
 
   Register projT1 as core.sigT.proj1.
   Register projT2 as core.sigT.proj2.
@@ -202,7 +200,7 @@ Import SigTNotations.
     [projT1] of a coerced [X : sigT2 P Q] will unify with [let (a,
     _, _) := X in a] *)
 
-Definition sigT_of_sigT2@{i j k} := sigma_of_sigma2@{Type Type Type Type Type| i j k}.
+Definition sigT_of_sigT2@{i j k} := sigma_of_sigma2@{Type Type Type Type Type; i j k}.
 
 (** Projections of [sigT2]
 
@@ -213,7 +211,7 @@ Definition sigT_of_sigT2@{i j k} := sigma_of_sigma2@{Type Type Type Type Type| i
     and [(projT3 x)] is the third projection, the types of which
     depends on the [projT1]. *)
 
-Definition projT3@{i j k} := proj3_sigma@{Type Type Type Type Type | i j k}.
+Definition projT3@{i j k} := proj3_sigma@{Type Type Type Type Type; i j k}.
 
 Local Notation "x .3" := (projT3 x) (at level 1, left associativity, format "x .3").
 

@@ -88,13 +88,13 @@ Section Defs.
   
   (** A [PreOrder] is both Reflexive and Transitive. *)
 
-  Cumulative Class PreOrder (R : crelation A)  := {
+  Class PreOrder (R : crelation A)  := {
     #[global] PreOrder_Reflexive :: Reflexive R | 2 ;
     #[global] PreOrder_Transitive :: Transitive R | 2 }.
 
   (** A [StrictOrder] is both Irreflexive and Transitive. *)
 
-  Cumulative Class StrictOrder (R : crelation A)  := {
+  Class StrictOrder (R : crelation A)  := {
     #[global] StrictOrder_Irreflexive :: Irreflexive R ;
     #[global] StrictOrder_Transitive :: Transitive R }.
 
@@ -104,13 +104,13 @@ Section Defs.
 
   (** A partial equivalence crelation is Symmetric and Transitive. *)
   
-  Cumulative Class PER (R : crelation A)  := {
+  Class PER (R : crelation A)  := {
     #[global] PER_Symmetric :: Symmetric R | 3 ;
     #[global] PER_Transitive :: Transitive R | 3 }.
 
   (** Equivalence crelations. *)
 
-  Cumulative Class Equivalence (R : crelation A)  := {
+  Class Equivalence (R : crelation A)  := {
     #[global] Equivalence_Reflexive :: Reflexive R ;
     #[global] Equivalence_Symmetric :: Symmetric R ;
     #[global] Equivalence_Transitive :: Transitive R }.
@@ -337,11 +337,6 @@ Proof. firstorder. Defined.
 Local Open Scope list_scope.
 
 (** A compact representation of non-dependent arities, with the codomain singled-out. *)
-(* Set Debug "ustate".
-Set Debug "uCompare".
-Set Debug "conversion". *)
-
-(* Set Debug "UnivVariances". *)
 
 Definition relation_equivalence@{a ra} {A : Type@{a}} : crelation@{max(a,ra+1) max(a,ra)} (crelation@{a ra} A) :=
   fun R R' : crelation@{a ra} A => forall x y : A, iffT@{ra ra} (R x y) (R' x y).

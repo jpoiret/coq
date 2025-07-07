@@ -80,10 +80,16 @@ let test_array_closing =
     lk_kw "|" >> lk_kw "]" >> check_no_space
   end
 
+let test_old_sort_qvar =
+  let open Procq.Lookahead in
+  to_entry "test_old_sort_qvar" begin
+    lk_ident >> lk_list lk_field >> lk_kw "|"
+  end
+
 let test_sort_qvar =
   let open Procq.Lookahead in
   to_entry "test_sort_qvar" begin
-    lk_ident >> lk_list lk_field >> lk_kw "|"
+    lk_ident >> lk_list lk_field >> lk_kws [";"]
   end
 
 let test_level_expr =
@@ -150,14 +156,18 @@ GRAMMAR EXTEND Gram
       | "SProp" -> { None, UNamed [CSProp, 0] }
       | "Type" -> { None, UAnonymous {rigid=UnivFlexible} }
       | "Type"; "@{"; "_"; "}" -> { None, UAnonymous {rigid=UnivRigid} }
-      | "Type"; "@{"; test_sort_qvar; q = reference; pipe_loc = [ "|" -> { loc } ]; u = universe_opt; "}" -> {
+      | "Type"; "@{"; test_old_sort_qvar; q = reference; pipe_loc = [ "|" -> { loc } ]; u = universe_opt; "}" -> {
           warn_old_sort_syntax ~loc:pipe_loc ();
           Some (CQVar q), u
         }
       | "Type"; "@{"; test_sort_qvar; q = reference; ";"; u = universe_opt; "}" -> {
           Some (CQVar q), u
         }
-      | "Type"; "@{"; u = universe; "}" -> { None, UNamed u } ] ]
+      | "Type"; "@{"; u = universe; "}" -> { None, UNamed u }
+      | "𝒰"; "@{"; test_sort_qvar; q = reference; ";"; u = universe_opt; "}" -> { Some (CQVar q), u }
+      | "𝒰"; "@{"; u = universe; "}" -> { None, UNamed u }
+      | "𝒰" -> { None, UAnonymous {rigid=UnivFlexible} }
+      ] ]
   ;
   sort_quality_or_set:
     [ [ "Prop" -> { UnivGen.QualityOrSet.prop }

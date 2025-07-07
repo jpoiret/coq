@@ -74,7 +74,7 @@ Universe idu.
 #[unfold_fix, universes(polymorphic)] Symbol id@{q| |} : forall A : Type@{q|idu}, A -> A.
 
 Rewrite Rules id_rew :=
-| @{q;u +|+} |- id _ Type@{q;u} => Type@{q;u}
+| @{q;u +|+} |- id _ 𝒰@{q;u} => 𝒰@{q;u}
 
 | @{q|u+|+} |- id Type@{q|u} (forall (x : ?A), ?P) => forall x, id Type@{q|u} ?P
 | id (forall (x : ?A), ?P) ?f => fun (x : ?A) => id ?P (?f x)

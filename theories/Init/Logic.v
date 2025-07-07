@@ -37,9 +37,9 @@ Notation "~ x" := (not x) : type_scope.
 
 Register not as core.not.type.
 
-(** Negation of a type in [Type] *)
+(** Negation of a type in [𝒰] *)
 
-Definition notT (A:Type) := A -> False.
+Definition notT (A:𝒰) := A -> False.
 
 (** Create the "core" hint database, and set its transparent state for
   variables and constants explicitly. *)
@@ -378,7 +378,7 @@ End universal_quantification.
 Set Universe Polymorphism.    
 Set Sort Polymorphism.    
 
-Inductive eq (A:Type) (x:A) : A -> Prop :=
+Inductive eq (A:𝒰) (x:A) : A -> Prop :=
     eq_refl : x = x :>A
 
 where "x = y :> A" := (@eq A x y) : type_scope.
@@ -406,7 +406,7 @@ Register eq_refl as core.eq.refl.
 Register eq_ind as core.eq.ind.
 Register eq_rect as core.eq.rect.
 
-Definition eq_poly [A : Type] (x : A) (P : A -> Type) (f : P x) :
+Definition eq_poly [A : 𝒰] (x : A) (P : A -> 𝒰) (f : P x) :
   forall a : A, x = a -> P a :=
 fun _ e => match e with eq_refl => f end.
 
@@ -421,7 +421,7 @@ Section Logic_lemmas.
   Qed.
 
   Section equality.
-    Variables A B : Type.
+    Variables A B : 𝒰.
     Variable f : A -> B.
     Variables x y z : A.
 
@@ -459,25 +459,25 @@ Section Logic_lemmas.
   End equality.
 
   Definition eq_sind_r :
-    forall (A:Type) (x:A) (P:A -> SProp), P x -> forall y:A, y = x -> P y.
+    forall (A:𝒰) (x:A) (P:A -> SProp), P x -> forall y:A, y = x -> P y.
   Proof.
     intros A x P H y H0. elim eq_sym with (1 := H0); assumption.
   Defined.
 
   Definition eq_ind_r :
-    forall (A:Type) (x:A) (P:A -> Prop), P x -> forall y:A, y = x -> P y.
+    forall (A:𝒰) (x:A) (P:A -> Prop), P x -> forall y:A, y = x -> P y.
     intros A x P H y H0. elim eq_sym with (1 := H0); assumption.
   Defined.
 
   Register eq_ind_r as core.eq.ind_r.
 
   Definition eq_rec_r :
-    forall (A:Type) (x:A) (P:A -> Set), P x -> forall y:A, y = x -> P y.
+    forall (A:𝒰) (x:A) (P:A -> Set), P x -> forall y:A, y = x -> P y.
     intros A x P H y H0; elim eq_sym with (1 := H0); assumption.
   Defined.
 
   Definition eq_rect_r :
-    forall (A:Type) (x:A) (P:A -> Type), P x -> forall y:A, y = x -> P y.
+    forall (A:𝒰) (x:A) (P:A -> 𝒰), P x -> forall y:A, y = x -> P y.
     intros A x P H y H0; elim eq_sym with (1 := H0); assumption.
   Defined.
 End Logic_lemmas.
@@ -557,8 +557,8 @@ End EqNotations.
 Import EqNotations.
 
 Section equality_dep.
-  Variable A : Type.
-  Variable B : A -> Type.
+  Variable A : 𝒰.
+  Variable B : A -> 𝒰.
   Variable f : forall x, B x.
   Variables x y : A.
 
@@ -576,20 +576,20 @@ Proof.
   destruct H, 1. reflexivity.
 Defined.
 
-Lemma rew_opp_r A (P:A->Type) (x y:A) (H:x=y) (a:P y) : rew H in rew <- H in a = a.
+Lemma rew_opp_r A (P:A->𝒰) (x y:A) (H:x=y) (a:P y) : rew H in rew <- H in a = a.
 Proof.
 destruct H.
 reflexivity.
 Defined.
 
-Lemma rew_opp_l A (P:A->Type) (x y:A) (H:x=y) (a:P x) : rew <- H in rew H in a = a.
+Lemma rew_opp_l A (P:A->𝒰) (x y:A) (H:x=y) (a:P x) : rew <- H in rew H in a = a.
 Proof.
 destruct H.
 reflexivity.
 Defined.
 
 Theorem f_equal2 :
-  forall (A1 A2 B:Type) (f:A1 -> A2 -> B) (x1 y1:A1)
+  forall (A1 A2 B:𝒰) (f:A1 -> A2 -> B) (x1 y1:A1)
     (x2 y2:A2), x1 = y1 -> x2 = y2 -> f x1 x2 = f y1 y2.
 Proof.
   destruct 1; destruct 1; reflexivity.
@@ -598,7 +598,7 @@ Qed.
 Register f_equal2 as core.eq.congr2.
 
 Theorem f_equal3 :
-  forall (A1 A2 A3 B:Type) (f:A1 -> A2 -> A3 -> B) (x1 y1:A1)
+  forall (A1 A2 A3 B:𝒰) (f:A1 -> A2 -> A3 -> B) (x1 y1:A1)
     (x2 y2:A2) (x3 y3:A3),
     x1 = y1 -> x2 = y2 -> x3 = y3 -> f x1 x2 x3 = f y1 y2 y3.
 Proof.
@@ -606,7 +606,7 @@ Proof.
 Qed.
 
 Theorem f_equal4 :
-  forall (A1 A2 A3 A4 B:Type) (f:A1 -> A2 -> A3 -> A4 -> B)
+  forall (A1 A2 A3 A4 B:𝒰) (f:A1 -> A2 -> A3 -> A4 -> B)
     (x1 y1:A1) (x2 y2:A2) (x3 y3:A3) (x4 y4:A4),
     x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> f x1 x2 x3 x4 = f y1 y2 y3 y4.
 Proof.
@@ -614,7 +614,7 @@ Proof.
 Qed.
 
 Theorem f_equal5 :
-  forall (A1 A2 A3 A4 A5 B:Type) (f:A1 -> A2 -> A3 -> A4 -> A5 -> B)
+  forall (A1 A2 A3 A4 A5 B:𝒰) (f:A1 -> A2 -> A3 -> A4 -> A5 -> B)
     (x1 y1:A1) (x2 y2:A2) (x3 y3:A3) (x4 y4:A4) (x5 y5:A5),
     x1 = y1 ->
     x2 = y2 ->
@@ -670,7 +670,7 @@ Proof.
 Defined.
 
 
-Theorem rew_map A B (P:B->Type) (f:A->B) x1 x2 (H:x1=x2) (y:P (f x1)) :
+Theorem rew_map A B (P:B->𝒰) (f:A->B) x1 x2 (H:x1=x2) (y:P (f x1)) :
   rew [fun x => P (f x)] H in y = rew f_equal f H in y.
 Proof.
   destruct H; reflexivity.
@@ -685,14 +685,14 @@ Proof.
 Defined.
 
 
-Lemma map_subst {A} {P Q:A->Type} (f : forall x, P x -> Q x) {x y} (H:x=y) (z:P x) :
+Lemma map_subst {A} {P Q:A->𝒰} (f : forall x, P x -> Q x) {x y} (H:x=y) (z:P x) :
   rew H in f x z = f y (rew H in z).
 Proof.
   destruct H. reflexivity.
 Defined.
 
 
-Lemma map_subst_map {A B} {P:A->Type} {Q:B->Type} (f:A->B) (g : forall x, P x -> Q (f x))
+Lemma map_subst_map {A B} {P:A->𝒰} {Q:B->𝒰} (f:A->B) (g : forall x, P x -> Q (f x))
   {x y} (H:x=y) (z:P x) :
   rew f_equal f H in g x z = g y (rew H in z).
 Proof.
@@ -700,13 +700,13 @@ Proof.
 Defined.
 
 
-Lemma rew_swap A (P:A->Type) x1 x2 (H:x1=x2) (y1:P x1) (y2:P x2) : rew H in y1 = y2 -> y1 = rew <- H in y2.
+Lemma rew_swap A (P:A->𝒰) x1 x2 (H:x1=x2) (y1:P x1) (y2:P x2) : rew H in y1 = y2 -> y1 = rew <- H in y2.
 Proof.
   destruct H. trivial.
 Defined.
 
 
-Lemma rew_compose A (P:A->Type) x1 x2 x3 (H1:x1=x2) (H2:x2=x3) (y:P x1) :
+Lemma rew_compose A (P:A->𝒰) x1 x2 x3 (H1:x1=x2) (H2:x2=x3) (y:P x1) :
   rew H2 in rew H1 in y = rew (eq_trans H1 H2) in y.
 Proof.
   destruct H2. reflexivity.
@@ -763,7 +763,7 @@ destruct e, e'.
 reflexivity.
 Defined.
 
-Lemma eq_trans_rew_distr A (P:A -> Type) (x y z:A) (e:x=y) (e':y=z) (k:P x) :
+Lemma eq_trans_rew_distr A (P:A -> 𝒰) (x y z:A) (e:x=y) (e':y=z) (k:P x) :
     rew (eq_trans e e') in k = rew e' in rew e in k.
 Proof.
   destruct e, e'; reflexivity.
@@ -792,13 +792,13 @@ Hint Immediate eq_sym not_eq_sym: core.
 
 (** Basic definitions about relations and properties *)
 
-Definition subrelation (A B : Type) (R R' : A->B->Prop) :=
+Definition subrelation (A B : 𝒰) (R R' : A->B->Prop) :=
   forall x y, R x y -> R' x y.
 
-Definition unique (A : Type) (P : A->Prop) (x:A) :=
+Definition unique (A : 𝒰) (P : A->Prop) (x:A) :=
   P x /\ forall (x':A), P x' -> x=x'.
 
-Definition uniqueness (A:Type) (P:A->Prop) := forall x y, P x -> P y -> x = y.
+Definition uniqueness (A:𝒰) (P:A->Prop) := forall x y, P x -> P y -> x = y.
 
 (** Unique existence *)
 
@@ -808,7 +808,7 @@ Notation "'exists' ! x .. y , p" :=
    format "'[' 'exists'  !  '/  ' x  ..  y ,  '/  ' p ']'")
   : type_scope.
 
-Lemma unique_existence : forall (A:Type) (P:A->Prop),
+Lemma unique_existence : forall (A:𝒰) (P:A->Prop),
   ((exists x, P x) /\ uniqueness P) <-> (exists! x, P x).
 Proof.
   intros A P; split.

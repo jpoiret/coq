@@ -218,7 +218,7 @@ let pr_quality_expr q = match q with
 
 let pr_quality_univ (q, l) = match q with
   | None -> pr_univ l
-  | Some q ->  pr_qvar_expr q ++ spc() ++ str "|" ++ spc () ++ pr_univ l
+  | Some q ->  pr_qvar_expr q ++ spc() ++ str ";" ++ spc () ++ pr_univ l
 
 let pr_univ_annot pr x = str "@{" ++ pr x ++ str "}"
 
@@ -227,7 +227,8 @@ let pr_sort_expr : sort_expr -> Pp.t = function
   | None, UNamed [CProp, 0] -> tag_type (str "Prop")
   | None, UNamed [CSet, 0] -> tag_type (str "Set")
   | None, UAnonymous {rigid=UnivRigid} -> tag_type (str "Type")
-  | u -> hov 0 (tag_type (str "Type") ++ pr_univ_annot pr_quality_univ u)
+  | None, u -> hov 0 (tag_type (str "Type") ++ pr_univ_annot pr_univ u)
+  | u -> hov 0 (tag_type (str "𝒰") ++ pr_univ_annot pr_quality_univ u)
 
 let pr_qualid sp =
   let (sl, id) = repr_qualid sp in

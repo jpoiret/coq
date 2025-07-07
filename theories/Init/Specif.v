@@ -28,7 +28,7 @@ Require Import Logic.
 Set Universe Polymorphism.
 Set Sort Polymorphism.
 
-Inductive sigma (A:𝒰) (P:A -> Type) : Type :=
+Inductive sigma (A:𝒰) (P:A -> 𝒰) : 𝒰 :=
     exist_poly : forall x:A, P x -> sigma P.
 
 Definition sig@{i j} := sigma@{Type Prop Type; i j}.
@@ -39,7 +39,7 @@ Register sig as core.sig.type.
 Register exist as core.sig.intro.
 Register sig_rect as core.sig.rect.
 
-Inductive sigma2 (A:Type) (P Q:A -> Type) : Type :=
+Inductive sigma2 (A:𝒰) (P Q:A -> 𝒰) : 𝒰 :=
     exist2_poly : forall x:A, P x -> Q x -> sigma2 P Q.
 
 Definition sig2@{i j k} := sigma2@{Type Prop Prop Type; i j k}.
@@ -110,8 +110,8 @@ Add Printing Let sigT2.
     proof of [(P a)] *)
 
 Section Subset_projections.
-  Variable A : Type.
-  Variables P : A -> Type.
+  Variable A : 𝒰.
+  Variables P : A -> 𝒰.
 
   Definition proj1_sigma (e:sigma P) := match e with
                                     | exist_poly _ a b => a
@@ -138,7 +138,7 @@ Register proj2_sig as core.sig.proj2.
     [proj1_sig] of a coerced [X : sig2 P Q] will unify with [let (a,
     _, _) := X in a] *)
 
-Definition sigma_of_sigma2 (A : Type) (P Q : A -> Type) (X : sigma2 P Q) : sigma P
+Definition sigma_of_sigma2 (A : 𝒰) (P Q : A -> 𝒰) (X : sigma2 P Q) : sigma P
   := exist_poly P
            (let (a, _, _) := X in a)
            (let (x, p, _) as s return (P (let (a, _, _) := s in a)) := X in p).
@@ -156,9 +156,9 @@ Definition sig_of_sig2@{i j k} := sigma_of_sigma2@{Type Prop Prop Type Type; i j
 
 Section Subset_projections2.
 
-  Variable A : Type.
-  Variables P : A -> Type.
-  Variables Q : A -> Type.
+  Variable A : 𝒰.
+  Variables P : A -> 𝒰.
+  Variables Q : A -> 𝒰.
 
   Definition proj3_sigma (e : sigma2 P Q) :=
     let (a, b, c) return Q (proj1_sigma (sigma_of_sigma2 e)) := e in c.
@@ -217,38 +217,38 @@ Local Notation "x .3" := (projT3 x) (at level 1, left associativity, format "x .
 
 (** [sigT] of a predicate is equivalent to [sig] *)
 
-Definition sig_of_sigT (A : Type) (P : A -> Prop) (X : sigT P) : sig P
+Definition sig_of_sigT (A : 𝒰) (P : A -> Prop) (X : sigT P) : sig P
   := exist P (projT1 X) (projT2 X).
 
-Definition sigT_of_sig (A : Type) (P : A -> Prop) (X : sig P) : sigT P
+Definition sigT_of_sig (A : 𝒰) (P : A -> Prop) (X : sig P) : sigT P
   := existT P (proj1_sig X) (proj2_sig X).
 
 (** [sigT2] of a predicate is equivalent to [sig2] *)
 
-Definition sig2_of_sigT2 (A : Type) (P Q : A -> Prop) (X : sigT2 P Q) : sig2 P Q
+Definition sig2_of_sigT2 (A : 𝒰) (P Q : A -> Prop) (X : sigT2 P Q) : sig2 P Q
   := exist2 P Q (projT1 (sigT_of_sigT2 X)) (projT2 (sigT_of_sigT2 X)) (projT3 X).
 
-Definition sigT2_of_sig2 (A : Type) (P Q : A -> Prop) (X : sig2 P Q) : sigT2 P Q
+Definition sigT2_of_sig2 (A : 𝒰) (P Q : A -> Prop) (X : sig2 P Q) : sigT2 P Q
   := existT2 P Q (proj1_sig (sig_of_sig2 X)) (proj2_sig (sig_of_sig2 X)) (proj3_sig X).
 
 (** [sig] of a predicate on [Prop]s can be turned into [ex] *)
 
-Definition ex_of_sig (A : Type) (P : A -> Prop) (X : sig P) : ex P
+Definition ex_of_sig (A : 𝒰) (P : A -> Prop) (X : sig P) : ex P
   := ex_intro P (proj1_sig X) (proj2_sig X).
 
 (** [sigT] of a predicate on [Prop]s can be turned into [ex] *)
 
-Definition ex_of_sigT (A : Type) (P : A -> Prop) (X : sigT P) : ex P
+Definition ex_of_sigT (A : 𝒰) (P : A -> Prop) (X : sigT P) : ex P
   := ex_of_sig (sig_of_sigT X).
 
 (** [sig2] of a predicate on [Prop]s can be turned into [ex2] *)
 
-Definition ex2_of_sig2 (A : Type) (P Q : A -> Prop) (X : sig2 P Q) : ex2 P Q
+Definition ex2_of_sig2 (A : 𝒰) (P Q : A -> Prop) (X : sig2 P Q) : ex2 P Q
   := ex_intro2 P Q (proj1_sig (sig_of_sig2 X)) (proj2_sig (sig_of_sig2 X)) (proj3_sig X).
 
 (** [sigT2] of a predicate on [Prop]s can be turned into [ex2] *)
 
-Definition ex2_of_sigT2 (A : Type) (P Q : A -> Prop) (X : sigT2 P Q) : ex2 P Q
+Definition ex2_of_sigT2 (A : 𝒰) (P Q : A -> Prop) (X : sigT2 P Q) : ex2 P Q
   := ex2_of_sig2 (sig2_of_sigT2 X).
 
 (** η Principles *)
@@ -282,13 +282,13 @@ Qed.
 (** Subtyping for prod *)
 (*
 #[projections(primitive=yes)]
-Record Prod (A : Type) (P:A -> Type) : Type := Pair { fst : A ; snd : P fst }.
+Record Prod (A : 𝒰) (P:A -> 𝒰) : Type := Pair { fst : A ; snd : P fst }.
 *)
 
 Section ProdSigT.
 
-  Variable A B : Type.
-
+  Variable A B : 𝒰.
+  About fst.
   Definition sigma_of_prod (p : prod A B) := (fst p; snd p).
   Definition prod_of_sigma (s : @sigma A  (fun _=> B)) := (s.1 , s.2).
 
@@ -308,17 +308,17 @@ Import EqNotations.
 Section sigT.
   Local Unset Implicit Arguments.
   (** Projecting an equality of a pair to equality of the first components *)
-  Definition projT1_eq {A} {P : A -> Type} {u v : { a : A & P a }} (p : u = v)
+  Definition projT1_eq {A} {P : A -> 𝒰} {u v : { a : A & P a }} (p : u = v)
     : u.1 = v.1
     := f_equal (fun x => x.1) p.
 
   (** Projecting an equality of a pair to equality of the second components *)
-  Definition projT2_eq {A} {P : A -> Type} {u v : { a : A & P a }} (p : u = v)
+  Definition projT2_eq {A} {P : A -> 𝒰} {u v : { a : A & P a }} (p : u = v)
     : rew projT1_eq p in u.2 = v.2
     := rew dependent p in eq_refl.
 
   (** Equality of [sigT] is itself a [sigT] (forwards-reasoning version) *)
-  Definition eq_existT_uncurried {A : Type} {P : A -> Type} {u1 v1 : A} {u2 : P u1} {v2 : P v1}
+  Definition eq_existT_uncurried {A : 𝒰} {P : A -> 𝒰} {u1 v1 : A} {u2 : P u1} {v2 : P v1}
              (pq : (Σ p , rew p in u2 = v2):Prop)
     : (u1; u2) = (v1; v2).
   Proof.
@@ -402,7 +402,7 @@ Section sigT.
   Defined.
 
   (** Induction principle for [@eq (sigT _)] *)
-  Definition eq_sigT_rect {A P} {u v : { a : A & P a }} (Q : u = v -> Type)
+  Definition eq_sigT_rect {A P} {u v : { a : A & P a }} (Q : u = v -> 𝒰)
              (f : forall p q, Q (eq_sigT u v p q))
     : forall p, Q p.
   Proof. intro p; specialize (f (projT1_eq p) (projT2_eq p)); destruct u, p; exact f. Defined.
@@ -412,15 +412,15 @@ Section sigT.
   (** In order to have a performant [inversion_sigma], we define
       specialized versions for when we have constructors on one or
       both sides of the equality *)
-  Definition eq_sigT_rect_existT_l {A P} {u1 u2 v} (Q : _ -> Type)
+  Definition eq_sigT_rect_existT_l {A P} {u1 u2 v} (Q : _ -> 𝒰)
              (f : forall p q, Q (@eq_existT_l A P u1 u2 v p q))
     : forall p, Q p
     := eq_sigT_rect Q f.
-  Definition eq_sigT_rect_existT_r {A P} {u v1 v2} (Q : _ -> Type)
+  Definition eq_sigT_rect_existT_r {A P} {u v1 v2} (Q : _ -> 𝒰)
              (f : forall p q, Q (@eq_existT_r A P u v1 v2 p q))
     : forall p, Q p
     := eq_sigT_rect Q f.
-  Definition eq_sigT_rect_existT {A P} {u1 u2 v1 v2} (Q : _ -> Type)
+  Definition eq_sigT_rect_existT {A P} {u1 u2 v1 v2} (Q : _ -> 𝒰)
              (f : forall p q, Q (@eq_existT_curried A P u1 v1 u2 v2 p q))
     : forall p, Q p
     := eq_sigT_rect Q f.
@@ -429,7 +429,7 @@ Section sigT.
       intropatterns, but we use [ex] types for the induction
       hypothesis to avoid extraction errors about informative
       inductive types having Prop instances *)
-  Definition eq_sigT_rect_uncurried {A P} {u v : { a : A & P a }} (Q : u = v -> Type)
+  Definition eq_sigT_rect_uncurried {A P} {u v : { a : A & P a }} (Q : u = v -> 𝒰)
              (f : forall pq : exists p : u.1 = v.1, _, Q (eq_sigT u v (ex_proj1 pq) (ex_proj2 pq)))
     : forall p, Q p
     := eq_sigT_rect Q (fun p q => f (ex_intro _ p q)).
@@ -519,7 +519,7 @@ Section sig.
     := eq_sig u (exist _ v1 v2) p q.
 
   (** Induction principle for [@eq (sig _)] *)
-  Definition eq_sig_rect {A P} {u v : { a : A | P a }} (Q : u = v -> Type)
+  Definition eq_sig_rect {A P} {u v : { a : A | P a }} (Q : u = v -> 𝒰)
              (f : forall p q, Q (eq_sig u v p q))
     : forall p, Q p.
   Proof. intro p; specialize (f (proj1_sig_eq p) (proj2_sig_eq p)); destruct u, p; exact f. Defined.
@@ -529,15 +529,15 @@ Section sig.
   (** In order to have a performant [inversion_sigma], we define
       specialized versions for when we have constructors on one or
       both sides of the equality *)
-  Definition eq_sig_rect_exist_l {A P} {u1 u2 v} (Q : _ -> Type)
+  Definition eq_sig_rect_exist_l {A P} {u1 u2 v} (Q : _ -> 𝒰)
              (f : forall p q, Q (@eq_exist_l A P u1 u2 v p q))
     : forall p, Q p
     := eq_sig_rect Q f.
-  Definition eq_sig_rect_exist_r {A P} {u v1 v2} (Q : _ -> Type)
+  Definition eq_sig_rect_exist_r {A P} {u v1 v2} (Q : _ -> 𝒰)
              (f : forall p q, Q (@eq_exist_r A P u v1 v2 p q))
     : forall p, Q p
     := eq_sig_rect Q f.
-  Definition eq_sig_rect_exist {A P} {u1 u2 v1 v2} (Q : _ -> Type)
+  Definition eq_sig_rect_exist {A P} {u1 u2 v1 v2} (Q : _ -> 𝒰)
              (f : forall p q, Q (@eq_exist_curried A P u1 v1 u2 v2 p q))
     : forall p, Q p
     := eq_sig_rect Q f.
@@ -546,7 +546,7 @@ Section sig.
       intropatterns, but we use [ex] types for the induction
       hypothesis to avoid extraction errors about informative
       inductive types having Prop instances *)
-  Definition eq_sig_rect_uncurried {A P} {u v : { a : A | P a }} (Q : u = v -> Type)
+  Definition eq_sig_rect_uncurried {A P} {u v : { a : A | P a }} (Q : u = v -> 𝒰)
              (f : forall pq : exists p : proj1_sig u = proj1_sig v, _, Q (eq_sig u v (ex_proj1 pq) (ex_proj2 pq)))
     : forall p, Q p
     := eq_sig_rect Q (fun p q => f (ex_intro _ p q)).
@@ -675,7 +675,7 @@ Section sigT2.
   Defined.
 
   (** Induction principle for [@eq (sigT2 _ _)] *)
-  Definition eq_sigT2_rect {A P Q} {u v : { a : A & P a & Q a }} (R : u = v -> Type)
+  Definition eq_sigT2_rect {A P Q} {u v : { a : A & P a & Q a }} (R : u = v -> 𝒰)
              (f : forall p q r, R (eq_sigT2 u v p q r))
     : forall p, R p.
   Proof.
@@ -689,15 +689,15 @@ Section sigT2.
   (** In order to have a performant [inversion_sigma], we define
       specialized versions for when we have constructors on one or
       both sides of the equality *)
-  Definition eq_sigT2_rect_existT2_l {A P Q} {u1 u2 u3 v} (R : _ -> Type)
+  Definition eq_sigT2_rect_existT2_l {A P Q} {u1 u2 u3 v} (R : _ -> 𝒰)
              (f : forall p q r, R (@eq_existT2_l A P Q u1 u2 u3 v p q r))
     : forall p, R p
     := eq_sigT2_rect R f.
-  Definition eq_sigT2_rect_existT2_r {A P Q} {u v1 v2 v3} (R : _ -> Type)
+  Definition eq_sigT2_rect_existT2_r {A P Q} {u v1 v2 v3} (R : _ -> 𝒰)
              (f : forall p q r, R (@eq_existT2_r A P Q u v1 v2 v3 p q r))
     : forall p, R p
     := eq_sigT2_rect R f.
-  Definition eq_sigT2_rect_existT2 {A P Q} {u1 u2 u3 v1 v2 v3} (R : _ -> Type)
+  Definition eq_sigT2_rect_existT2 {A P Q} {u1 u2 u3 v1 v2 v3} (R : _ -> 𝒰)
              (f : forall p q r, R (@eq_existT2_curried A P Q u1 v1 u2 v2 u3 v3 p q r))
     : forall p, R p
     := eq_sigT2_rect R f.
@@ -706,7 +706,7 @@ Section sigT2.
       intropatterns, but we use [ex2] types for the induction
       hypothesis to avoid extraction errors about informative
       inductive types having Prop instances *)
-  Definition eq_sigT2_rect_uncurried {A P Q} {u v : { a : A & P a & Q a }} (R : u = v -> Type)
+  Definition eq_sigT2_rect_uncurried {A P Q} {u v : { a : A & P a & Q a }} (R : u = v -> 𝒰)
              (f : forall pqr : exists2 p : u.1 = v.1, _ & _, R (eq_sigT2 u v (ex_proj1 pqr) (ex_proj2 pqr) (ex_proj3 pqr)))
     : forall p, R p
     := eq_sigT2_rect R (fun p q r => f (ex_intro2 _ _ p q r)).
@@ -830,7 +830,7 @@ Section sig2.
   Defined.
 
   (** Induction principle for [@eq (sig2 _ _)] *)
-  Definition eq_sig2_rect {A P Q} {u v : { a : A | P a & Q a }} (R : u = v -> Type)
+  Definition eq_sig2_rect {A P Q} {u v : { a : A | P a & Q a }} (R : u = v -> 𝒰)
              (f : forall p q r, R (eq_sig2 u v p q r))
     : forall p, R p.
   Proof.
@@ -844,15 +844,15 @@ Section sig2.
   (** In order to have a performant [inversion_sigma], we define
       specialized versions for when we have constructors on one or
       both sides of the equality *)
-  Definition eq_sig2_rect_exist2_l {A P Q} {u1 u2 u3 v} (R : _ -> Type)
+  Definition eq_sig2_rect_exist2_l {A P Q} {u1 u2 u3 v} (R : _ -> 𝒰)
              (f : forall p q r, R (@eq_exist2_l A P Q u1 u2 u3 v p q r))
     : forall p, R p
     := eq_sig2_rect R f.
-  Definition eq_sig2_rect_exist2_r {A P Q} {u v1 v2 v3} (R : _ -> Type)
+  Definition eq_sig2_rect_exist2_r {A P Q} {u v1 v2 v3} (R : _ -> 𝒰)
              (f : forall p q r, R (@eq_exist2_r A P Q u v1 v2 v3 p q r))
     : forall p, R p
     := eq_sig2_rect R f.
-  Definition eq_sig2_rect_exist2 {A P Q} {u1 u2 u3 v1 v2 v3} (R : _ -> Type)
+  Definition eq_sig2_rect_exist2 {A P Q} {u1 u2 u3 v1 v2 v3} (R : _ -> 𝒰)
              (f : forall p q r, R (@eq_exist2_curried A P Q u1 v1 u2 v2 u3 v3 p q r))
     : forall p, R p
     := eq_sig2_rect R f.
@@ -861,7 +861,7 @@ Section sig2.
       intropatterns, but we use [ex2] types for the induction
       hypothesis to avoid extraction errors about informative
       inductive types having Prop instances *)
-  Definition eq_sig2_rect_uncurried {A P Q} {u v : { a : A | P a & Q a }} (R : u = v -> Type)
+  Definition eq_sig2_rect_uncurried {A P Q} {u v : { a : A | P a & Q a }} (R : u = v -> 𝒰)
              (f : forall pqr : exists2 p : proj1_sig u = proj1_sig v, _ & _, R (eq_sig2 u v (ex_proj1 pqr) (ex_proj2 pqr) (ex_proj3 pqr)))
     : forall p, R p
     := eq_sig2_rect R (fun p q r => f (ex_intro2 _ _ p q r)).
@@ -917,7 +917,7 @@ Register sumbool as core.sumbool.type.
 (** [sumor] is an option type equipped with the justification of why
     it may not be a regular value *)
 
-Inductive sumor (A:Type) (B:Prop) : Type :=
+Inductive sumor (A:𝒰) (B:Prop) : Type :=
   | inleft : A -> A + {B}
   | inright : B -> A + {B}
  where "A + { B }" := (sumor A B) : type_scope.

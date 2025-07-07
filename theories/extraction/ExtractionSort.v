@@ -6,11 +6,11 @@ Constraint Type ~> Extr.
 Set Universe Polymorphism.
 Set Sort Polymorphism.
 
-Class LargeElimSort@{s t; l| t ~> Type} : Type@{t;_} :=
-{ Univ : Type@{s;l+1} ;
-  code : Type@{s;l} -> Univ ;   
-  El : Univ -> Type@{s;l} ;
-  El_code A : El (code A) = A :> Type@{s;l} }.
+Class LargeElimSort@{s t; l| t ~> Type} : 𝒰@{t;l+2} :=
+{ Univ : 𝒰@{s;l+1} ;
+  code : 𝒰@{s;l} -> Univ ;   
+  El : Univ -> 𝒰@{s;l} ;
+  El_code A : El (code A) = A :> 𝒰@{s;l} }.
 
 Definition lift_El@{s|u|} {H:LargeElimSort@{s Type|u}} (A:Type@{s|u}) : A -> H.(El) (H.(code) A) :=
   fun a => eq_poly _ (fun X => X) a _ (eq_sym (H.(El_code) A)).
@@ -21,12 +21,12 @@ Definition unlift_El@{s|u|} {H:LargeElimSort@{s Type|u}} (A:Type@{s|u}) : H.(El)
 Instance ExtrLargeElimSort@{l} : LargeElimSort@{Extr Type; l}.
 Admitted. 
 
-Inductive nat : Type :=
+Inductive nat : 𝒰 :=
   | O : nat
   | S : nat -> nat.
 
-Inductive unit : Type := tt.
-Inductive empty : Type := .
+Inductive unit : 𝒰 := tt.
+Inductive empty : 𝒰 := .
 
 Definition nat_rect@{i} := nat_poly@{Type Type; i}.
 Definition nat_rec@{} := nat_poly@{Type Type; 0}.

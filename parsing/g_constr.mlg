@@ -89,7 +89,7 @@ let test_old_sort_qvar =
 let test_sort_qvar =
   let open Procq.Lookahead in
   to_entry "test_sort_qvar" begin
-    lk_ident >> lk_list lk_field >> lk_kws [";"]
+    (lk_ident <+> lk_kw "Type") >> lk_list lk_field >> lk_kws [";"]
   end
 
 let test_level_expr =
@@ -160,13 +160,10 @@ GRAMMAR EXTEND Gram
           warn_old_sort_syntax ~loc:pipe_loc ();
           Some (CQVar q), u
         }
-      | "Type"; "@{"; test_sort_qvar; q = reference; ";"; u = universe_opt; "}" -> {
-          Some (CQVar q), u
-        }
       | "Type"; "@{"; u = universe; "}" -> { None, UNamed u }
       | "𝒰"; "@{"; test_sort_qvar; q = reference; ";"; u = universe_opt; "}" -> { Some (CQVar q), u }
-      | "𝒰"; "@{"; u = universe; "}" -> { None, UNamed u }
-      | "𝒰" -> { None, UAnonymous {rigid=UnivFlexible} }
+      | "𝒰"; "@{"; u = universe; "}" -> { Some (CQAnon (Some loc)), UNamed u }
+      | "𝒰" -> { Some (CQAnon (Some loc)), UAnonymous {rigid=UnivFlexible} }
       ] ]
   ;
   sort_quality_or_set:

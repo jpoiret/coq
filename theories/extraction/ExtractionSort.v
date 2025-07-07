@@ -12,10 +12,10 @@ Class LargeElimSort@{s t; l| t ~> Type} : 𝒰@{t;l+2} :=
   El : Univ -> 𝒰@{s;l} ;
   El_code A : El (code A) = A :> 𝒰@{s;l} }.
 
-Definition lift_El@{s|u|} {H:LargeElimSort@{s Type|u}} (A:Type@{s|u}) : A -> H.(El) (H.(code) A) :=
+Definition lift_El@{s;u} {H:LargeElimSort@{s Type;u}} (A:𝒰@{s;u}) : A -> H.(El) (H.(code) A) :=
   fun a => eq_poly _ (fun X => X) a _ (eq_sym (H.(El_code) A)).
 
-Definition unlift_El@{s|u|} {H:LargeElimSort@{s Type|u}} (A:Type@{s|u}) : H.(El) (H.(code) A) -> A :=
+Definition unlift_El@{s;u} {H:LargeElimSort@{s Type;u}} (A:𝒰@{s;u}) : H.(El) (H.(code) A) -> A :=
   fun a => eq_poly _ (fun X => X) a _ (H.(El_code) _).
 
 Instance ExtrLargeElimSort@{l} : LargeElimSort@{Extr Type; l}.

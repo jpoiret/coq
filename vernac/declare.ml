@@ -2145,7 +2145,7 @@ let prepare_proof ?(warn_incomplete=true) { proof; pinfo } =
   (* EJGA: likely the right solution is to attach side effects to the first constant only? *)
   let proofs = List.map (fun (_, body, typ) -> (to_constr body, to_constr typ)) initial_goals in
   let evd = UnivVariances.register_universe_variances_of_proofs (Global.env()) evd proofs in
-  let evd = Evd.minimize_universes evd in
+  let evd = Evd.minimize_universes ~to_type:(not sort_poly) evd in
   let proofs = List.map (fun (body, typ) -> (Evarutil.nf_evars_universes evd body, Evarutil.nf_evars_universes evd typ)) proofs in
   let proofs = match pinfo.possible_guard with
     | None -> proofs

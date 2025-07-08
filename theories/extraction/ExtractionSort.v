@@ -42,12 +42,12 @@ Definition P {H:LargeElimSort} (n : nat) :=
   | _ => code empty
   end.
 
-Lemma eq_true@{s s';u} {H:LargeElimSort@{s;u}} (n : nat@{s';}): O = n -> H.(El) (P@{s' s; u u u} n).
+Lemma eq_true {H:LargeElimSort} : forall (n:nat), O = n -> H.(El) (P n).
 Proof.
-  intros e. destruct e. exact (lift_El _ tt).
+  intros b e. destruct e. exact (lift_El _ tt).
 Qed.
 
-Lemma nat_discr@{s;u} {H:LargeElimSort@{s;u}} (n : nat@{s;}): O = S n -> empty@{s;u}.
+Lemma nat_discr {H:LargeElimSort} (n : nat): O = S n -> empty.
 Proof.
   intro e. exact (unlift_El _ (eq_true _ e)).
 Qed.

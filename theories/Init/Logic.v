@@ -421,8 +421,7 @@ Section Logic_lemmas.
   Qed.
 
   Section equality.
-    Variables A B : 𝒰.
-    Variable f : A -> B.
+    Variables A : 𝒰.
     Variables x y z : A.
 
     Theorem eq_sym : x = y -> y = x.
@@ -444,17 +443,23 @@ Section Logic_lemmas.
       destruct 2; trivial.
     Defined.
 
+    Theorem not_eq_sym : x <> y -> y <> x.
+    Proof.
+      red; intros h1 h2; apply h1; destruct h2; trivial.
+    Qed.
+  End equality.
+
+  Section equality.
+    Variables A B : 𝒰.
+    Variable f : A -> B.
+    Variables x y z : A.
+
     Theorem f_equal : x = y -> f x = f y.
     Proof.
       destruct 1; trivial.
     Defined.
 
     Register f_equal as core.eq.congr.
-
-    Theorem not_eq_sym : x <> y -> y <> x.
-    Proof.
-      red; intros h1 h2; apply h1; destruct h2; trivial.
-    Qed.
 
   End equality.
 

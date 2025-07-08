@@ -602,7 +602,7 @@ val check_poly_decl : poly:bool -> cumulative:bool -> kind:UVars.assumption_or_d
 
 (** An early check of compatibility of the universe declaration before
     starting to build a declaration interactively *)
-val check_poly_decl_early : poly:bool -> sort_poly:bool -> cumulative:bool -> with_obls:bool -> evar_map -> UState.poly_decl -> Constr.t list -> unit
+val check_poly_decl_early : poly:bool -> cumulative:bool -> with_obls:bool -> evar_map -> UState.poly_decl -> Constr.t list -> unit
 
 val merge_universe_context : evar_map -> UState.t -> evar_map
 val set_universe_context : evar_map -> UState.t -> evar_map

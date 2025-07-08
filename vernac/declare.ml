@@ -89,7 +89,6 @@ module Info = struct
 
   type t =
     { poly : bool
-    ; sort_poly : bool
     ; cumulative : bool
     ; inline : bool
     ; kind : Decls.logical_kind
@@ -104,10 +103,10 @@ module Info = struct
 
   (** Note that [opaque] doesn't appear here as it is not known at the
      start of the proof in the interactive case. *)
-  let make ?(poly=false) ?(sort_poly = false) ?(cumulative = false) ?(inline=false) ?(kind=Decls.(IsDefinition Definition))
+  let make ?(poly=false) ?(cumulative = false) ?(inline=false) ?(kind=Decls.(IsDefinition Definition))
       ?(udecl=UState.default_poly_decl) ?(scope=Locality.default_scope)
       ?(clearbody=false) ?hook ?typing_flags ?user_warns ?(ntns=[]) () =
-    { poly; sort_poly; cumulative; inline; kind; udecl; scope; hook; typing_flags; clearbody; user_warns; ntns }
+    { poly; cumulative; inline; kind; udecl; scope; hook; typing_flags; clearbody; user_warns; ntns }
 end
 
 (** Declaration of constants and parameters *)
@@ -1064,13 +1063,6 @@ let declare_possibly_mutual_parameters ~info ~cinfo ?(mono_uctx_extra=UState.emp
       (i+1, (name, Constr.mkConstU (cst,inst))::subst, (cst, univs)::csts)
   ) (0, [], []) cinfo typs)
 
-(* XXX How are these flags better handled? *)
-(* let sort_poly_flag () =  *)
-(*   match Goptions.get_option_value ["Sort" ; "Polymorphism"] with  *)
-(*   | None -> false *)
-(*   | Some flag -> match flag () with  *)
-(*     | BoolValue b -> b  *)
-(*     | _ -> false  *)
 
 let make_recursive_bodies ?sigma env ~typing_flags ~possible_guard ~rec_declaration =
   let env = Environ.update_typing_flags ?typing_flags env in
@@ -1135,13 +1127,13 @@ let check_evars_are_solved env sigma t =
   if not (Evar.Set.is_empty evars) then error_unresolved_evars env sigma t evars
 
     
-let declare_definition ~info ~cinfo ~opaque ~sort_poly ~obls ~body ?using sigma =
+let declare_definition ~info ~cinfo ~opaque ~poly ~obls ~body ?using sigma =
   let { CInfo.name; typ; _ } = cinfo in
   let env = Global.env () in
   Option.iter (check_evars_are_solved env sigma) typ;
   check_evars_are_solved env sigma body;
   let sigma = UnivVariances.register_universe_variances_of env sigma ?typ body in
-  let sigma = Evd.minimize_universes ~to_type:(not sort_poly) sigma in
+  let sigma = Evd.minimize_universes ~to_type:(not poly) sigma in
   let body = EConstr.to_constr sigma body in
   let typ = Option.map (EConstr.to_constr sigma) typ in
   let uctx = Evd.ustate sigma in
@@ -1150,14 +1142,14 @@ let declare_definition ~info ~cinfo ~opaque ~sort_poly ~obls ~body ?using sigma 
   let gref = List.hd (declare_possibly_mutual_definitions ~info ~cinfo:[cinfo] ~obls obj) in
   gref, uctx
 
-let prepare_obligations ~name ~sort_poly ?types ~body env sigma =
+let prepare_obligations ~name ~poly ?types ~body env sigma =
   let env = Global.env () in
   let types = match types with
     | Some t -> t
     | None -> Retyping.get_type_of env sigma body
   in
   let sigma = UnivVariances.register_universe_variances_of env sigma ~typ:types body in
-  let sigma, (body, types) = Evarutil.finalize ~abort_on_undefined_evars:false ~to_type:(not sort_poly)
+  let sigma, (body, types) = Evarutil.finalize ~abort_on_undefined_evars:false ~to_type:(not poly)
       sigma (fun nf -> nf body, nf types)
   in
   RetrieveObl.check_evars env sigma;
@@ -1166,11 +1158,11 @@ let prepare_obligations ~name ~sort_poly ?types ~body env sigma =
   let uctx = Evd.ustate sigma in
   body, cty, uctx, evmap, obls
 
-let prepare_parameter ~poly ~sort_poly ~cumulative ~udecl ~types sigma =
+let prepare_parameter ~poly ~cumulative ~udecl ~types sigma =
   let env = Global.env () in
   Pretyping.check_evars_are_solved ~program_mode:false env sigma;
   let sigma = UnivVariances.register_universe_variances_of_type env sigma types in
-  let sigma, typ = Evarutil.finalize ~abort_on_undefined_evars:true ~to_type:(not sort_poly)
+  let sigma, typ = Evarutil.finalize ~abort_on_undefined_evars:true ~to_type:(not poly)
       sigma (fun nf -> nf types)
   in
   let univs = Evd.check_poly_decl ~poly ~cumulative ~kind:UVars.Assumption sigma udecl in
@@ -1587,7 +1579,7 @@ let declare_definition ~pm prg =
   let obls = List.map (fun (id, (_, c)) -> (id, c)) varsubst in
   (* XXX: This is doing normalization twice *)
     (* TODO: Double check sort poly flag *)
-  let kn, uctx = declare_definition ~cinfo ~info ~obls ~body ~opaque ~sort_poly:false ?using sigma in
+  let kn, uctx = declare_definition ~cinfo ~info ~obls ~body ~opaque ~poly:false ?using sigma in
   (* XXX: We call the obligation hook here, by consistency with the
      previous imperative behaviour, however I'm not sure this is right *)
   let pm = State.call_prg_hook prg
@@ -1871,11 +1863,11 @@ let start_proof_core ~name ~pinfo ?using sigma goals =
      marked "opaque", this is a hack tho, see #10446, and
      build_constant_by_tactic uses a different method that would break
      program_inference_hook *)
-    let { Proof_info.info = { Info.poly; Info.sort_poly; typing_flags; _ }; _ } = pinfo in
+    let { Proof_info.info = { Info.poly; typing_flags; _ }; _ } = pinfo in
   let goals = List.map (fun (sign, typ) ->
       let sign = match sign with None -> initialize_named_context_for_proof () | Some sign -> sign in
       (Global.env_of_context sign, typ)) goals in
-  let proof = Proof.start ~name ~poly ~sort_poly ?typing_flags sigma goals in
+  let proof = Proof.start ~name ~poly ?typing_flags sigma goals in
   let initial_euctx = Evd.ustate Proof.((data proof).sigma) in
   { proof
   ; endline_tactic = None
@@ -1897,8 +1889,8 @@ let start_core ~info ~cinfo ?proof_ending ?using sigma =
 let start = start_core ?proof_ending:None
 
 let start_dependent ~info ~cinfo ~name ~proof_ending goals =
-    let { Info.poly; Info.sort_poly; typing_flags; _ } = info in
-  let proof = Proof.dependent_start ~name ~poly ~sort_poly ?typing_flags goals in
+    let { Info.poly; typing_flags; _ } = info in
+  let proof = Proof.dependent_start ~name ~poly ?typing_flags goals in
   let initial_euctx = Evd.ustate Proof.((data proof).sigma) in
   let pinfo = Proof_info.make ~info ~cinfo ~proof_ending () in
   { proof
@@ -2118,7 +2110,7 @@ let check_incomplete_proof evd =
 
 (* XXX: This is still separate from close_proof below due to drop_pt in the STM *)
 let prepare_proof ?(warn_incomplete=true) { proof; pinfo } =
-    let Proof.{ name = pid; entry; poly; sort_poly; sigma = evd } = Proof.data proof in
+    let Proof.{ name = pid; entry; poly; sigma = evd } = Proof.data proof in
   let initial_goals = Proofview.initial_goals entry in
   let () = if not @@ Proof.is_done proof then raise (OpenProof (pid, OpenGoals)) in
   let _ : Proof.t =
@@ -2145,7 +2137,7 @@ let prepare_proof ?(warn_incomplete=true) { proof; pinfo } =
   (* EJGA: likely the right solution is to attach side effects to the first constant only? *)
   let proofs = List.map (fun (_, body, typ) -> (to_constr body, to_constr typ)) initial_goals in
   let evd = UnivVariances.register_universe_variances_of_proofs (Global.env()) evd proofs in
-  let evd = Evd.minimize_universes ~to_type:(not sort_poly) evd in
+  let evd = Evd.minimize_universes ~to_type:(not poly) evd in
   let proofs = List.map (fun (body, typ) -> (Evarutil.nf_evars_universes evd body, Evarutil.nf_evars_universes evd typ)) proofs in
   let proofs = match pinfo.possible_guard with
     | None -> proofs
@@ -2368,13 +2360,13 @@ let finish_admitted ~pm ~pinfo ~sec_vars typs =
 
 let save_admitted ~pm ~proof =
   let iproof = get proof in
-  let Proof.{ entry; sort_poly } = Proof.data iproof in
+  let Proof.{ entry; poly } = Proof.data iproof in
   let typs = List.map pi3 (Proofview.initial_goals entry) in
   let sigma = Evd.from_ctx proof.initial_euctx in
   List.iter (check_type_evars_solved (Global.env ()) sigma) typs;
   let sec_vars = compute_proof_using_for_admitted proof.pinfo proof typs iproof in
   let sigma = UnivVariances.register_universe_variances_of_proof_statements (Global.env ()) sigma typs in
-  let sigma = Evd.minimize_universes ~to_type:(not sort_poly) sigma in
+  let sigma = Evd.minimize_universes ~to_type:(not poly) sigma in
   let uctx = Evd.ustate sigma in
   let typs = List.map (fun typ -> (EConstr.to_constr sigma typ, uctx)) typs in
   finish_admitted ~pm ~pinfo:proof.pinfo ~sec_vars typs
@@ -2899,7 +2891,7 @@ let program_inference_hook env sigma ev =
       (* XXX: Should sort poly be enabled? *)
       let c, sigma =
         Proof_.refine_by_tactic ~name:(Id.of_string "program_subproof")
-          ~poly:false ~sort_poly:false env sigma concl (Tacticals.tclSOLVE [tac])
+          ~poly:false env sigma concl (Tacticals.tclSOLVE [tac])
       in
       Some (sigma, c)
   with
@@ -2930,9 +2922,9 @@ let declare_constant ?loc ?local ~name ~kind ?typing_flags =
 let declare_entry ?loc ~name ?scope ~kind ?user_warns ?hook ~impargs ~uctx entry =
   declare_entry ~loc ~name ?scope ~kind ~typing_flags:None ?clearbody:None ~user_warns ?hook ~impargs ~uctx entry
 
-let declare_definition_full ~info ~cinfo ~opaque ~sort_poly ~body ?using sigma =
-  let c, uctx = declare_definition ~obls:[] ~info ~cinfo ~opaque ~sort_poly ~body ?using sigma in
+let declare_definition_full ~info ~cinfo ~opaque ~poly ~body ?using sigma =
+  let c, uctx = declare_definition ~obls:[] ~info ~cinfo ~opaque ~poly ~body ?using sigma in
   c, if info.poly then PolyConstraints.ContextSet.empty else UState.context_set uctx
 
-let declare_definition ~info ~cinfo ~opaque ~sort_poly ~body ?using sigma =
-  declare_definition ~obls:[] ~info ~cinfo ~opaque ~sort_poly ~body ?using sigma |> fst
+let declare_definition ~info ~cinfo ~opaque ~poly ~body ?using sigma =
+  declare_definition ~obls:[] ~info ~cinfo ~opaque ~poly ~body ?using sigma |> fst

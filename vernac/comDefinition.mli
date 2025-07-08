@@ -16,7 +16,7 @@ open Constrexpr
 
 val interp_definition
   :  program_mode:bool
-  -> sort_poly:bool
+  -> poly:bool
   -> Environ.env
   -> Evd.evar_map
   -> Constrintern.internalization_env
@@ -33,7 +33,6 @@ val do_definition
   -> ?scope:Locality.definition_scope
   -> ?clearbody:bool
   -> poly:bool
-  -> sort_poly:bool
   -> cumulative:bool
   -> ?typing_flags:Declarations.typing_flags
   -> kind:Decls.definition_object_kind
@@ -54,7 +53,6 @@ val do_definition_program
   -> scope:Locality.definition_scope
   -> ?clearbody:bool
   -> poly:bool
-  -> sort_poly:bool
   -> cumulative:bool
   -> ?typing_flags:Declarations.typing_flags
   -> kind:Decls.logical_kind
@@ -75,7 +73,6 @@ val do_definition_interactive
   -> scope:Locality.definition_scope
   -> ?clearbody:bool
   -> poly:bool
-  -> sort_poly:bool
   -> cumulative:bool
   -> typing_flags:Declarations.typing_flags option
   -> kind:Decls.logical_kind
@@ -93,7 +90,6 @@ val do_definition_refine
   -> scope:Locality.definition_scope
   -> ?clearbody:bool
   -> poly:bool
-  -> sort_poly:bool
   -> typing_flags:Declarations.typing_flags option
   -> kind:Decls.logical_kind
   -> ?using:Vernacexpr.section_subset_expr

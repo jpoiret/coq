@@ -1520,7 +1520,6 @@ let do_build_inductive evd (funconstants : pconstant list)
   try
     let flags = {
       ComInductive.poly = false;
-      ComInductive.sort_poly = false;
       cumulative = false;
       template = Some false;
       finite = Finite;

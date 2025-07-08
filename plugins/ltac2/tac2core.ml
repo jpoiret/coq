@@ -32,7 +32,6 @@ let constr_flags =
     expand_evars = true;
     program_mode = false;
     polymorphic = false;
-    sort_polymorphic = false;
     undeclared_evars_patvars = false;
     patvars_abstract = false;
     unconstrained_sorts = false;
@@ -48,7 +47,6 @@ let open_constr_no_classes_flags =
   expand_evars = false;
   program_mode = false;
   polymorphic = false;
-  sort_polymorphic = false;
   undeclared_evars_patvars = false;
   patvars_abstract = false;
   unconstrained_sorts = false;
@@ -64,7 +62,6 @@ let preterm_flags =
   expand_evars = false;
   program_mode = false;
   polymorphic = false;
-  sort_polymorphic = false;
   undeclared_evars_patvars = false;
   patvars_abstract = false;
   unconstrained_sorts = false;
@@ -1826,7 +1823,7 @@ let () =
 (** Ltac2 in terms *)
 
 let () =
-  let interp ?loc ~poly ~sort_poly env sigma tycon (ids, tac) =
+  let interp ?loc ~poly env sigma tycon (ids, tac) =
     (* Syntax prevents bound notation variables in constr quotations *)
     let ist = Tac2interp.get_env @@ GlobEnv.lfun env in
     let () = assert (Id.Set.subset ids (Id.Map.domain ist.env_ist)) in
@@ -1836,7 +1833,7 @@ let () =
     | Some ty -> sigma, ty
     | None -> GlobEnv.new_type_evar env sigma ~src:(loc,Evar_kinds.InternalHole)
     in
-    let c, sigma = Proof.refine_by_tactic ~name ~poly ~sort_poly (GlobEnv.renamed_env env) sigma concl tac in
+    let c, sigma = Proof.refine_by_tactic ~name ~poly (GlobEnv.renamed_env env) sigma concl tac in
     let j = { Environ.uj_val = c; Environ.uj_type = concl } in
     (j, sigma)
   in
@@ -1882,7 +1879,7 @@ let interp_preterm_var_as_constr ?loc env sigma tycon id =
   Environ.make_judge t ty, sigma
 
 let () =
-  let interp ?loc ~poly ~sort_poly env sigma tycon (kind,id) =
+  let interp ?loc ~poly env sigma tycon (kind,id) =
     let f = match kind with
       | ConstrVar -> interp_constr_var_as_constr
       | PretermVar -> interp_preterm_var_as_constr

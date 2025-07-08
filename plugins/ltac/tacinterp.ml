@@ -623,7 +623,6 @@ let constr_flags () = {
   expand_evars = true;
   program_mode = false;
   polymorphic = false;
-  sort_polymorphic = false;
   undeclared_evars_patvars = false;
   patvars_abstract = false;
   unconstrained_sorts = false;
@@ -646,7 +645,6 @@ let open_constr_use_classes_flags () = {
   expand_evars = false;
   program_mode = false;
   polymorphic = false;
-  sort_polymorphic = false;
   undeclared_evars_patvars = false;
   patvars_abstract = false;
   unconstrained_sorts = false;
@@ -660,7 +658,6 @@ let open_constr_no_classes_flags () = {
   expand_evars = false;
   program_mode = false;
   polymorphic = false;
-  sort_polymorphic = false;
   undeclared_evars_patvars = false;
   patvars_abstract = false;
   unconstrained_sorts = false;
@@ -674,7 +671,6 @@ let pure_open_constr_flags = {
   expand_evars = false;
   program_mode = false;
   polymorphic = false;
-  sort_polymorphic = false;
   undeclared_evars_patvars = false;
   patvars_abstract = false;
   unconstrained_sorts = false;
@@ -2156,7 +2152,7 @@ let interp_ltac_constr ist c k = Ftactic.run (interp_ltac_constr ist c) k
 (* Backwarding recursive needs of tactic glob/interp/eval functions *)
 
 let () =
-  let eval ?loc ~poly ~sort_poly env sigma tycon (used_ntnvars,tac) =
+  let eval ?loc ~poly env sigma tycon (used_ntnvars,tac) =
     let lfun = GlobEnv.lfun env in
     let () = assert (Id.Set.subset used_ntnvars (Id.Map.domain lfun)) in
     let extra = TacStore.set TacStore.empty f_debug (get_debug ()) in
@@ -2170,7 +2166,7 @@ let () =
     | Some ty -> sigma, ty
     | None -> GlobEnv.new_type_evar env sigma ~src:(loc,Evar_kinds.InternalHole)
     in
-    let (c, sigma) = Proof.refine_by_tactic ~name ~poly ~sort_poly (GlobEnv.renamed_env env) sigma ty tac in
+    let (c, sigma) = Proof.refine_by_tactic ~name ~poly (GlobEnv.renamed_env env) sigma ty tac in
     let j = { Environ.uj_val = c; uj_type = ty } in
     (j, sigma)
   in

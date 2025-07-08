@@ -116,8 +116,6 @@ type t =
   (** the name of the theorem whose proof is being constructed *)
   ; poly : bool
   (** polymorphism *)
-  ; sort_poly : bool
-  (** Sort polymorphism *)
   ; typing_flags : Declarations.typing_flags option
   }
 
@@ -273,7 +271,7 @@ let unfocused = is_last_focus end_of_stack_kind
 
 let unfocus_all p = unfocus end_of_stack_kind p ()
 
-let start ~name ~poly ~sort_poly ?typing_flags sigma goals =
+let start ~name ~poly ?typing_flags sigma goals =
   let entry, proofview = Proofview.init sigma goals in
   let pr =
     { proofview
@@ -281,12 +279,11 @@ let start ~name ~poly ~sort_poly ?typing_flags sigma goals =
     ; focus_stack = []
     ; name
     ; poly
-    ; sort_poly
     ; typing_flags
   } in
   _focus end_of_stack () 1 (List.length goals) pr
 
-let dependent_start ~name ~poly ~sort_poly ?typing_flags goals =
+let dependent_start ~name ~poly ?typing_flags goals =
   let entry, proofview = Proofview.dependent_init goals in
   let pr =
     { proofview
@@ -294,7 +291,6 @@ let dependent_start ~name ~poly ~sort_poly ?typing_flags goals =
     ; focus_stack = []
     ; name
     ; poly
-    ; sort_poly
     ; typing_flags
   } in
   let number_of_goals = List.length (Proofview.initial_goals pr.entry) in
@@ -370,11 +366,9 @@ type data =
   (** The name of the theorem whose proof is being constructed *)
   ; poly : bool
   (** Locality, polymorphism, and "kind" [Coercion, Definition, etc...] *)
-  ; sort_poly : bool
-  (** Sort polymorphic *)
   }
 
-let data { proofview; focus_stack; entry; name; poly; sort_poly } =
+let data { proofview; focus_stack; entry; name; poly } =
   let goals, sigma = Proofview.proofview proofview in
   (* spiwack: beware, the bottom of the stack is used by [Proof]
      internally, and should not be exposed. *)
@@ -385,7 +379,7 @@ let data { proofview; focus_stack; entry; name; poly; sort_poly } =
   in
   let map (FocusElt (_, _, c)) = Proofview.focus_context sigma c in
   let stack = map_minus_one map focus_stack in
-  { sigma; goals; entry; stack; name; poly; sort_poly }
+  { sigma; goals; entry; stack; name; poly }
 
 let pr_goal e = Pp.(str "GOAL:" ++ int (Evar.repr e))
 
@@ -476,7 +470,7 @@ let solve ?with_end_tac gi info_lvl tac pr =
 (**********************************************************************)
 (* Shortcut to build a term using tactics *)
 
-let refine_by_tactic ~name ~poly ~sort_poly env sigma ty tac =
+let refine_by_tactic ~name ~poly env sigma ty tac =
   (* Save the initial side-effects to restore them afterwards. We set the
      current set of side-effects to be empty so that we can retrieve the
      ones created during the tactic invocation easily. *)
@@ -485,7 +479,7 @@ let refine_by_tactic ~name ~poly ~sort_poly env sigma ty tac =
   (* Save the existing goals *)
   let sigma = Evd.push_future_goals sigma in
   (* Start a proof *)
-  let prf = start ~name ~poly ~sort_poly sigma [env, ty] in
+  let prf = start ~name ~poly sigma [env, ty] in
   let (prf, _, ()) =
     try run_tactic env tac prf
     with Logic_monad.TacticFailure e as src ->

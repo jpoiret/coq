@@ -47,8 +47,6 @@ type data = private
   (** The name of the theorem whose proof is being constructed *)
   ; poly : bool
   (** polymorphism *)
-  ; sort_poly : bool
-  (** Sort polymorphism *)
   }
 
 val data : t -> data
@@ -57,14 +55,12 @@ val data : t -> data
 val start
   :  name:Names.Id.t
   -> poly:bool
-  -> sort_poly:bool
   -> ?typing_flags:Declarations.typing_flags
   -> Evd.evar_map -> (Environ.env * EConstr.types) list -> t
 
 val dependent_start
   :  name:Names.Id.t
   -> poly:bool
-  -> sort_poly:bool
   -> ?typing_flags:Declarations.typing_flags
   -> Proofview.telescope -> t
 
@@ -205,7 +201,6 @@ val use_unification_heuristics : unit -> bool
 val refine_by_tactic
   :  name:Names.Id.t
   -> poly:bool
-  -> sort_poly:bool
   -> Environ.env
   -> Evd.evar_map
   -> EConstr.types

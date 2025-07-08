@@ -33,7 +33,6 @@ let init_setoid () =
 
 type rewrite_attributes = {
   polymorphic : bool;
-  sort_polymorphic : bool;
   cumulative: bool;
   locality : Hints.hint_locality;
 }
@@ -44,7 +43,7 @@ let rewrite_attributes =
   let locality =
     if Locality.make_section_locality locality then Hints.Local else SuperGlobal
   in
-  Attributes.Notations.return { polymorphic; sort_polymorphic = polymorphic; cumulative; locality }
+  Attributes.Notations.return { polymorphic; cumulative; locality }
 
 (** Utility functions *)
 
@@ -70,7 +69,7 @@ let declare_an_instance {CAst.v=n; loc} s args =
 let declare_instance a aeq n s = declare_an_instance n s [a;aeq]
 
 let anew_instance atts binders (name,t) fields =
-  let _id = Classes.new_instance ~poly:atts.polymorphic ~sort_poly:atts.sort_polymorphic ~cumulative:atts.cumulative
+  let _id = Classes.new_instance ~poly:atts.polymorphic ~cumulative:atts.cumulative
       name binders t (true, CAst.make @@ CRecord (fields))
       Hints.empty_hint_info
   in
@@ -178,7 +177,7 @@ let declare_projection {CAst.v=name; loc} instance_id r =
   let cinfo = Declare.CInfo.make ?loc ~name ~impargs ~typ:types () in
   let info = Declare.Info.make ~kind ~udecl ~poly () in
   let _r : GlobRef.t =
-    Declare.declare_definition ~cinfo ~info ~opaque:false ~sort_poly:false ~body sigma
+    Declare.declare_definition ~cinfo ~info ~opaque:false ~poly:false ~body sigma
   in ()
 
 let add_setoid atts binders a aeq t n =
@@ -199,11 +198,10 @@ let add_morphism_as_parameter atts m n : unit =
   let env = Global.env () in
   let evd = Evd.from_env env in
   let poly = atts.polymorphic in
-  let sort_poly = atts.sort_polymorphic in
   let kind = Decls.(IsAssumption Logical) in
   let impargs, udecl = [], UState.default_poly_decl in
   let evd, types = Rewrite.Internal.build_morphism_signature env evd m in
-  let evd, pe = Declare.prepare_parameter ~poly ~sort_poly ~cumulative:atts.cumulative ~udecl ~types evd in
+  let evd, pe = Declare.prepare_parameter ~poly ~cumulative:atts.cumulative ~udecl ~types evd in
   let cst = Declare.declare_constant ?loc:instance_id.loc ~name:instance_id.v ~kind (Declare.ParameterEntry pe) in
   let cst = GlobRef.ConstRef cst in
   Classes.Internal.add_instance
@@ -243,7 +241,7 @@ let add_morphism atts ~tactic binders m s n =
        [cHole; s; m])
   in
   let _id, lemma = Classes.new_instance_interactive
-      ~locality:atts.locality ~poly:atts.polymorphic ~sort_poly:atts.sort_polymorphic ~cumulative:atts.cumulative
+      ~locality:atts.locality ~poly:atts.polymorphic ~cumulative:atts.cumulative
       instance_name binders instance_t
       ~tac:tactic ~hook:(declare_projection n instance_id)
       Hints.empty_hint_info None

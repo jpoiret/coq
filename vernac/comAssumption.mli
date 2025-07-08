@@ -70,7 +70,6 @@ val declare_global
 val do_assumptions
   :  program_mode:bool
   -> poly:bool
-  -> sort_poly:bool
   -> cumulative:bool
   -> scope:Locality.definition_scope
   -> kind:Decls.assumption_object_kind
@@ -83,14 +82,13 @@ val do_assumptions
 val do_context
   :  program_mode:bool
   -> poly:bool
-  -> sort_poly:bool
   -> local_binder_expr list
   -> unit
 
 (** Interpret a declaration of the form [binders |- typ] as a type *)
 val interp_assumption
   :  program_mode:bool
-  -> sort_poly:bool
+  -> poly:bool
   -> Environ.env
   -> Evd.evar_map
   -> Constrintern.internalization_env

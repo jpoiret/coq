@@ -232,7 +232,6 @@ type inference_flags = {
   expand_evars : bool;
   program_mode : bool;
   polymorphic : bool;
-  sort_polymorphic : bool;
   undeclared_evars_patvars: bool;
   patvars_abstract : bool;
   unconstrained_sorts : bool;
@@ -240,7 +239,6 @@ type inference_flags = {
 
 type pretype_flags = {
   poly : bool;
-  sort_poly : bool;
   resolve_tc : bool;
   program_mode : bool;
   use_coercions : bool;
@@ -849,7 +847,7 @@ struct
     sigma, { uj_val; uj_type }
 
   let pretype_genarg self arg ?loc ~flags tycon env sigma =
-    let j, sigma = GlobEnv.interp_glob_genarg ?loc ~poly:flags.poly ~sort_poly:flags.sort_poly env sigma tycon arg in
+    let j, sigma = GlobEnv.interp_glob_genarg ?loc ~poly:flags.poly env sigma tycon arg in
     sigma, j
 
   let pretype_rec self (fixkind, names, bl, lar, vdef) =
@@ -1728,7 +1726,6 @@ let ise_pretype_gen (flags : inference_flags) env sigma lvar kind c =
     program_mode = flags.program_mode;
     use_coercions = flags.use_coercions;
     poly = flags.polymorphic;
-    sort_poly = flags.sort_polymorphic;
     undeclared_evars_patvars = flags.undeclared_evars_patvars;
     patvars_abstract = flags.patvars_abstract;
     unconstrained_sorts = flags.unconstrained_sorts;
@@ -1765,7 +1762,6 @@ let default_inference_flags fail = {
   expand_evars = true;
   program_mode = false;
   polymorphic = false;
-  sort_polymorphic = false;
   undeclared_evars_patvars = false;
   patvars_abstract = false;
   unconstrained_sorts = false;
@@ -1779,7 +1775,6 @@ let no_classes_no_fail_inference_flags = {
   expand_evars = true;
   program_mode = false;
   polymorphic = false;
-  sort_polymorphic = false;
   undeclared_evars_patvars = false;
   patvars_abstract = false;
   unconstrained_sorts = false;

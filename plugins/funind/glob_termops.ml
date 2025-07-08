@@ -585,7 +585,6 @@ let resolve_and_replace_implicits exptyp env sigma rt =
       program_mode = false;
       use_coercions = true;
       poly = false;
-      sort_poly = false;
       resolve_tc = true;
       undeclared_evars_patvars = false;
       patvars_abstract = false;

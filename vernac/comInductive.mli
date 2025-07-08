@@ -15,7 +15,6 @@ open Constrexpr
 
 type flags = {
   poly : bool;
-  sort_poly : bool;
   cumulative : bool;
   template : bool option;
   finite : Declarations.recursivity_kind;

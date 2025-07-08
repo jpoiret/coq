@@ -36,15 +36,15 @@ Definition nat_rec@{} := nat_poly@{Type Type; 0}.
 Definition nat_ind@{} := nat_poly@{Type Prop; 0}.
 Definition nat_sind@{} := nat_poly@{Type SProp; 0}.
 
-Definition P@{s;u} {H:LargeElimSort@{s;u}} (n : nat@{s;}) :=
+Definition P {H:LargeElimSort} (n : nat) :=
   match n return H.(Univ) with
-    O => code unit@{s;u}
-  | _ => code empty@{s;u}
+    O => code unit
+  | _ => code empty
   end.
 
-Lemma eq_true@{s;u} {H:LargeElimSort@{s;u}} : forall (n:nat@{s;}), O = n -> H.(El) (P n).
+Lemma eq_true@{s s';u} {H:LargeElimSort@{s;u}} (n : nat@{s';}): O = n -> H.(El) (P@{s' s; u u u} n).
 Proof.
-  intros b e. destruct e. exact (lift_El _ tt).
+  intros e. destruct e. exact (lift_El _ tt).
 Qed.
 
 Lemma nat_discr@{s;u} {H:LargeElimSort@{s;u}} (n : nat@{s;}): O = S n -> empty@{s;u}.

@@ -109,9 +109,9 @@ module DefAttributes = struct
   let def_attributes_gen ?(coercion=false) ?(discharge=NoDischarge,"","") ?(ass_or_def=UVars.Definition) () =
     let discharge, deprecated_thing, replacement = discharge in
     let clearbody = match discharge with DoDischarge -> clearbody | NoDischarge -> return None in
-    (locality ++ user_warns_with_use_globref_instead ++ polymorphic ++ sort_polymorphic ++ cumulative ass_or_def ++ program ++
+    (locality ++ user_warns_with_use_globref_instead ++ polymorphic ++ cumulative ass_or_def ++ program ++
                canonical_instance ++ typing_flags ++ using ++
-               reversible ++ clearbody) >>= fun ((((((((((locality, user_warns), polymorphic), sort_polymorphic), cumulative), program),
+               reversible ++ clearbody) >>= fun (((((((((locality, user_warns), polymorphic), cumulative), program),
            canonical_instance), typing_flags), using),
            reversible), clearbody) ->
       let using = Option.map Proof_using.using_from_string using in
@@ -120,7 +120,8 @@ module DefAttributes = struct
         then CErrors.user_err Pp.(str "Cannot use attribute clearbody outside sections.")
       in
       let scope = scope_of_locality locality discharge deprecated_thing replacement in
-      return { scope; locality; polymorphic; sort_polymorphic; cumulative; program; user_warns; canonical_instance; typing_flags; using; reversible; clearbody }
+      (* FIXME: Quickfix, setting sort_polymorphic with polymorphic flag. Consider other way to handle *)
+      return { scope; locality; polymorphic; sort_polymorphic = polymorphic; cumulative; program; user_warns; canonical_instance; typing_flags; using; reversible; clearbody }
 
   let parse ?coercion ?discharge ?ass_or_def f =
     Attributes.parse (def_attributes_gen ?coercion ?discharge ?ass_or_def ()) f
@@ -1183,14 +1184,14 @@ let check_proj_flags rf =
   { pf_coercion; pf_instance; pf_canonical = rf.rf_canonical }
 
 let preprocess_defclass ~atts udecl (id, bl, c, l) =
-  let ((poly, cumulative), sort_poly), mode =
-    Attributes.(parse Notations.(polymorphic_cumulative ~is_defclass:true ++ sort_polymorphic ++ mode_attr) atts)
+  let (poly, cumulative), mode =
+    Attributes.(parse Notations.(polymorphic_cumulative ~is_defclass:true ++ mode_attr) atts)
   in
   let flags = {
     (* flags which don't matter for definitional classes *)
     ComInductive.template=None;  finite=BiFinite;
     (* real flags *)
-    poly; sort_poly; cumulative; mode;
+    poly; sort_poly = poly; cumulative; mode;
   }
   in
   let bl = match bl with
@@ -1232,17 +1233,16 @@ let preprocess_record ~atts udecl kind indl =
     | Class _ -> mode_attr
     | _ -> Notations.return None
   in
-  let (((template, (poly, cumulative)), sort_poly), primitive_proj), mode =
+  let ((template, (poly, cumulative)), primitive_proj), mode =
     Attributes.(
       parse Notations.(
           template
           ++ polymorphic_cumulative ~is_defclass:false
-          ++ sort_polymorphic
           ++ primitive_proj ++ hint_mode_attr)
         atts)
   in
   let finite = finite_of_kind kind in
-  let flags = { ComInductive.template; cumulative; poly; sort_poly; finite; mode } in
+  let flags = { ComInductive.template; cumulative; poly; sort_poly = poly; finite; mode } in
   let parse_record_field_attr (x, f) =
     let attr =
       let rev = match f.rfu_coercion with
@@ -1299,17 +1299,16 @@ let preprocess_inductive ~atts udecl kind indl =
     | Class _ -> mode_attr
     | _ -> Notations.return None
   in
-  let ((((template, (poly, cumulative)), sort_poly), private_ind), typing_flags), mode =
+  let (((template, (poly, cumulative)), private_ind), typing_flags), mode =
     Attributes.(
       parse Notations.(
           template
           ++ polymorphic_cumulative ~is_defclass:false
-          ++ sort_polymorphic
           ++ private_ind ++ typing_flags ++ hint_mode_attr)
         atts)
   in
   let finite = finite_of_kind kind in
-  let flags = { ComInductive.template; cumulative; poly; sort_poly; finite; mode } in
+  let flags = { ComInductive.template; cumulative; poly; sort_poly = poly; finite; mode } in
   let unpack (((_, id) , bl, c, decl), ntn) = match decl with
     | Constructors l -> (id, bl, c, l), ntn
     | RecordDecl _ -> assert false (* ruled out above *)
@@ -1785,40 +1784,40 @@ let vernac_identity_coercion ~atts id qids qidt =
 
 let vernac_instance_program ~atts ~pm name bl t props info =
   Dumpglob.dump_constraint (fst name) false "inst";
-  let ((locality, poly), sort_poly), cumulative =
-    Attributes.(parse (Notations.(hint_locality ++ polymorphic ++ sort_polymorphic ++ cumulative UVars.Definition))) atts
+  let (locality, poly), cumulative =
+    Attributes.(parse (Notations.(hint_locality ++ polymorphic ++ cumulative UVars.Definition))) atts
   in
-  let pm, _id = Classes.new_instance_program ~pm ~locality ~poly ~sort_poly ~cumulative name bl t props info in
+  let pm, _id = Classes.new_instance_program ~pm ~locality ~poly ~sort_poly:poly ~cumulative name bl t props info in
   pm
 
 let vernac_instance_interactive ~atts name bl t info props =
   Dumpglob.dump_constraint (fst name) false "inst";
-  let ((locality, poly), sort_poly), cumulative =
-    Attributes.(parse (Notations.(hint_locality ++ polymorphic ++ sort_polymorphic ++ cumulative UVars.Definition))) atts
+  let (locality, poly), cumulative =
+    Attributes.(parse (Notations.(hint_locality ++ polymorphic ++ cumulative UVars.Definition))) atts
   in
   let _id, pstate =
-    Classes.new_instance_interactive ~locality ~poly ~sort_poly ~cumulative name bl t info props in
+    Classes.new_instance_interactive ~locality ~poly ~sort_poly:poly ~cumulative name bl t info props in
   pstate
 
 let vernac_instance ~atts name bl t props info =
   Dumpglob.dump_constraint (fst name) false "inst";
-  let ((locality, poly), sort_poly), cumulative =
-    Attributes.(parse (Notations.(hint_locality ++ polymorphic ++ sort_polymorphic ++ cumulative UVars.Definition))) atts
+  let (locality, poly), cumulative =
+    Attributes.(parse (Notations.(hint_locality ++ polymorphic ++ cumulative UVars.Definition))) atts
   in
   let _id : lident =
-    Classes.new_instance ~locality ~poly ~sort_poly ~cumulative name bl t props info in
+    Classes.new_instance ~locality ~poly ~sort_poly:poly ~cumulative name bl t props info in
   ()
 
 let vernac_declare_instance ~atts id bl inst pri =
   Dumpglob.dump_definition (fst id) false "inst";
-  let (((program, locality), poly), sort_poly), cumulative =
-    Attributes.(parse (Notations.(program ++ hint_locality ++ polymorphic ++ sort_polymorphic ++ cumulative UVars.Definition))) atts
+  let ((program, locality), poly), cumulative =
+    Attributes.(parse (Notations.(program ++ hint_locality ++ polymorphic ++ cumulative UVars.Definition))) atts
   in
-  Classes.declare_new_instance ~program_mode:program ~locality ~poly ~sort_poly ~cumulative id bl inst pri
+  Classes.declare_new_instance ~program_mode:program ~locality ~poly ~sort_poly:poly ~cumulative id bl inst pri
 
 let vernac_context ~atts ctx =
-  let (program_mode, poly), sort_poly = Attributes.(parse (Notations.(program ++ polymorphic ++ sort_polymorphic))) atts in
-  ComAssumption.do_context ~program_mode ~poly ~sort_poly ctx
+  let (program_mode, poly) = Attributes.(parse (Notations.(program ++ polymorphic))) atts in
+  ComAssumption.do_context ~program_mode ~poly ~sort_poly:poly ctx
 
 let vernac_existing_instance ~atts insts =
   let locality = Attributes.parse hint_locality atts in
@@ -2774,10 +2773,10 @@ let translate_pure_vernac ?loc ~atts v = let open Vernactypes in match v with
 
   | VernacSymbol l ->
     vtdefault (fun () ->
-      let (unfold_fix, poly), sort_poly =
-        Attributes.(parse Notations.(unfold_fix ++ polymorphic ++ sort_polymorphic)) atts
+      let (unfold_fix, poly) =
+        Attributes.(parse Notations.(unfold_fix ++ polymorphic)) atts
       in
-        ComRewriteRule.do_symbols ~poly ~sort_poly ~unfold_fix l)
+        ComRewriteRule.do_symbols ~poly ~sort_poly:poly ~unfold_fix l)
 
   | VernacInductive (finite, l) ->
     vtdefault(fun () -> vernac_inductive ~atts finite l)
@@ -2835,8 +2834,8 @@ let translate_pure_vernac ?loc ~atts v = let open Vernactypes in match v with
 
   | VernacAddRewRule (id, c) ->
     vtdefault (fun () ->
-        let sort_poly = Attributes.(parse sort_polymorphic) atts in
-        ComRewriteRule.do_rules ~sort_poly id.v c)
+        let poly = Attributes.(parse polymorphic) atts in
+        ComRewriteRule.do_rules ~sort_poly:poly id.v c)
 
   (* Gallina extensions *)
 

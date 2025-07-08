@@ -4,7 +4,6 @@ Constraint Extr ~> SProp.
 Constraint Type ~> Extr.
 
 Set Universe Polymorphism.
-Set Sort Polymorphism.
 
 Class LargeElimSort@{s;l} : Type@{l+2} :=
 { Univ : 𝒰@{s;l+1} ;

@@ -40,11 +40,11 @@ type rewrite_attributes = {
 
 let rewrite_attributes =
   let open Attributes.Notations in
-  Attributes.(polymorphic ++ sort_polymorphic ++ cumulative UVars.Definition ++ locality) >>= fun (((polymorphic, sort_polymorphic), cumulative), locality) ->
+  Attributes.(polymorphic ++ cumulative UVars.Definition ++ locality) >>= fun ((polymorphic, cumulative), locality) ->
   let locality =
     if Locality.make_section_locality locality then Hints.Local else SuperGlobal
   in
-  Attributes.Notations.return { polymorphic; sort_polymorphic; cumulative; locality }
+  Attributes.Notations.return { polymorphic; sort_polymorphic = polymorphic; cumulative; locality }
 
 (** Utility functions *)
 

@@ -37,7 +37,7 @@ Class subrelation@{=a =ra =ra'} {A : Type@{a}} (R : crelation@{a ra} A) (R' : cr
 
 Module Import TypeProduct.
 
-Cumulative Record prodT A B :=
+Cumulative Record prodT (A B : Type) : Type :=
  { fst : A; snd : B }.
 Arguments fst {A B}.
 Arguments snd {A B}.
@@ -57,7 +57,7 @@ Section Defs.
 
   (** We rebind crelational properties in separate classes to be able to overload each proof. *)
 
-  Class Reflexive (R : crelation A) :=
+  Class Reflexive (R : crelation A) : Type :=
     reflexivity : forall x : A, R x x.
 
   Definition complement (R : crelation A) : crelation A := 
@@ -70,16 +70,16 @@ Section Defs.
   Lemma complement_inverse R : complement (flip R) = flip (complement R).
   Proof. reflexivity. Qed.
 
-  Class Irreflexive (R : crelation A) :=
+  Class Irreflexive (R : crelation A) : Type :=
     irreflexivity : Reflexive (complement R).
 
-  Class Symmetric (R : crelation A) :=
+  Class Symmetric (R : crelation A) : Type :=
     symmetry : forall {x y}, R x y -> R y x.
   
-  Class Asymmetric (R : crelation A) :=
+  Class Asymmetric (R : crelation A) : Type :=
     asymmetry : forall {x y}, R x y -> (complement R y x : Type).
   
-  Class Transitive (R : crelation A) :=
+  Class Transitive (R : crelation A) : Type :=
     transitivity : forall {x y z}, R x y -> R y z -> R x z.
 
   Arguments transitivity {R Transitive x} y {z}.
@@ -88,13 +88,13 @@ Section Defs.
   
   (** A [PreOrder] is both Reflexive and Transitive. *)
 
-  Class PreOrder (R : crelation A)  := {
+  Class PreOrder (R : crelation A) : Type := {
     #[global] PreOrder_Reflexive :: Reflexive R | 2 ;
     #[global] PreOrder_Transitive :: Transitive R | 2 }.
 
   (** A [StrictOrder] is both Irreflexive and Transitive. *)
 
-  Class StrictOrder (R : crelation A)  := {
+  Class StrictOrder (R : crelation A) : Type := {
     #[global] StrictOrder_Irreflexive :: Irreflexive R ;
     #[global] StrictOrder_Transitive :: Transitive R }.
 
@@ -104,13 +104,13 @@ Section Defs.
 
   (** A partial equivalence crelation is Symmetric and Transitive. *)
   
-  Class PER (R : crelation A)  := {
+  Class PER (R : crelation A) : Type := {
     #[global] PER_Symmetric :: Symmetric R | 3 ;
     #[global] PER_Transitive :: Transitive R | 3 }.
 
   (** Equivalence crelations. *)
 
-  Class Equivalence (R : crelation A)  := {
+  Class Equivalence (R : crelation A) : Type := {
     #[global] Equivalence_Reflexive :: Reflexive R ;
     #[global] Equivalence_Symmetric :: Symmetric R ;
     #[global] Equivalence_Transitive :: Transitive R }.
@@ -123,7 +123,7 @@ Section Defs.
 
   (** We can now define antisymmetry w.r.t. an equivalence crelation on the carrier. *)
   
-  Class Antisymmetric eqA `{equ : Equivalence eqA} (R : crelation A) :=
+  Class Antisymmetric eqA `{equ : Equivalence eqA} (R : crelation A) : Type :=
     antisymmetry : forall {x y}, R x y -> R y x -> eqA x y.
   
   (** Any symmetric crelation is equal to its inverse. *)
@@ -187,7 +187,7 @@ Section Defs.
    crelations. This is also done automatically by the [Declare Relation A RA]
    commands. *)
 
-  Class RewriteRelation (RA : crelation A).
+  Class RewriteRelation (RA : crelation A) : Type.
 
   (** Any [Equivalence] declared in the context is automatically considered
    a rewrite crelation. *)

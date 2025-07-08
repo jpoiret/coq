@@ -176,7 +176,8 @@ let build_type_telescope ~unconstrained_sorts newps env0 sigma { DataI.arity; _ 
   | Some { CAst.v = CSort s; loc } when Constrexpr_ops.(sort_expr_eq (expr_Type_sort UState.univ_flexible) s) ->
     (* special case: the user wrote ": Type". We want to allow it to become algebraic
        (and Prop but that may change in the future) *)
-    let sigma, s = Evd.new_sort_variable ?loc UState.univ_flexible sigma in
+    let sigma, u = Evd.new_univ_variable ?loc UState.univ_flexible sigma in
+    let s = EConstr.ESorts.make @@ Sorts.sort_of_univ u in
     sigma, (EConstr.mkSort s, s)
   | Some t ->
     let env = EConstr.push_rel_context newps env0 in

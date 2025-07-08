@@ -15,7 +15,6 @@ Require Import Ltac.
 Require Import Logic.
 
 Set Universe Polymorphism.    
-Set Sort Polymorphism.    
 
 (********************************************************************)
 (** * Datatypes with zero and one element *)

@@ -376,7 +376,6 @@ End universal_quantification.
     [A] which is true of [x] is also true of [y] *)
 
 Set Universe Polymorphism.    
-Set Sort Polymorphism.    
 
 Inductive eq (A:𝒰) (x:A) : A -> Prop :=
     eq_refl : x = x :>A

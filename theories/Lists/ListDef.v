@@ -11,7 +11,6 @@
 Set Implicit Arguments.
 
 Set Universe Polymorphism.
-Set Sort Polymorphism.
 
 (******************************************************************)
 (** * Basics: definition of polymorphic lists and some operations *)
@@ -147,5 +146,4 @@ Section Compare.
 
 End Compare.
 
-Unset Sort Polymorphism.
 Unset Universe Polymorphism.

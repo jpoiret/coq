@@ -26,7 +26,6 @@ Require Import Logic.
     of elements of the type [A] which satisfy both [P] and [Q]. *)
 
 Set Universe Polymorphism.
-Set Sort Polymorphism.
 
 Inductive sigma (A:𝒰) (P:A -> 𝒰) : 𝒰 :=
     exist_poly : forall x:A, P x -> sigma P.
@@ -966,7 +965,6 @@ Section Choice_lemmas.
 End Choice_lemmas.
 
 Unset Universe Polymorphism.
-Unset Sort Polymorphism.
 
 Section Dependent_choice_lemmas.
 

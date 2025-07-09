@@ -147,7 +147,6 @@ exception AlreadyDeclared = G.AlreadyDeclared
 
 let add_quality q (g, p, dom) =
   let g = G.add q g in
-  let (g,p,dom) = enforce_constraint Static (Quality.qtype, ElimConstraint.ElimTo, q) (g,p,dom) in
   let (p,dom) = if Quality.is_qglobal q
                 then (RigidPaths.add (Quality.qtype, q) p, q :: dom)
                 else (p,dom) in

@@ -1,11 +1,10 @@
-Sort Extr.
+Sort Info Erase.
 
-Constraint Extr ~> SProp.
-Constraint Type ~> Extr.
+Constraint Info ~> Erase, Info ~> Type, Erase ~> Type.
 
 Set Universe Polymorphism.
 
-Class LargeElimSort@{s;l} : Type@{l+2} :=
+Class LargeElimSort@{s;l|Type~>s} : Type@{l+2} :=
 { Univ : 𝒰@{s;l+1} ;
   code : 𝒰@{s;l} -> Univ ;   
   El : Univ -> 𝒰@{s;l} ;
@@ -14,14 +13,12 @@ Class LargeElimSort@{s;l} : Type@{l+2} :=
 Instance TypeLargeElimSort@{l} : LargeElimSort@{Type;l} := {
     Univ := Type@{l} ; code := fun A => A ; El := fun A => A ; El_code := fun A => eq_refl}.
 
-Definition lift_El {H:LargeElimSort} (A:𝒰) : A -> H.(El) (H.(code) A) :=
+Definition lift_El@{s;l |Type~>s} {H:LargeElimSort@{s;l}} (A:𝒰@{s;l}) : A -> H.(El) (H.(code) A) :=
   fun a => eq_poly _ (fun X => X) a _ (eq_sym (H.(El_code) A)).
 
-Definition unlift_El {H:LargeElimSort} (A:𝒰) : H.(El) (H.(code) A) -> A :=
+Definition unlift_El@{s;l |Type~>s} {H:LargeElimSort@{s;l}} (A:𝒰@{s;l}) : H.(El) (H.(code) A) -> A :=
   fun a => eq_poly _ (fun X => X) a _ (H.(El_code) _).
 
-Instance ExtrLargeElimSort@{l} : LargeElimSort@{Extr; l}.
-Admitted. 
 
 Inductive nat : 𝒰 :=
   | O : nat
@@ -35,6 +32,7 @@ Definition nat_rec@{} := nat_poly@{Type Type; 0}.
 Definition nat_ind@{} := nat_poly@{Type Prop; 0}.
 Definition nat_sind@{} := nat_poly@{Type SProp; 0}.
 
+(*
 Definition P {H:LargeElimSort} (n : nat) :=
   match n return H.(Univ) with
     O => code unit
@@ -46,24 +44,36 @@ Proof.
   intros b e. destruct e. exact (lift_El _ tt).
 Qed.
 
-Lemma nat_discr {H:LargeElimSort} (n : nat): O = S n -> empty.
+Lemma nat_discr_gen {H:LargeElimSort} (n : nat): O = S n -> empty.
 Proof.
   intro e. exact (unlift_El _ (eq_true _ e)).
 Qed.
 
-Lemma nat_discr_extr (n : nat@{Extr;}): O = S n -> False.
-Proof.
-  intro e. pose proof (nat_discr n e). destruct X.
-Qed.  
 
-Inductive Vect (A : Type) : nat@{Extr;} -> Type :=
+Lemma nat_discr (n : nat@{Info;}): O = S n -> False.
+Proof.
+  intro e. pose proof (nat_discr_gen n e). destruct X.
+Qed.
+*)
+
+Inductive Vect (A : 𝒰@{Info;_}) : nat@{Erase;} -> 𝒰@{Info;_} :=
 | vnil : Vect A O
 | vcons : forall (a:A) n, Vect A n -> Vect A (S n).
 
-Fail Definition length A n : Vect A n -> nat@{Type;} := fun _ => n. 
+Fail Definition length A n : Vect A n -> nat@{Info;} := fun _ => n.
 
-Fixpoint length A n : Vect A n -> nat@{Type;} := 
+Definition length' A n : Vect A n -> nat := fun _ => n.
+
+Fixpoint length A n : Vect A n -> nat@{Info;} :=
   fun v => match v with 
     | vnil _ => O 
     | vcons _  a n v => S (length A n v)
     end.
+
+Fail Definition vector_from_commut_nat A (n:nat@{Info;}) : Vect A n.
+
+Fixpoint info_to_erase (n : nat@{Info;}) : nat@{Erase;} :=
+    match n with O => O | S n => S (info_to_erase n) end.
+
+Definition vector_from_commut_nat A (n:nat@{Info;}) : Vect A (info_to_erase n).
+Abort.

@@ -44,7 +44,7 @@ Section NatSeq.
   (** [seq] computes the sequence of [len] contiguous integers
       that starts at [start]. For instance, [seq 2 3] is [2::3::4::nil]. *)
 
-  Fixpoint seq (start len:nat) : list nat :=
+  Fixpoint seq (start len:nat) : list nat : Type :=
     match len with
       | O => nil
       | S len => start :: seq (S start) len
@@ -55,7 +55,7 @@ End NatSeq.
 Section Repeat.
 
   Variable A : Type.
-  Fixpoint repeat (x : A) (n: nat ) :=
+  Fixpoint repeat (x : A) (n: nat ) : list A : Type:=
     match n with
       | O => nil
       | S k => x :: repeat x k
@@ -85,7 +85,7 @@ Section Cutting.
 
   Variable A : Type.
 
-  Fixpoint firstn (n:nat) (l:list A) : list A :=
+  Fixpoint firstn (n:nat) (l:list A) : list A : Type :=
     match n with
       | O => nil
       | S n => match l with
@@ -94,7 +94,7 @@ Section Cutting.
                end
     end.
 
-  Fixpoint skipn (n:nat) (l:list A) : list A :=
+  Fixpoint skipn (n:nat) (l:list A) : list A : Type :=
     match n with
       | O => l
       | S n => match l with

@@ -423,7 +423,7 @@ let is_squashed_gen g indsort_to_quality squashed_to_quality ((_,mip),u) =
            so here if inds=Set it is a sort poly squash (see "foo6" in test sort_poly.v) *)
         if Quality.Set.for_all
              (fun q -> eliminates_to g indq (squashed_to_quality u q))
-             squash
+             squash && not @@ Quality.is_qvar indq
         then None
         else Some (SquashToQuality indq)
 

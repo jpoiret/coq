@@ -55,12 +55,12 @@ Qed.
 Definition Pred_nat (n : nat) :=
   match n return Type with | O => unit | _ => empty end.
 
-Lemma eq_true'@{s ; + |+} : forall (n:nat), O = n -> Pred_nat@{s ; _ _} n.
+Lemma eq_true' : forall (n:nat), O = n -> Pred_nat n.
 Proof.
   intros b e. destruct e. exact tt.
 Qed.
 
-Lemma nat_discr@{s;} (n : nat@{s;}) : O = S n -> False.
+Lemma nat_discr (n : nat) : O = S n -> False.
 Proof.
   intro e. destruct (eq_true' _ e).
 Qed.

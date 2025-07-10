@@ -108,7 +108,7 @@ let set q qv m =
        if QSet.mem q m.rigid then None
        else
          let (elims,elim_to_prop) =
-           if eliminates_to_prop q m
+           if eliminates_to_prop q m && QSet.mem q m.elim_to_prop
            then (QGraph.enforce_eq (QVar qv) (QVar q) m.elims,QSet.add qv m.elim_to_prop)
            else (m.elims,m.elim_to_prop)
          in

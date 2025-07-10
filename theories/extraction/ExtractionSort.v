@@ -35,5 +35,8 @@ Fail Definition vector_from_commut_nat A (n:nat@{Info;}) : Vect A n.
 Fixpoint info_to_erase (n : nat@{Info;}) : nat@{Erase;} :=
     match n with O => O | S n => S (info_to_erase n) end.
 
+Fail Fixpoint erase_to_info (n : nat@{Erase;}) : nat@{Info;} :=
+    match n with O => O | S n => S (erase_to_info n) end.    
+
 Definition vector_from_commut_nat A (n:nat@{Info;}) : Vect A (info_to_erase n).
 Abort.

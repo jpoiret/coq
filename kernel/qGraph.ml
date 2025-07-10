@@ -21,7 +21,7 @@ module ElimTable = struct
 
   let eliminates_to q q' =
     match q, q' with
-    | QConstant QType, _ -> true
+    | QConstant QType, (QConstant QProp | QConstant QSProp) -> true
     | QConstant q, QConstant q' -> const_eliminates_to q q'
     | QVar q, QVar q' -> QVar.equal q q'
     | (QConstant _ | QVar _), _ -> false

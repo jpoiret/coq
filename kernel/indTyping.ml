@@ -260,7 +260,9 @@ let check_record data =
             match info.record_arg_info with
             | HasRelevantArg -> true, false
             | HasQSortArg -> true, true
-            | OnlySPropArg -> Sorts.is_sprop info.ind_univ || Sorts.is_qsort info.ind_univ, false
+            | OnlySPropArg ->
+              let is_qsort = Sorts.is_qsort info.ind_univ in
+              Sorts.is_sprop info.ind_univ || is_qsort, is_qsort
           in
           if can_be_primitive
           then None, recheck_at_eta

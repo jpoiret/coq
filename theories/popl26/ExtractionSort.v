@@ -1,4 +1,4 @@
-Require Import LargeElim.
+From Corelib Require Import LargeElim.
 
 Sort Info Erase.
 
@@ -25,8 +25,8 @@ Fail Definition length A n : Vect A n -> nat@{Info;} := fun _ => n.
 Definition length' A n : Vect A n -> nat := fun _ => n.
 
 Fixpoint length A n : Vect A n -> nat@{Info;} :=
-  fun v => match v with 
-    | vnil _ => O 
+  fun v => match v with
+    | vnil _ => O
     | vcons _  a n v => S (length A n v)
     end.
 
@@ -36,7 +36,7 @@ Fixpoint info_to_erase (n : nat@{Info;}) : nat@{Erase;} :=
     match n with O => O | S n => S (info_to_erase n) end.
 
 Fail Fixpoint erase_to_info (n : nat@{Erase;}) : nat@{Info;} :=
-    match n with O => O | S n => S (erase_to_info n) end.    
+    match n with O => O | S n => S (erase_to_info n) end.
 
 Definition vector_from_commut_nat A (n:nat@{Info;}) : Vect A (info_to_erase n).
 Abort.

@@ -25,7 +25,7 @@ support this version of Rocq.
 The adapted prelude of the core library is in `theories/Init`. 
 See in particular `theories/Init/Specif.v` and `theories/Init/Datatypes.v` for 
 adaptation of core definitions like the option type. 
-The files in `theories/_popl26-examples` support the sections on large elimination 
+The files in `theories/popl26` support the sections on large elimination
 and the extracted sorts of the paper.
 Other relevant examples can be found in the test suite, namely in `test-suite/success/sort_poly_elim_csts.v` and `test-suite/success/sort_poly_elab.v`.
 

@@ -1,18 +1,19 @@
+Sort sprop.
 Set Universe Polymorphism.
 Set Printing Universes.
 
 Module Reduction.
 
   Definition qsort := 𝒰.
-  (* qsort@{α | u |} = 𝒰@{α | u} : 𝒰@{u+1} *)
+  (* qsort@{α;u |} = 𝒰@{α;u} : 𝒰@{u+1} *)
 
   Definition qsort' : 𝒰 := 𝒰.
-  (* qsort'@{α | u u0 |} = 𝒰@{α | u0} : 𝒰@{u} *)
+  (* qsort'@{α;u u0 |} = 𝒰@{α;u0} : 𝒰@{u} *)
 
   Monomorphic Universe U.
 
   Definition tU := 𝒰@{U}.
-  Definition qU := qsort@{Type | U}.
+  Definition qU := qsort@{Type;U}.
 
   Definition q1 := Eval lazy in qU.
   Check eq_refl : q1 = tU.
@@ -24,37 +25,36 @@ Module Reduction.
   Check eq_refl : q3 = tU.
 
   Definition exfalso (A:𝒰) (H:False) : A := match H with end.
-  (* exfalso@{α | u |} : forall A : 𝒰@{α | _}, False -> A *)
+  (* exfalso@{α;u |} : forall A : 𝒰@{α;_}, False -> A *)
 
-  Definition exfalsoVM := Eval vm_compute in exfalso@{Type|Set}.
-  Definition exfalsoNative := Eval native_compute in exfalso@{Type|Set}.
+  Definition exfalsoVM := Eval vm_compute in exfalso@{Type;Set}.
+  Definition exfalsoNative := Eval native_compute in exfalso@{Type;Set}.
 
-  (* Set Debug "backtrace". *)
-  Fail Fixpoint iter@{s;u} (A:𝒰@{s;u}) (f:A -> A) (n : nat) (x : A) : A :=
+  Fixpoint iter@{s;u|Type~>s} (A:𝒰@{s;u}) (f:A -> A) (n : nat) (x : A) : A :=
     match n with
     | 0 => x
     | S k => iter A f k (f x)
     end.
-  (* iter@{α | u |} : forall (A : 𝒰@{α | u}) (_ : forall _ : A, A) (_ : nat) (_ : A), A *)
+  (* iter@{s;u | s ~> Type} : forall (A : 𝒰@{s;u}) (_ : forall _ : A, A) (_ : nat) (_ : A), A *)
 
-  (* Definition iterType := Eval lazy in iter@{Type|_}.
-  Definition iterSProp := Eval lazy in iter@{SProp|_}. *)
+  Definition iterType := Eval lazy in iter@{Type;_}.
+  Definition iterSProp := Eval lazy in iter@{SProp;_}.
 
 End Reduction.
 
 Module Conversion.
 
   Inductive Box (A:𝒰) := box (_:A).
-  (* Box@{α α0 | u |} (A : 𝒰@{α | u}) : 𝒰@{α0 | u} *)
+  (* Box@{α α0;u |} (A : 𝒰@{α;u}) : 𝒰@{α0;u} *)
 
 
   Definition t1 (A:𝒰) (x y : A) := box _ x.
-  (* t1@{α α0 | u |} : forall (A : 𝒰@{α | u}) (_ : A) (_ : A), Box@{α α0 | u} A *)
+  (* t1@{α α0;u |} : forall (A : 𝒰@{α;u}) (_ : A) (_ : A), Box@{α α0;u} A *)
   Definition t2 (A:𝒰) (x y : A) := box _ y.
-  (* t2@{α α0 | u |} : forall (A : 𝒰@{α | u}) (_ : A) (_ : A), Box@{α α0 | u} A *)
+  (* t2@{α α0;u |} : forall (A : 𝒰@{α;u}) (_ : A) (_ : A), Box@{α α0;u} A *)
 
   Definition t1' (A:𝒰) (x y : A) := x.
-  (* t1'@{α | u |} : forall (A : 𝒰@{α | u}) (_ : A) (_ : A), A *)
+  (* t1'@{α;u |} : forall (A : 𝒰@{α;u}) (_ : A) (_ : A), A *)
   Definition t2' (A:𝒰) (x y : A) := y.
 
   Fail Check eq_refl : t1 nat = t2 nat.
@@ -62,52 +62,52 @@ Module Conversion.
 
   Check fun A:SProp => eq_refl : t1 A = t2 A.
   (* : forall A : SProp,
-       @eq (forall (_ : A) (_ : A), Box@{SProp Type | sort_poly_elab.475} A)
-         (t1@{SProp Type | sort_poly_elab.475} A)
-         (t2@{SProp Type | sort_poly_elab.475} A) *)
+       @eq (forall (_ : A) (_ : A), Box@{SProp Type;sort_poly_elab.475} A)
+         (t1@{SProp Type;sort_poly_elab.475} A)
+         (t2@{SProp Type;sort_poly_elab.475} A) *)
 
   Check fun A:SProp => eq_refl : box _ (t1' A) = box _ (t2' A).
   (* : forall A : SProp,
        @eq
-         (Box@{SProp Type | sort_poly_elab.479} (forall (_ : A) (_ : A), A))
-         (box@{SProp Type | sort_poly_elab.479} (forall (_ : A) (_ : A), A)
-            (t1'@{SProp | sort_poly_elab.480} A))
-         (box@{SProp Type | sort_poly_elab.479} (forall (_ : A) (_ : A), A)
-            (t2'@{SProp | sort_poly_elab.482} A)) *)
+         (Box@{SProp Type;sort_poly_elab.479} (forall (_ : A) (_ : A), A))
+         (box@{SProp Type;sort_poly_elab.479} (forall (_ : A) (_ : A), A)
+            (t1'@{SProp;sort_poly_elab.480} A))
+         (box@{SProp Type;sort_poly_elab.479} (forall (_ : A) (_ : A), A)
+            (t2'@{SProp;sort_poly_elab.482} A)) *)
 
   Definition ignore {A:𝒰} (x:A) := tt.
-  (* ignore@{α | u |} : forall {A : 𝒰@{α | u}} (_ : A), unit *)
+  (* ignore@{α;u |} : forall {A : 𝒰@{α;u}} (_ : A), unit *)
 
   Definition unfold_ignore (A:𝒰) : ignore (t1 A) = ignore (t2 A) := eq_refl.
-  (* unfold_ignore@{α α0 α1 | u |} : forall A : 𝒰@{α | u},
+  (* unfold_ignore@{α α0 α1;u |} : forall A : 𝒰@{α;u},
        @eq unit
-         (@ignore@{α0 | u} (forall (_ : A) (_ : A), Box@{α α0 | u} A)
-            (t1@{α α0 | u} A))
-         (@ignore@{α1 | u} (forall (_ : A) (_ : A), Box@{α α1 | u} A)
-            (t2@{α α1 | u} A)) *)
+         (@ignore@{α0;u} (forall (_ : A) (_ : A), Box@{α α0;u} A)
+            (t1@{α α0;u} A))
+         (@ignore@{α1;u} (forall (_ : A) (_ : A), Box@{α α1;u} A)
+            (t2@{α α1;u} A)) *)
 
   Definition t (A:SProp) := Eval lazy in t1 A.
-  (* t@{α | u |} : forall (A : SProp) (_ : A) (_ : A), Box@{SProp α | u} A *)
+  (* t@{α;u |} : forall (A : SProp) (_ : A) (_ : A), Box@{SProp α;u} A *)
 
   Axiom v : forall (A:𝒰), bool -> A.
   Fail Check fun P (x:P (v@{Type|_} nat true)) => x : P (v nat false).
   Check fun (A:SProp) P (x:P (v A true)) => x : P (v A false).
     (* : forall (A : SProp) (P : A -> Type@{sort_poly_elab.105}),
-       P (v@{SProp | sort_poly_elab.104} A true) ->
-       P (v@{SProp | sort_poly_elab.106} A false) *)
+       P (v@{SProp;sort_poly_elab.104} A true) ->
+       P (v@{SProp;sort_poly_elab.106} A false) *)
 End Conversion.
 
 Module Inference.
   Definition zog (A:𝒰) := A.
-  (* zog@{α | u |} : 𝒰@{α | _} -> 𝒰@{α | _} *)
+  (* zog@{α;u |} : 𝒰@{α;_} -> 𝒰@{α;_} *)
 
   (* implicit instance of zog gets a variable which then gets unified with s from the type of A *)
   Definition zag (A:𝒰) := zog A.
-  (* zag@{α | u |} : 𝒰@{α | _} -> 𝒰@{α | _} *)
+  (* zag@{α;u |} : 𝒰@{α;_} -> 𝒰@{α;_} *)
 
   (* implicit type of A gets unified to 𝒰@{s|u} *)
   Definition zig A := zog A.
-  (* zig@{α | u |} : 𝒰@{α | _} -> 𝒰@{α | _} *)
+  (* zig@{α;u |} : 𝒰@{α;_} -> 𝒰@{α;_} *)
 
   (* different manually bound sort variables don't unify *)
   Fail Definition zog'@{s s';u} (A:𝒰@{s;u}) := zog@{s'; u} A.
@@ -115,7 +115,7 @@ End Inference.
 
 Module Inductives.
   Inductive foo1 : 𝒰 := .
-  (* foo1@{α | u |} : 𝒰@{α | _} :=  . *)
+  (* foo1@{α;u |} : 𝒰@{α;_} :=  . *)
   Check foo1_poly.
   Fail Check foo1_sind.
 
@@ -127,22 +127,22 @@ Module Inductives.
   (* Elimination constraints are not implied by the ones declared: s ~> Prop *)
 
   Definition foo1_False@{s|+|+} (x : foo1@{s|_}) : False := match x return False with end.
-  (* s | u |= s ~> Prop *)
+  (* s;u |= s ~> Prop *)
 
   Definition foo1_False' (x : foo1) : False := match x return False with end.
-  (* foo1_False'@{α | u |} : foo1@{α | u} -> False *)
-  (* α | u |= α ~> Prop *)
+  (* foo1_False'@{α;u |} : foo1@{α;u} -> False *)
+  (* α;u |= α ~> Prop *)
 
   Inductive foo2 : 𝒰 := Foo2 : 𝒰 -> foo2.
-  (* foo2@{α | u |} : 𝒰@{α | u+1} *)
+  (* foo2@{α;u |} : 𝒰@{α;u+1} *)
   Fail Check foo2_rect.
 
   Inductive foo3 (A : 𝒰) : 𝒰 := Foo3 : A -> foo3 A.
-  (* foo3@{α α0 | u |} (A : 𝒰@{α | u}) : 𝒰@{α0 | u} *)
+  (* foo3@{α α0;u |} (A : 𝒰@{α;u}) : 𝒰@{α0;u} *)
   Fail Check foo3_rect.
 
   Inductive foo5 (A : 𝒰) : Prop := Foo5 (_ : A).
-  (* foo5@{α | u |} (A : 𝒰@{α | u}) : Prop := *)
+  (* foo5@{α;u |} (A : 𝒰@{α;u}) : Prop := *)
 
   Definition foo5_ind' : forall (A : 𝒰) (P : Prop), (A -> P) -> foo5 A -> P
     := foo5_ind.
@@ -207,7 +207,7 @@ Module Inductives.
   Fail Record R1 : 𝒰 := {}.
 
   (* the 𝒰 instantiation may fail *)
-  (* R2@{Type|} may not be primitive  *)
+  (* R2@{Type;} may not be primitive  *)
   Record R2 (A:SProp) : 𝒰 := { R2f1 : A }.
 
   Goal forall (A:SProp) (r2 : R2@{Type;0} A), r2 = {| R2f1 := r2.(R2f1 A) |}.

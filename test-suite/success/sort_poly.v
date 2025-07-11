@@ -9,7 +9,7 @@ Module Syntax.
   Set Printing Universes.
   Print bar.
 
-  Definition baz@{s | | } := Type@{s | Set}.
+  Definition baz@{s | | } := 𝒰@{s;Set}.
   Print baz.
 
   Definition potato@{s | + | } := Type.
@@ -42,7 +42,7 @@ Module Reduction.
   Definition exfalsoVM := Eval vm_compute in exfalso@{Type|Set}.
   Definition exfalsoNative := Eval native_compute in exfalso@{Type|Set}.
 
-  Fixpoint iter@{s|u|} (A:Type@{s|u}) (f:A -> A) n x :=
+  Fixpoint iter@{s;u|Type~>s} (A:𝒰@{s;u}) (f:A -> A) n x :=
     match n with
     | 0 => x
     | S k => iter A f k (f x)
@@ -108,8 +108,8 @@ Module Inductives.
   Inductive foo2@{s| |} := Foo2 : Type@{s|Set} -> foo2.
   Check foo2_rect.
 
-  Inductive foo3@{s| |} (A:Type@{s|Set}) := Foo3 : A -> foo3 A.
-  Check foo3_rect.
+  Inductive foo3@{s| |} (A:Type@{s|Set}) : Type@{s|Set} := Foo3 : A -> foo3 A.
+  Check foo3_poly.
 
   Fail Inductive foo4@{s|u v|v < u} : Type@{v} := C (_ : Type@{s|u}).
 
@@ -205,19 +205,21 @@ Module Inductives.
     Record R5@{s| |} (A:Type@{s|Set}) : SProp := { R5f1 : A}.
   Fail Check R5f1.
 
-  Record R6@{s| |} (A:Type@{s|Set}) := { R6f1 : A; R6f2 : nat }.
-  Check fun (A:SProp) (x y : R6 A) =>
+  Record R6@{s;|s ~> Type} (A:Type@{s|Set}) : Type@{s|Set} := { R6f1 : A; R6f2 : nat }.
+  Fail Check fun (A:SProp) (x y : R6@{SProp;} A) =>
           eq_refl : Conversion.box _ x.(R6f1 _) = Conversion.box _ y.(R6f1 _).
   Fail Check fun (A:Prop) (x y : R6 A) =>
           eq_refl : Conversion.box _ x.(R6f1 _) = Conversion.box _ y.(R6f1 _).
   Fail Check fun (A:SProp) (x y : R6 A) =>
           eq_refl : Conversion.box _ x.(R6f2 _) = Conversion.box _ y.(R6f2 _).
 
-  #[projections(primitive=no)] Record R7@{s| |} (A:Type@{s|Set}) := { R7f1 : A; R7f2 : nat }.
-  Check R7@{SProp|} : SProp -> Set.
+  Fail #[projections(primitive=no)] Record R7@{s| |} (A:𝒰@{s;Set}) : Type@{0} := { R7f1 : A; R7f2 : nat }.
+
+  #[projections(primitive=no)] Record R7@{s| |} (A:𝒰@{s;Set}) : 𝒰@{s;0} := { R7f1 : A; R7f2 : nat }.
+  Check R7@{SProp|} : SProp -> SProp.
   Check R7@{Type|} : Set -> Set.
 
-  Cumulative Inductive sigma@{s;u v|} (A:𝒰@{s;u}) (B:A -> 𝒰@{s;v}) : Type@{s;max(u,v)}
+  Cumulative Inductive sigma@{s;u v|} (A:𝒰@{s;u}) (B:A -> 𝒰@{s;v}) : 𝒰@{s;max(u,v)}
     := pair : forall x : A, B x -> sigma A B.
 
   Definition sigma_srect@{s|k +|} A B
@@ -251,7 +253,7 @@ Module Inductives.
   Qed.
 
   (* sigma as a primitive record works better *)
-  Cumulative Record Rsigma@{s;u v|} (A:𝒰@{s;u}) (B:A -> 𝒰@{s;v}) : Type@{s;max(u,v)}
+  Cumulative Record Rsigma@{s;u v|} (A:𝒰@{s;u}) (B:A -> 𝒰@{s;v}) : 𝒰@{s;max(u,v)}
     := Rpair { Rpr1 : A; Rpr2 : B Rpr1 }.
 
   (* match desugared to primitive projections using definitional eta *)
@@ -271,12 +273,12 @@ Module Inductives.
   Check sexists_ind.
 
   Cumulative Inductive sigma3@{s s' s'';u v| } (A:𝒰@{s;u}) (P:A -> 𝒰@{s';v}) :
-    Type@{s'';max(u,v)} :=
+    𝒰@{s'';max(u,v)} :=
     exist3 : forall x:A, P x -> sigma3 A P.
 
   Arguments exist3 {_ _}.
 
-  Definition π1@{s s'|u v|} {A:Type@{s|u}} {P:A -> Type@{s'|v}} (p : sigma3@{_ _ Type|_ _} A P) : A :=
+  Definition π1@{s s'|u v|Type~>s} {A:Type@{s|u}} {P:A -> Type@{s'|v}} (p : sigma3@{_ _ Type|_ _} A P) : A :=
     match p return A with exist3 a _ => a end.
 
 End Inductives.

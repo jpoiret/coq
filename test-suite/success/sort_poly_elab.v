@@ -321,4 +321,26 @@ Module Inductives.
   Definition π1 {A:𝒰} {P:A -> 𝒰} (p : sigma@{_ _ Type|_ _} A P) : A :=
     match p return A with pair _ _ a _ => a end.
 
+
+  (*** List examples *)
+  Fixpoint map {A B:𝒰} (f:A -> B) (l:list A) : list B :=
+    match l with
+    | nil => nil
+    | cons x xs => cons (f x) (map f xs)
+    end.
+
+  Inductive bool : 𝒰 := true | false.
+
+  Definition andb (b1 b2 : bool) := if b1 then b2 else false.
+
+  Fixpoint allb {A:𝒰} (p:A -> bool) (l:list A) : bool :=
+    match l with
+    | nil => true
+    | cons x xs => andb (p x) (allb p xs)
+    end.
+  (* allb@{α α0 α1 α2 ; u |} : forall {A : 𝒰@{α ; u}},
+       (A -> bool@{α0 ; }) -> list@{α α1 ; u} A -> bool@{α2 ; }
+(* α α0 α1 α2 | α0 ~> α2, α1 ~> α2 *) *)
+
+
 End Inductives.

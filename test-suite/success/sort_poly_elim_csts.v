@@ -15,6 +15,8 @@ Section Global.
   Fail Check t@{s s'|Set Set}.
   Check t@{s Prop|Set Set}.
   Fail Check t@{Prop s|Set Set}.
+
+  Constraint Type ~> s.
   Check t@{Type s|Set Set}.
   Check t@{s' s'|Set Set}.
   Fail Check t@{s Type|Set Set}.

@@ -1,6 +1,6 @@
 This artifact contains the implementation of sort elimination constraints and an 
-initial prelude of Rocq making use of it. Refer to `README.md` for instruction on how 
-to build from sources. 
+initial prelude of Rocq making use of it. See `README.md` and `INSTALL.md` for instruction on how 
+to build from sources, install and point your interfaces. 
 
 The adapted prelude of the core library is in `theories/Init`. 
 See in particular `theories/Init/Specif.v` and `theories/Init/Datatypes.v` for 

@@ -1,112 +1,60 @@
-# The Rocq Prover
+# Bounded Sort Polymorphism with Elimination Constraints (Artifact)
 
-[![GitLab CI][gitlab-badge]][gitlab-link]
-[![GitHub macOS CI][gh-macos-badge]][gh-macos-link]
-[![GitHub Windows CI][gh-win-badge]][gh-win-link]
-[![Zulip][zulip-badge]][zulip-link]
-[![Discourse][discourse-badge]][discourse-link]
-[![DOI][doi-badge]][doi-link]
+This folder contains the artifact for the paper titled "Bounded Sort Polymorphism with Elimination Constraints".
+It contains a modified version of Rocq that supports algebraic universes, sort elimination constraints, and elaboration of implicit sorts and elimination constraints, as well as an initial prelude of Rocq making use of it.
 
-[gitlab-badge]: https://gitlab.inria.fr/coq/coq/badges/master/pipeline.svg
-[gitlab-link]: https://gitlab.inria.fr/coq/coq/commits/master
+The upstream Rocq repository can be found on the [Rocq Prover GitHub repo](https://github.com/rocq-prover/rocq).
 
-[gh-macos-badge]: https://github.com/rocq-prover/rocq/actions/workflows/ci-macos.yml/badge.svg
-[gh-macos-link]: https://github.com/rocq-prover/rocq/actions/workflows/ci-macos.yml
+## Hardware dependencies
 
-[gh-win-badge]: https://github.com/rocq-prover/rocq/actions/workflows/ci-windows.yml/badge.svg
-[gh-win-link]: https://github.com/rocq-prover/rocq/actions/workflows/ci-windows.yml
+No specific hardware dependencies.
 
-[discourse-badge]: https://img.shields.io/badge/Discourse-forum-informational.svg
-[discourse-link]: https://discourse.rocq-prover.org/
+## Getting Started
 
-[zulip-badge]: https://img.shields.io/badge/Zulip-chat-informational.svg
-[zulip-link]: https://rocq-prover.zulipchat.com/
+All of the code has been developed and built with Ocaml v4.14.0.
 
-[doi-badge]: https://zenodo.org/badge/DOI/10.5281/zenodo.15149628.svg
-[doi-link]: https://doi.org/10.5281/zenodo.15149628
+We provide a script for a local setup, using `opam`, that installs and builds everything. The specific instructions can be found in the [corresponding section](#local-setup-with-opam).
 
-The Rocq Prover is an interactive theorem prover, or proof assistant. It provides a formal language to write
-mathematical definitions, executable algorithms and theorems together with an
-environment for semi-interactive development of machine-checked proofs.
+Otherwise, usual Rocq installation instructions apply to this artifact. These can be found in the
+file `INSTALL.md`. The OPAM switch method is recommended, with a small download
+footprint, and we expect a build time of maximum 10 minutes on older machines.
 
-## Installation
+To navigate the code, claims of the paper, and interactively check the proofs and definitions,
+we encourage the reader to use RocqIDE, built
+alongside Rocq with the provided `opam` script (or by executing `make Rocqide` manually), as other IDEs would need patches to
+support this version of Rocq.
+To run RocqIDE, it suffices to call the command `Rocqide`, which will open the application.
 
-[![latest packaged version(s)][repology-badge]][repology-link]
+Alternatively, we recommend the reader to use [VS Code](https://code.visualstudio.com/download) with the [VsCoq Legacy plugin](https://marketplace.visualstudio.com/items?itemName=coq-community.vscoq1).
+This alternative requires updating the `coqtop` path setting, which should be set to `_build/install/default/bin/`.
 
-[![Docker Hub package][dockerhub-badge]][dockerhub-link]
-[![latest dockerized version][docker-rocq-badge]][docker-rocq-link]
+### Local Setup (with Opam)
 
-[repology-badge]: https://repology.org/badge/latest-versions/coq.svg
-[repology-link]: https://repology.org/metapackage/coq/versions
+We include a shell script `opam-artifact-setup.sh` that creates a new opam switch named `popl26-paper-1025-elim-constraints-artifact` and installs all the necessary requirements. The script also prompts whether to build the project immediately or to wait, letting one build it manually. The specific steps are the following:
 
-[dockerhub-badge]: https://img.shields.io/badge/images%20on-Docker%20Hub-blue.svg
-[dockerhub-link]: https://hub.docker.com/r/rocq/rocq-prover#supported-tags "Supported tags on Docker Hub"
+1. Run `./opam-artifact-setup.sh`.
+1. Accept or reject the prompt asking whether to build the project immediately.
+1. Accept or reject the prompt asking whether to build and install `RocqIDE` in the switch.
 
-[docker-rocq-badge]: https://img.shields.io/docker/v/rocq/rocq-prover/latest
-[docker-rocq-link]: https://github.com/rocq-community/docker-coq/wiki#docker-coq-images "rocq/rocq-prover:latest"
+## Step-by-step instructions and list of claims
 
-Please see https://rocq-prover.org/install.
-Information on how to build and install from sources can be found in
-[`INSTALL.md`](INSTALL.md).
+Following the steps from the previous section already builds every proof and definition in the project.
+Therefore, in this section we focus on providing specific details on some paper-to-artifact correspondences and files to look at.
+All of these files can be checked individually by loading them in RocqIDE after having built all of Rocq with `make world`, and going
+through the file using the Navigation menu, loading all relevant sentences in the file.
 
-## Documentation
+First, the adapted prelude of the core library can be found in the folder `theories/Init`.
+See in particular `theories/Init/Specif.v` and `theories/Init/Datatypes.v` for
+adaptation of core definitions like the `option` type.
 
-The sources of the documentation can be found in directory [`doc`](doc).
-See [`doc/README.md`](/doc/README.md) to learn more about the documentation,
-in particular how to build it. The
-documentation of the last released version is available on the Rocq
-web site at [rocq-prover.org/docs](https://rocq-prover.org/docs).
-See also [the Rocq wiki](https://github.com/rocq-prover/rocq/wiki),
-and the [Rocq FAQ](https://github.com/rocq-prover/rocq/wiki/The-Rocq-FAQ),
-for additional user-contributed documentation.
+The files in `theories/popl26` support the sections on large elimination (Section XXX)
+and the extracted sorts of the paper (Section XXX).
 
-The documentation of the master branch is continuously deployed.  See:
-- [Reference Manual (master)][refman-master]
-- [Documentation of the standard library (master)][stdlib-master]
-- [Documentation of the ML API (master)][api-master]
+Finally, other relevant examples can be found in the test suite, namely in `test-suite/success/sort_poly_elim_csts.v` and `test-suite/success/sort_poly_elab.v`.
 
-[api-master]: https://rocq-prover.org/doc/master/api/
-[refman-master]: https://rocq-prover.org/doc/master/refman/
-[stdlib-master]: https://rocq-prover.org/doc/master/stdlib/
 
-## Changes
+## Reusability
 
-The [Recent
-changes](https://rocq-prover.org/doc/master/refman/changes.html) chapter
-of the reference manual explains the differences and the
-incompatibilities of each new version of the Rocq Prover. If you upgrade Rocq,
-please read it carefully as it contains important advice on how to
-approach some problems you may encounter.
+## License
 
-## Questions and discussion
-
-We have a number of channels to reach the user community and the
-development team:
-
-- Our [Zulip chat][zulip-link], for casual and high traffic discussions.
-- Our [Discourse forum][discourse-link], for more structured and easily browsable discussions and Q&A.
-
-See also [rocq-prover.org/community](https://rocq-prover.org/community), which
-lists several other active platforms.
-
-## Bug reports
-
-Please report any bug / feature request in [our issue tracker](https://github.com/rocq-prover/rocq/issues).
-
-To be effective, bug reports should mention the OCaml version used
-to compile and run Rocq, the Rocq version (`coqtop -v` or `rocq -v`), the configuration
-used, and include a complete source example leading to the bug.
-
-## Contributing to Rocq
-
-Guidelines for contributing to Rocq in various ways are listed in the [contributor's guide](CONTRIBUTING.md).
-
-Information about release plans is at https://github.com/rocq-prover/rocq/wiki/Release-Plan
-
-## Supporting Rocq
-
-Help the Rocq community grow and prosper by becoming a sponsor! The [Rocq
-Consortium](https://rocq-prover.org/consortium) can establish sponsorship contracts
-or receive donations. If you want to take an active role in shaping Rocq's
-future, you can also become a Consortium member. If you are interested, please
-get in touch!
+This project is distributed under the terms of the XXX license.

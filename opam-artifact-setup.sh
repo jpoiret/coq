@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Definición de colores
+# Colors
 GREEN="$(tput setaf 2)"
 RED="$(tput setaf 1)"
 YELLOW="$(tput setaf 3)"
@@ -8,7 +8,7 @@ BLUE="$(tput setaf 4)"
 SKY_BLUE="$(tput setaf 6)"
 RESET="$(tput sgr0)"
 
-# Funciones para mensajes con formato
+# Functions for formatted messages
 ok() { echo "${GREEN}[OK]${RESET} $1"; }
 error() { echo "${RED}[ERROR]${RESET} $1"; }
 warn() { echo "${YELLOW}[WARN]${RESET} $1"; }

@@ -13,7 +13,9 @@ No specific hardware dependencies.
 
 All of the code has been developed and built with Ocaml v4.14.0.
 
-We provide a script for a local setup, using `opam`, that installs and builds everything. The specific instructions can be found in the [corresponding section](#local-setup-with-opam).
+We provide a script for a local setup, using `opam`, that installs and builds everything.
+We recommend using this approach to setup the project.
+The specific instructions can be found in the [corresponding section](#local-setup-with-opam).
 
 Otherwise, usual Rocq installation instructions apply to this artifact. These can be found in the
 file `INSTALL.md`. The OPAM switch method is recommended, with a small download
@@ -30,18 +32,25 @@ This alternative requires updating the `coqtop` path setting, which should be se
 
 ### Local Setup (with Opam)
 
-We include a shell script `opam-artifact-setup.sh` that creates a new opam switch named `popl26-paper-1025-elim-constraints-artifact` and installs all the necessary requirements. The script also prompts whether to build the project immediately or to wait, letting one build it manually. The specific steps are the following:
+We include a bash script `opam-artifact-setup.sh` that:
+1. Creates a new opam switch named `popl26-paper-1025-elim-constraints-artifact`,
+1. installs all the necessary dependencies, and
+1. builds Rocq and RocqIDE, and installs them in the switch.
+
+The specific steps to setup the project are the following:
 
 1. Run `./opam-artifact-setup.sh`.
-1. Accept or reject the prompt asking whether to build the project immediately.
-1. Accept or reject the prompt asking whether to build and install `RocqIDE` in the switch.
+1. Accept or reject the prompt asking whether to build and install the project immediately. This builds Rocq and RocqIDE.
+
+After these steps, one should be able to run the command `rocqide` in the terminal, which will launch RocqIDE.
+It is now possible to browse the source code and Rocq files.
 
 ## Step-by-step instructions and list of claims
 
 Following the steps from the previous section already builds every proof and definition in the project.
 Therefore, in this section we focus on providing specific details on some paper-to-artifact correspondences and files to look at.
-All of these files can be checked individually by loading them in RocqIDE after having built all of Rocq with `make world`, and going
-through the file using the Navigation menu, loading all relevant sentences in the file.
+All of these files can be checked individually by loading them in RocqIDE, and going
+through the files using the Navigation menu, which loads all relevant sentences in the file.
 
 First, the adapted prelude of the core library can be found in the folder `theories/Init`.
 See in particular `theories/Init/Specif.v` and `theories/Init/Datatypes.v` for

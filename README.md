@@ -20,6 +20,8 @@ We recommend using this approach to setup the project.
 The specific instructions can be found in the [corresponding section](#opam-setup).
 After setting up, consider reading the [how to navigate the code section](#navigating-the-code).
 
+Alternatively, Rocq already provides a Nix setup with the necessary dependencies. Check the [corresponding section](#nix-setup) below for more details.
+
 Otherwise, usual Rocq installation instructions apply to this artifact. These can be found in the
 file `INSTALL.md`. The OPAM switch method is recommended, with a small download
 footprint, for which we expect a build time of maximum 10 minutes on older machines.
@@ -30,7 +32,8 @@ To navigate the code, claims of the paper, and interactively check the proofs an
 we encourage the reader to use RocqIDE, built
 alongside Rocq with the provided `opam` script (or by executing `make Rocqide` manually), as other IDEs may need patches or specific configurations to
 support this version of Rocq.
-To run RocqIDE, it suffices to call the command `Rocqide`, which will open the application.
+To run RocqIDE, it suffices to call the command `rocqide`, which will open the application.
+For example, running `rocqide test-suite/success/sort_poly_elab.v` will open the corresponding file with the IDE.
 
 Alternatively, we recommend the reader to use [VS Code](https://code.visualstudio.com/download) with the [VsCoq Legacy plugin](https://marketplace.visualstudio.com/items?itemName=coq-community.vscoq1).
 If the project is built following the [opam instructions](#opam-setup), then the binaries are installed in the opam switch and available in the environment, therefore the VsCoq plugin should work out of the box.
@@ -52,11 +55,15 @@ The specific steps to setup the project are the following:
 1. Run `./opam-artifact-setup.sh`.
 1. Accept or reject the prompt asking whether to build and install the project immediately. This builds Rocq and RocqIDE.
 
-After these steps, one should now be able to run the command `rocqide` in the terminal, which will launch RocqIDE.
-For example, running `rocqide test-suite/success/sort_poly_elab.v` will the corresponding file with the IDE.
 It is now possible to browse the source code and Rocq files.
+Check the [Navigating the code](#navigating-the-code) section for details on running the RocqIDE or VSCode to explore the project and claims of the paper.
 
 ### Nix setup
+
+Rocq provides a `flake.nix` file with all the necessary dependencies. It suffices to do XXX.
+
+It is now possible to browse the source code and Rocq files.
+Check the [Navigating the code](#navigating-the-code) section for details on running the RocqIDE or VSCode to explore the project and claims of the paper.
 
 ## Step-by-step instructions and list of claims
 

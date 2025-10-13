@@ -76,11 +76,12 @@ First, the adapted prelude of the core library can be found in the folder `theor
 See in particular `theories/Init/Specif.v` and `theories/Init/Datatypes.v` for
 adaptation of core definitions like the `option` type.
 
-The files in `theories/popl26` support the sections on large elimination (Section XXX)
-and the extracted sorts of the paper (Section XXX).
+The files in `theories/popl26` support the examples in Section 2:
+- `BasicExamples.v` contains examples from Section 2.2.
+- `ExtractionSort.v` contains the example from Section 2.3, plus the `nat_discr_(info|erase)` lemmas from Section 2.4.
+- `LargeElim.v` contains an example of large elimination, mentioned in Section 2.4.
 
 Finally, other relevant examples can be found in the test suite, namely in `test-suite/success/sort_poly_elim_csts.v` and `test-suite/success/sort_poly_elab.v`.
-
 
 ## Reusability
 

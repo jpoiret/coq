@@ -87,4 +87,4 @@ Finally, other relevant examples can be found in the test suite, namely in `test
 
 ## License
 
-This project is distributed under the terms of the XXX license.
+This project is distributed under the terms of the GNU Lesser General Public License Version 2.1.

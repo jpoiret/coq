@@ -1,7 +1,9 @@
 # Bounded Sort Polymorphism with Elimination Constraints (Artifact)
 
-This folder contains the artifact for the paper titled "Bounded Sort Polymorphism with Elimination Constraints".
-It contains a modified version of Rocq that supports algebraic universes, sort elimination constraints, and elaboration of implicit sorts and elimination constraints, as well as an initial prelude of Rocq making use of it.
+This folder contains the artifact for the paper titled "Bounded Sort Polymorphism with
+Elimination Constraints". It contains a modified version of Rocq that supports algebraic
+universes, sort elimination constraints, and elaboration of implicit sorts and elimination
+constraints, as well as an initial prelude of Rocq making use of it.
 
 The upstream Rocq repository can be found on the [Rocq Prover GitHub repo](https://github.com/rocq-prover/rocq).
 
@@ -18,9 +20,10 @@ All of the code has been developed and built with Ocaml v4.14.0.
 We provide a script for a local setup, using `opam`, that installs and builds everything.
 We recommend using this approach to setup the project.
 The specific instructions can be found in the [corresponding section](#opam-setup).
-After setting up, consider reading the [how to navigate the code section](#navigating-the-code).
+After setting up, consider reading the section on [how to navigate the code](#navigating-the-code).
 
-Alternatively, Rocq already provides a Nix setup with the necessary dependencies. Check the [corresponding section](#nix-setup) below for more details.
+Alternatively, Rocq already provides a Nix setup with the necessary dependencies. Check
+the [corresponding section](#nix-setup) below for more details.
 
 Otherwise, usual Rocq installation instructions apply to this artifact. These can be found in the
 file `INSTALL.md`. The OPAM switch method is recommended, with a small download
@@ -28,18 +31,23 @@ footprint, for which we expect a build time of maximum 10 minutes on older machi
 
 #### Navigating the code
 
-To navigate the code, claims of the paper, and interactively check the proofs and definitions,
-we encourage the reader to use RocqIDE, built
-alongside Rocq with the provided `opam` script (or by executing `make Rocqide` manually), as other IDEs may need patches or specific configurations to
-support this version of Rocq.
-To run RocqIDE, it suffices to call the command `rocqide`, which will open the application.
-For example, running `rocqide test-suite/success/sort_poly_elab.v` will open the corresponding file with the IDE.
+To navigate the code, claims of the paper, and interactively check the proofs and
+definitions, we encourage the reader to use RocqIDE, built alongside Rocq with the
+provided `opam` script (or by executing `make rocqide` manually), as other IDEs may need
+patches or specific configurations to support this version of Rocq.  To run RocqIDE, it
+suffices to call the command `rocqide`, which will open the application.  For example,
+running `rocqide test-suite/success/sort_poly_elab.v` will open the corresponding file
+with the IDE.
 
-Alternatively, we recommend the reader to use [VS Code](https://code.visualstudio.com/download) with the [VsCoq Legacy plugin](https://marketplace.visualstudio.com/items?itemName=coq-community.vscoq1).
-If the project is built following the [opam instructions](#opam-setup), then the binaries are installed in the opam switch and available in the environment, therefore the VsCoq plugin should work out of the box.
-If the binaries cannot be found, then one can set the path to them manually:
+Alternatively, we recommend the reader to use [VS Code](https://code.visualstudio.com/download) with the
+[VsCoq Legacy plugin](https://marketplace.visualstudio.com/items?itemName=coq-community.vscoq1). If the
+project is built following the [opam instructions](#opam-setup), then the binaries are
+installed in the opam switch and available in the environment, therefore the VsCoq plugin
+should work out of the box. If the binaries cannot be found, then one can set the path to
+them manually:
 1. Go to Settings > Extensions > Coq configuration
-1. Look for the `Coqtop: Bin Path` configuration variable (otherwise, use the `Search settings` input field at the top of the settings and search for `coqtop`)
+1. Look for the `Coqtop: Bin Path` configuration variable (otherwise, use the `Search
+   settings` input field at the top of the settings and search for `coqtop`).
 1. Enter the value `_build/install/default/bin` in the input field.
 1. (optional) Restart the extensions or VSCode to make sure the changes are applied.
 
@@ -60,9 +68,12 @@ Check the [Navigating the code](#navigating-the-code) section for details on run
 
 ### Nix setup
 
-Rocq provides a `flake.nix` file with all the necessary dependencies.
-In order to build the project, it suffices to launch a `nix-shell` and manually execute `make world` and `make rocqide`.
-Note that the binaries one should use to navigate the code are not installed in the (non-existing) opam switch, hence when you follow the instructions in [navigating the code](#navigating-the-code), one should use the binaries built in `_build/install/default/bin`.
+Rocq provides a `flake.nix` and a `shell.nix` file with all the necessary dependencies.
+In order to build the project, it suffices to launch a `nix-shell` and manually execute
+`make world` and `make rocqide`.  Note that the binaries one should use to navigate the
+code are not installed in the (non-existing) opam switch. Consequently, when following the
+instructions in [navigating the code](#navigating-the-code), one should use the binaries
+built in `_build/install/default/bin`.
 
 ## Step-by-step instructions and list of claims
 
@@ -84,6 +95,11 @@ The files in `theories/popl26` support the examples in Section 2:
 Finally, other relevant examples can be found in the test suite, namely in `test-suite/success/sort_poly_elim_csts.v` and `test-suite/success/sort_poly_elab.v`.
 
 ## Reusability
+
+This Rocq version comes with a pinned `nixpkgs` version in `dev/nixpkgs.nix` that contains
+all the necessary dependencies to build the project now and in the future. One simply
+needs to follow the instructions given in the [Nix setup](#nix-setup) section, and should
+be good to go.
 
 ## License
 

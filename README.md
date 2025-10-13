@@ -17,7 +17,8 @@ All of the code has been developed and built with Ocaml v4.14.0.
 
 We provide a script for a local setup, using `opam`, that installs and builds everything.
 We recommend using this approach to setup the project.
-The specific instructions can be found in the [corresponding section](#local-setup-with-opam).
+The specific instructions can be found in the [corresponding section](#opam-setup).
+After setting up, consider reading the [how to navigate the code section](#navigating-the-code).
 
 Otherwise, usual Rocq installation instructions apply to this artifact. These can be found in the
 file `INSTALL.md`. The OPAM switch method is recommended, with a small download
@@ -32,14 +33,14 @@ support this version of Rocq.
 To run RocqIDE, it suffices to call the command `Rocqide`, which will open the application.
 
 Alternatively, we recommend the reader to use [VS Code](https://code.visualstudio.com/download) with the [VsCoq Legacy plugin](https://marketplace.visualstudio.com/items?itemName=coq-community.vscoq1).
-If the project is built following the [opam instructions](#local-setup-with-opam), then the binaries are installed in the opam switch and available in the environment, therefore the VsCoq plugin should work out of the box.
+If the project is built following the [opam instructions](#opam-setup), then the binaries are installed in the opam switch and available in the environment, therefore the VsCoq plugin should work out of the box.
 If the binaries cannot be found, then one can set the path to them manually:
 1. Go to Settings > Extensions > Coq configuration
 1. Look for the `Coqtop: Bin Path` configuration variable (otherwise, use the `Search settings` input field at the top of the settings and search for `coqtop`)
 1. Enter the value `_build/install/default/bin` in the input field.
 1. (optional) Restart the extensions or VSCode to make sure the changes are applied.
 
-### Local Setup (with Opam)
+### Opam setup
 
 We include a bash script `opam-artifact-setup.sh` that:
 1. Creates a new opam switch named `popl26-paper-1025-elim-constraints-artifact`,
@@ -55,6 +56,7 @@ After these steps, one should now be able to run the command `rocqide` in the te
 For example, running `rocqide test-suite/success/sort_poly_elab.v` will the corresponding file with the IDE.
 It is now possible to browse the source code and Rocq files.
 
+### Nix setup
 
 ## Step-by-step instructions and list of claims
 

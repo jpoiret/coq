@@ -60,10 +60,9 @@ Check the [Navigating the code](#navigating-the-code) section for details on run
 
 ### Nix setup
 
-Rocq provides a `flake.nix` file with all the necessary dependencies. It suffices to do XXX.
-
-It is now possible to browse the source code and Rocq files.
-Check the [Navigating the code](#navigating-the-code) section for details on running the RocqIDE or VSCode to explore the project and claims of the paper.
+Rocq provides a `flake.nix` file with all the necessary dependencies.
+In order to build the project, it suffices to launch a `nix-shell` and manually execute `make world` and `make rocqide`.
+Note that the binaries one should use to navigate the code are not installed in the (non-existing) opam switch, hence when you follow the instructions in [navigating the code](#navigating-the-code), one should use the binaries built in `_build/install/default/bin`.
 
 ## Step-by-step instructions and list of claims
 
@@ -80,6 +79,7 @@ The files in `theories/popl26` support the examples in Section 2:
 - `BasicExamples.v` contains examples from Section 2.2.
 - `ExtractionSort.v` contains the example from Section 2.3, plus the `nat_discr_(info|erase)` lemmas from Section 2.4.
 - `LargeElim.v` contains an example of large elimination, mentioned in Section 2.4.
+- `Impredicativity.v` contains the example on inheritance of impredicativity, illustrated in Section 2.4.
 
 Finally, other relevant examples can be found in the test suite, namely in `test-suite/success/sort_poly_elim_csts.v` and `test-suite/success/sort_poly_elab.v`.
 

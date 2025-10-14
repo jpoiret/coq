@@ -83,8 +83,8 @@ All of these files can be checked individually by loading them in RocqIDE, and g
 through the files using the Navigation menu, which loads all relevant sentences in the file.
 
 First, the adapted prelude of the core library can be found in the folder `theories/Init`.
-See in particular `theories/Init/Specif.v` and `theories/Init/Datatypes.v` for
-adaptation of core definitions like the `option` type.
+See in particular `theories/Init/Specif.v` and `theories/Init/Datatypes.v` for the
+adaptation of core definitions, such as the `option` type.
 
 The files in `theories/popl26` support the examples in Section 2:
 - `BasicExamples.v` contains examples from Section 2.2.
@@ -96,10 +96,24 @@ Finally, other relevant examples can be found in the test suite, namely in `test
 
 ## Reusability
 
-This Rocq version comes with a pinned `nixpkgs` version in `dev/nixpkgs.nix` that contains
-all the necessary dependencies to build the project now and in the future. One simply
-needs to follow the instructions given in the [Nix setup](#nix-setup) section, and should
-be good to go.
+There are two main reusable components to this artifact: the OCaml extension to Rocq itself and the Rocq implementation.
+
+In particular, regarding the Rocq code, its main reusable components are the adapted prelude of the core library, which can be found in the folder `theories/Init`.
+See in particular `theories/Init/Specif.v` and `theories/Init/Datatypes.v` for the
+adaptation of core definitions, such as the `option` type, `sigma` types, `list`s and others.
+These new sort polymorphic definitions with elimination constraints are readily available for reuse in other Rocq code, and can be used directly when importing the core library.
+Note that not all of the prelude of the core library has been adapted to be sort polymorphic, as can be illustrated by the `bool` type.
+Many of these cases can be easily identified by the preceding `#[universes(polymorphic=no)]` attribute or when they are defined using the `Set` universe.
+
+The OCaml extension of Rocq includes the following reusable components:
+- New vernacular to explicitly define global elimination constraints between sorts, e.g. `Constraint s ~> s'.` to define a global constraint between sort `s` and `s'`.
+- Explicit syntax to specify required elimination constraints between sorts in definitions, e.g. `Definition foo@{s s'; u | s ~> s'}` which requires that `foo` should be instantiated with two sorts `s` and `s'`, such that `s` eliminates to `s'`.
+- Implicit elaboration of required sorts and elimination constraints, which is automatically triggered when using the `Set Universe Polymorphism.` flag.
+- New syntax for universes, with notation 𝒰, for backwards compatibility with the existing `Type` notation. 𝒰 implicitly elaborates the most general sort and universes.
+- Postponed eta-conversion for projections of primitive records, allowing for new primitive record definitions that are currently disallowed in Rocq.
+
+These components allow for new Rocq code to be defined in a sort polymorphic way, including with elimination constraints, in both an explicit way and also implicitly.
+The implicit elaboration should allow for easier adoption of these features, by reducing the burden of specifying every sort and their elimination constraints.
 
 ## License
 

@@ -106,6 +106,7 @@ Note that not all of the prelude of the core library has been adapted to be sort
 Many of these cases can be easily identified by the preceding `#[universes(polymorphic=no)]` attribute or when they are defined using the `Set` universe.
 
 The OCaml extension of Rocq includes the following reusable components:
+- New vernacular to define global sorts `Sort s s'`.
 - New vernacular to explicitly define global elimination constraints between sorts, e.g. `Constraint s ~> s'.` to define a global constraint between sort `s` and `s'`.
 - Explicit syntax to specify required elimination constraints between sorts in definitions, e.g. `Definition foo@{s s'; u | s ~> s'}` which requires that `foo` should be instantiated with two sorts `s` and `s'`, such that `s` eliminates to `s'`.
 - Implicit elaboration of required sorts and elimination constraints, which is automatically triggered when using the `Set Universe Polymorphism.` flag.

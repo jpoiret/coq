@@ -130,7 +130,7 @@ Arguments cons' {A} _ _.
 Definition list'_elim@{s s0 s'; l l'|s0 ~> s'}
   (A : 𝒰@{s; l}) (P : List'@{s s0;l} A -> 𝒰@{s';l'})
   (fn : P nil') (fc : forall (x : A) (l : List' A), P l -> P (cons' x l)) :=
-  fix F (l : List'@{s s0|l} A) : P l :=
+  fix F (l : List'@{s s0;l} A) : P l :=
     match l with
     | nil' => fn
     | cons' x l => fc x l (F l)

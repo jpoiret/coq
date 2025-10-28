@@ -147,14 +147,11 @@ Module Inductives.
   Definition foo5_ind' : forall (A : 𝒰) (P : Prop), (A -> P) -> foo5 A -> P
     := foo5_ind.
 
-  Fail Definition foo5_Prop_rect (A:Prop) (P:foo5 A -> 𝒰)
+  Definition foo5_Prop_rect (A:Prop) (P:foo5 A -> 𝒰)
     (H : forall a, P (Foo5 A a))
     (f : foo5 A)
     : P f
     := match f with Foo5 _ a => H a end.
-  (* The command has indeed failed with message:
-     This expression would enforce an elimination constraint between Prop and
-     α96 that is not allowed. *)
 
   Definition foo5_Prop_rect' (A : Prop) (P : foo5 A -> 𝒰)
     (H : forall a, P (Foo5 A a))
@@ -194,7 +191,7 @@ Module Inductives.
     : P f
     := match f with Foo7_1 => H | Foo7_2 => H' end.
 
-  Fail Definition foo7_prop_rect (P:foo7 -> 𝒰)
+  Definition foo7_prop_rect (P:foo7 -> 𝒰)
     (H : P Foo7_1) (H' : P Foo7_2)
     (f : foo7@{Prop|})
     : P f

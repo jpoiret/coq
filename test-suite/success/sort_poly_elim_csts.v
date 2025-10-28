@@ -4,7 +4,7 @@ Section Global.
   Fail Constraint Prop ~> Type.
   Fail Constraint Type ~> Prop.
   Fail Constraint SProp ~> s.
-  Fail Constraint Prop ~> s.
+  Constraint Prop ~> s.
   Constraint s ~> Prop.
   Constraint s ~> SProp.
 
@@ -14,7 +14,7 @@ Section Global.
 
   Fail Check t@{s s'|Set Set}.
   Check t@{s Prop|Set Set}.
-  Fail Check t@{Prop s|Set Set}.
+  Check t@{Prop s|Set Set}.
 
   Constraint Type ~> s.
   Check t@{Type s|Set Set}.
@@ -29,7 +29,7 @@ Module Syntax.
   Fail Definition foo'@{| Prop ~> SProp} := Prop.
 
   Definition bar@{s|u|s ~> Type} := Type@{s|u}.
-  Fail Definition bar'@{s|u|Prop ~> s} := Type@{s|u}.
+  Definition bar'@{s|u|Prop ~> s} := Type@{s|u}.
 
   Definition bar''@{s s'| |s ~> s', s' ~> Prop} := Prop.
   Fail Definition bar'''@{s| |s ~> Type, Prop ~> s} := Prop.

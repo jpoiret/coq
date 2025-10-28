@@ -90,7 +90,7 @@ Module Conversion.
   (* t@{α;u |} : forall (A : SProp) (_ : A) (_ : A), Box@{SProp α;u} A *)
 
   Axiom v : forall (A:𝒰), bool -> A.
-  Fail Check fun P (x:P (v@{Type|_} nat true)) => x : P (v nat false).
+  Fail Check fun P (x:P (v@{Type;_} nat true)) => x : P (v nat false).
   Check fun (A:SProp) P (x:P (v A true)) => x : P (v A false).
     (* : forall (A : SProp) (P : A -> Type@{sort_poly_elab.105}),
        P (v@{SProp;sort_poly_elab.104} A true) ->
@@ -105,7 +105,7 @@ Module Inference.
   Definition zag (A:𝒰) := zog A.
   (* zag@{α;u |} : 𝒰@{α;_} -> 𝒰@{α;_} *)
 
-  (* implicit type of A gets unified to 𝒰@{s|u} *)
+  (* implicit type of A gets unified to 𝒰@{s; u} *)
   Definition zig A := zog A.
   (* zig@{α;u |} : 𝒰@{α;_} -> 𝒰@{α;_} *)
 
@@ -119,14 +119,14 @@ Module Inductives.
   Check foo1_poly.
   Fail Check foo1_sind.
 
-  Definition foo1_rect@{u1 u2} := foo1_poly@{Type Type|u1 u2}.
-  Definition foo1_ind@{u1 u2} := foo1_poly@{Type Prop|u1 u2}.
+  Definition foo1_rect@{u1 u2} := foo1_poly@{Type Type;u1 u2}.
+  Definition foo1_ind@{u1 u2} := foo1_poly@{Type Prop;u1 u2}.
 
   (* Fails if constraints cannot be extended *)
-  Fail Definition foo1_False@{s|+|} (x : foo1@{s|_}) : False := match x return False with end.
+  Fail Definition foo1_False@{s;+|} (x : foo1@{s;_}) : False := match x return False with end.
   (* Elimination constraints are not implied by the ones declared: s ~> Prop *)
 
-  Definition foo1_False@{s|+|+} (x : foo1@{s|_}) : False := match x return False with end.
+  Definition foo1_False@{s; +|+} (x : foo1@{s;_}) : False := match x return False with end.
   (* s;u |= s ~> Prop *)
 
   Definition foo1_False' (x : foo1) : False := match x return False with end.
@@ -155,7 +155,7 @@ Module Inductives.
 
   Definition foo5_Prop_rect' (A : Prop) (P : foo5 A -> 𝒰)
     (H : forall a, P (Foo5 A a))
-    (f : foo5@{Prop|_} A)
+    (f : foo5@{Prop;_} A)
     : P f
     := match f with Foo5 _ a => H a end.
 
@@ -171,13 +171,13 @@ Module Inductives.
 
   Definition foo6_prop_rect (P:foo6 -> 𝒰)
     (H : P Foo6)
-    (f : foo6@{Prop|_})
+    (f : foo6@{Prop; _})
     : P f
     := match f with Foo6 => H end.
 
   Definition foo6_type_rect (P:foo6 -> 𝒰)
     (H : P Foo6)
-    (f : foo6@{Type|_})
+    (f : foo6@{Type; _})
     : P f
     := match f with Foo6 => H end.
 
@@ -187,13 +187,13 @@ Module Inductives.
 
   Definition foo7_prop_ind (P:foo7 -> Prop)
     (H : P Foo7_1) (H' : P Foo7_2)
-    (f : foo7@{Prop|})
+    (f : foo7@{Prop; })
     : P f
     := match f with Foo7_1 => H | Foo7_2 => H' end.
 
   Definition foo7_prop_rect (P:foo7 -> 𝒰)
     (H : P Foo7_1) (H' : P Foo7_2)
-    (f : foo7@{Prop|})
+    (f : foo7@{Prop; })
     : P f
     := match f with Foo7_1 => H | Foo7_2 => H' end.
 
@@ -213,7 +213,7 @@ Module Inductives.
   Goal forall (A:SProp) (r2 : R2@{SProp;0} A), r2 = {| R2f1 := r2.(R2f1 A) |}.
   Proof. intros A r2. reflexivity. Abort.
 
-  (* R3@{SProp Type|} may not be primitive  *)
+  (* R3@{SProp Type; } may not be primitive  *)
   Record R3 (A:𝒰) : 𝒰 := { R3f1 : A }.
 
   Example R3_same_sort@{s;u} (A :𝒰@{s;u}) : forall (r3 : R3@{s s;u} A), r3 = {| R3f1 := r3.(R3f1 A) |}.
@@ -248,10 +248,10 @@ Module Inductives.
 
   (* Elimination constraints are accumulated by fields, even on independent fields *)
   #[projections(primitive=no)] Record R7 (A:𝒰) := { R7f1 : A; R7f2 : nat }.
-  (* Record R7@{α α0 | u |} (A : 𝒰@{α | u}) : 𝒰@{α0 | max(Set,u)}  *)
-  (* R7f1@{α α0 | u |} : forall A : 𝒰@{α | u}, R7@{α α0 | u} A -> A
+  (* Record R7@{α α0 ;  u |} (A : 𝒰@{α ;  u}) : 𝒰@{α0 ;  max(Set,u)}  *)
+  (* R7f1@{α α0 ;  u |} : forall A : 𝒰@{α ;  u}, R7@{α α0 ;  u} A -> A
       α α0 | u |= α0 ~> α *)
-  (* R7f2@{α α0 | u |} : forall A : 𝒰@{α | u}, R7@{α α0 | u} A -> nat
+  (* R7f2@{α α0 ;  u |} : forall A : 𝒰@{α ;  u}, R7@{α α0 ;  u} A -> nat
       α α0 | u |= α0 ~> α
                   α0 ~> Type *)
 
@@ -262,16 +262,16 @@ Module Inductives.
     R8f1 : 𝒰;
     R8f2 : R8f1
   }.
-  (* Record R8@{α α0 | u |} : 𝒰@{α | u+1}. *)
-  (* R8f1@{α α0 | u |} : R8@{α α0 | u} -> 𝒰@{α0 | u}
+  (* Record R8@{α α0 ;  u |} : 𝒰@{α ;  u+1}. *)
+  (* R8f1@{α α0 ;  u |} : R8@{α α0 ;  u} -> 𝒰@{α0 ;  u}
       α α0 | u |= α ~> Type *)
-  (* R8f2@{α α0 | u |} : forall r : R8@{α α0 | u}, R8f1@{α α0 | u} r
+  (* R8f2@{α α0 ;  u |} : forall r : R8@{α α0 ;  u}, R8f1@{α α0 ;  u} r
       α α0 | u |= α ~> α0
                   α ~> Type *)
 
   Inductive sigma (A:𝒰) (B:A -> 𝒰) : 𝒰
     := pair : forall x : A, B x -> sigma A B.
-  (* Inductive sigma@{α α0 α1 | u u0 |} (A : 𝒰@{α | u}) (B : A -> 𝒰@{α0 | u0}) : 𝒰@{α1 | max(u,u0)} *)
+  (* Inductive sigma@{α α0 α1 ;  u u0 |} (A : 𝒰@{α ;  u}) (B : A -> 𝒰@{α0 ;  u0}) : 𝒰@{α1 ;  max(u,u0)} *)
 
   (* Elimination constraints are added *)
   Definition pr1 {A B} (s:sigma A B) : A
@@ -284,7 +284,7 @@ Module Inductives.
                        α1 ~> α0 *)
 
   Inductive seq (A:𝒰) (a:A) : A -> Prop := seq_refl : seq A a a.
-  (* Inductive seq@{α | u |} (A : 𝒰@{α | u}) (a : A) : A -> Prop *)
+  (* Inductive seq@{α ;  u |} (A : 𝒰@{α ;  u}) (a : A) : A -> Prop *)
   Arguments seq_refl {_ _}.
 
   Definition eta A B (s:sigma A B) : seq _ s (pair A B (pr1 s) (pr2 s)).
@@ -315,7 +315,7 @@ Module Inductives.
   Check sexists_ind.
 
 
-  Definition π1 {A:𝒰} {P:A -> 𝒰} (p : sigma@{_ _ Type|_ _} A P) : A :=
+  Definition π1 {A:𝒰} {P:A -> 𝒰} (p : sigma@{_ _ Type; _ _} A P) : A :=
     match p return A with pair _ _ a _ => a end.
 
 

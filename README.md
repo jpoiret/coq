@@ -58,13 +58,39 @@ We include a bash script `opam-artifact-setup.sh` that:
 1. installs all the necessary dependencies, and
 1. builds Rocq and RocqIDE, and installs them in the switch.
 
-The specific steps to setup the project are the following:
+The specific steps to setup the project with the script are the following:
 
 1. Run `./opam-artifact-setup.sh`.
 1. Accept or reject the prompt asking whether to build and install the project immediately. This builds Rocq and RocqIDE.
 
 It is now possible to browse the source code and Rocq files.
 Check the [Navigating the code](#navigating-the-code) section for details on running the RocqIDE or VSCode to explore the project and claims of the paper.
+
+If there are errors when running the script, one can also apply the steps manually, as follows:
+1. Create an opam switch
+```bash
+opam switch create popl26-paper-1025-elim-constraints-artifact 4.14.0
+```
+1. Activate the switch
+```bash
+eval $(opam env)
+```
+1. Install Rocq dependencies
+```bash
+opam install --deps-only . -y
+```
+1. Build the project
+```bash
+make clean && make world
+```
+1. Build RocqIDE
+```bash
+make rocqide
+```
+1. Install the binaries in the Opam switch
+```bash
+dune install rocq-runtime coq-core rocq-core coqide-server rocqide
+```
 
 ### Nix setup
 

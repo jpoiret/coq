@@ -77,7 +77,7 @@ fi
 
 # Set the environment for the new switch
 action "Activating switch '$SWITCH_NAME'..."
-eval $(opam env)
+eval $(opam env --switch="$SWITCH_NAME" --set-switch)
 
 # Install Rocq dependencies
 action "Installing Rocq dependencies..."

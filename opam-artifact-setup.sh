@@ -42,7 +42,7 @@ action "Starting OPAM environment setup..."
 info "Target switch: '$SWITCH_NAME'"
 info "OCaml version: '$OCAML_VERSION'"
 
-# Create the switch
+# Function to create the switch
 create_switch() {
   action "Creating switch '$SWITCH_NAME' with OCaml version '$OCAML_VERSION'..."
   if ! opam switch create "$SWITCH_NAME" "$OCAML_VERSION"; then

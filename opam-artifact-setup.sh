@@ -42,6 +42,16 @@ action "Starting OPAM environment setup..."
 info "Target switch: '$SWITCH_NAME'"
 info "OCaml version: '$OCAML_VERSION'"
 
+# Create the switch
+create_switch() {
+  action "Creating switch '$SWITCH_NAME' with OCaml version '$OCAML_VERSION'..."
+  if ! opam switch create "$SWITCH_NAME" "$OCAML_VERSION"; then
+    error "Failed to create switch '$SWITCH_NAME'"
+    exit 1
+  fi
+  ok "Switch created."
+}
+
 # Check if the switch exists
 if opam switch list --short | grep -q "^${SWITCH_NAME}$"; then
   warn "The switch '$SWITCH_NAME' already exists."
@@ -55,16 +65,14 @@ if opam switch list --short | grep -q "^${SWITCH_NAME}$"; then
       exit 1
     fi
     ok "Switch removed."
-    # Create the switch
-    action "Creating switch '$SWITCH_NAME' with OCaml version '$OCAML_VERSION'..."
-    if ! opam switch create "$SWITCH_NAME" "$OCAML_VERSION"; then
-      error "Failed to create switch '$SWITCH_NAME'"
-      exit 1
-    fi
-    ok "Switch created."
+    # Recreate the switch
+    create_switch
   else
     info "Keeping existing switch."
   fi
+else
+  # Create the switch
+  create_switch
 fi
 
 # Set the environment for the new switch

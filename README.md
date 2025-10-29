@@ -71,23 +71,23 @@ If there are errors when running the script, one can also apply the steps manual
 ```bash
 opam switch create popl26-paper-1025-elim-constraints-artifact 4.14.0
 ```
-1. Activate the switch
+2. Activate the switch
 ```bash
 eval $(opam env)
 ```
-1. Install Rocq dependencies
+3. Install Rocq dependencies
 ```bash
 opam install --deps-only . -y
 ```
-1. Build the project
+4. Build the project
 ```bash
 make clean && make world
 ```
-1. Build RocqIDE
+5. Build RocqIDE
 ```bash
 make rocqide
 ```
-1. Install the binaries in the Opam switch
+6. Install the binaries in the Opam switch
 ```bash
 dune install rocq-runtime coq-core rocq-core coqide-server rocqide
 ```
